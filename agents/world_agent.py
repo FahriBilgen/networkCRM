@@ -4,14 +4,14 @@ import logging
 """Implementation of the World Agent using the Ollama client stack."""
 from typing import Any, Dict, Optional
 
-from fortress_director.agents.base_agent import (
+from agents.base_agent import (
     BaseAgent,
     PromptTemplate,
     build_prompt_path,
     default_ollama_client,
     get_model_config,
 )
-from fortress_director.llm.ollama_client import OllamaClient
+from llm.ollama_client import OllamaClient
 
 
 class WorldAgent(BaseAgent):

@@ -9,26 +9,26 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from fortress_director.agents.character_agent import CharacterAgent
-from fortress_director.agents.event_agent import EventAgent
-from fortress_director.agents.judge_agent import JudgeAgent
-from fortress_director.agents.world_agent import WorldAgent
-from fortress_director.settings import SETTINGS
-from fortress_director.rules.rules_engine import (
+from agents.character_agent import CharacterAgent
+from agents.event_agent import EventAgent
+from agents.judge_agent import JudgeAgent
+from agents.world_agent import WorldAgent
+from settings import SETTINGS
+from rules.rules_engine import (
     RulesEngine,
     TierTwoValidationError,
 )
-from fortress_director.codeaware.function_registry import (
+from codeaware.function_registry import (
     FunctionCall,
     FunctionValidationError,
     SafeFunctionRegistry,
     Validator,
 )
-from fortress_director.codeaware.function_validator import (
+from codeaware.function_validator import (
     FunctionCallValidator,
 )
-from fortress_director.codeaware.rollback_system import RollbackSystem
-from fortress_director.utils.output_validator import validate_turn_output
+from codeaware.rollback_system import RollbackSystem
+from utils.output_validator import validate_turn_output
 
 
 LOGGER = logging.getLogger(__name__)
@@ -702,14 +702,14 @@ class Orchestrator:
                         else:
                             raise ValueError("Invalid spawn_item args")
                     elif func_name == "move_npc":
-                        # Parse 'npc_name', 'target_room'
+                        # Parse 'npc_id', 'location'
                         parts = [
                             p.strip().strip("'").strip('"') for p in args.split(",")
                         ]
                         if len(parts) == 2:
                             payload["kwargs"] = {
-                                "npc_name": parts[0],
-                                "target_room": parts[1],
+                                "npc_id": parts[0],
+                                "location": parts[1],
                             }
                         else:
                             raise ValueError("Invalid move_npc args")

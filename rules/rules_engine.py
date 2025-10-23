@@ -8,8 +8,8 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List
 
-from fortress_director.agents.base_agent import AgentError
-from fortress_director.agents.judge_agent import JudgeAgent
+from agents.base_agent import AgentError
+from agents.judge_agent import JudgeAgent
 
 
 LOGGER = logging.getLogger(__name__)

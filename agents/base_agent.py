@@ -7,12 +7,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from fortress_director.llm.ollama_client import (
+from llm.ollama_client import (
     OllamaClient,
     OllamaClientConfig,
     OllamaClientError,
 )
-from fortress_director.settings import ModelConfig, SETTINGS
+from settings import ModelConfig, SETTINGS
 
 
 class AgentError(RuntimeError):

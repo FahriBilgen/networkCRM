@@ -27,7 +27,7 @@ You may call safe functions to enact changes in the world.
 If you decide that a physical, environmental, or character state change is required, 
 respond in the following JSON format:
 
-Available functions (use only keyword arguments, not positional!): change_weather(weather_type), spawn_item(item_name, location), move_npc(npc_name, target_room).
+Available functions (use only keyword arguments, not positional!): change_weather(weather_type), spawn_item(item_name, location), move_npc(npc_id, location).
 Example: "safe_functions": ["change_weather('rainy')", "spawn_item('torch', 'lornhaven_wall')", "move_npc('Rhea', 'lornhaven_gate')"]
  If you decide that a physical, environmental, or character state change is required, 
 - Karakterler kendi görevlerine sadık kalmalı (savunucular tetikte, kaçış yok).

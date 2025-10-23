@@ -4,7 +4,7 @@ import logging
 """Judge Agent implementation providing lore consistency checks."""
 from typing import Any, Dict, Optional
 
-from fortress_director.agents.base_agent import (
+from agents.base_agent import (
     AgentOutputError,
     BaseAgent,
     PromptTemplate,
@@ -12,7 +12,7 @@ from fortress_director.agents.base_agent import (
     default_ollama_client,
     get_model_config,
 )
-from fortress_director.llm.ollama_client import OllamaClient
+from llm.ollama_client import OllamaClient
 
 
 class JudgeAgent(BaseAgent):

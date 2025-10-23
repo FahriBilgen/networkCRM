@@ -10,12 +10,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, cast
 
-from fortress_director.orchestrator.orchestrator import (
+from orchestrator.orchestrator import (
     DEFAULT_WORLD_STATE,
     Orchestrator,
     StateStore,
 )
-from fortress_director.settings import SETTINGS
+from settings import SETTINGS
 
 
 def _print_json(data: Dict[str, Any]) -> None:

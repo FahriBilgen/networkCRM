@@ -4,7 +4,7 @@ import logging
 """Implementation of the Character Agent for NPC reactions."""
 from typing import Any, Dict, List, Optional
 
-from fortress_director.agents.base_agent import (
+from agents.base_agent import (
     AgentOutputError,
     BaseAgent,
     PromptTemplate,
@@ -12,7 +12,7 @@ from fortress_director.agents.base_agent import (
     default_ollama_client,
     get_model_config,
 )
-from fortress_director.llm.ollama_client import OllamaClient
+from llm.ollama_client import OllamaClient
 
 
 MAX_SPEECH_LENGTH = 360
