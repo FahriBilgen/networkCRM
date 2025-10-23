@@ -1,0 +1,178 @@
+2025-10-18 13:58:20,495 [DEBUG] root: Logging configured (console level=INFO, file=C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\logs\turn_20251018_105820.log)
+2025-10-18 13:58:20,495 [INFO] __main__: Detailed logs written to C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\logs\turn_20251018_105820.log
+2025-10-18 13:58:20,495 [INFO] fortress_director.codeaware.function_registry: Registering safe function: change_weather
+2025-10-18 13:58:20,495 [INFO] fortress_director.codeaware.function_registry: Safe function 'change_weather' registered successfully.
+2025-10-18 13:58:20,495 [INFO] fortress_director.codeaware.function_registry: Registering safe function: spawn_item
+2025-10-18 13:58:20,495 [INFO] fortress_director.codeaware.function_registry: Safe function 'spawn_item' registered successfully.
+2025-10-18 13:58:20,495 [INFO] fortress_director.codeaware.function_registry: Registering safe function: move_npc
+2025-10-18 13:58:20,495 [INFO] fortress_director.codeaware.function_registry: Safe function 'move_npc' registered successfully.
+2025-10-18 13:58:20,495 [INFO] fortress_director.orchestrator.orchestrator: run_turn called (player_choice_id=None)
+2025-10-18 13:58:20,502 [DEBUG] fortress_director.orchestrator.orchestrator: Resetting function validator and creating checkpoint: {'phase': 'turn_start'}
+2025-10-18 13:58:20,502 [DEBUG] fortress_director.orchestrator.orchestrator: State snapshot loaded from C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\data\world_state.json (turn=19)
+2025-10-18 13:58:20,502 [INFO] fortress_director.codeaware.rollback_system: Checkpoint created (turn=19, call=None)
+2025-10-18 13:58:20,502 [INFO] fortress_director.orchestrator.orchestrator: Turn execution started.
+2025-10-18 13:58:20,502 [DEBUG] fortress_director.orchestrator.orchestrator: State snapshot loaded from C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\data\world_state.json (turn=19)
+2025-10-18 13:58:20,502 [DEBUG] fortress_director.orchestrator.orchestrator: Pre-turn state snapshot: {"character_summary": "Rhea is loyal but impulsive; Boris is cautious and calculating.", "current_room": "lornhaven_wall", "day": 1, "flags": ["Rhea_investigation", "mystery_figure", "major_mystery_investigation", "atmosphere", "lornhaven_wall_watcher"], "items": {"Rhea": ["oil lamp"], "string": ["string"]}, "metrics": {"major_event_last_turn": 18, "major_events_triggered": 4, "major_flag_set": true, "risk_applied_total": 1}, "npc_trust": {"Rhea": 3, "Shieldbearer": 0, "The Shieldbearer": 2}, "player": {"inventory": ["oil lamp", "patched shield"], "name": "The Shieldbearer", "stats": {"empa...
+2025-10-18 13:58:20,502 [INFO] fortress_director.orchestrator.orchestrator: World context built.
+2025-10-18 13:58:20,503 [DEBUG] fortress_director.orchestrator.orchestrator: World context payload: Turn 19 | Day 1 | Time dawn
+Location: lornhaven_wall
+Player: The Shieldbearer — A weary defender holding the western wall.
+Inventory: oil lamp, patched shield
+World constraint: {"atmosphere": "overcast", "sensory_details": "The weather shifts subtly."}
+Recent events: The Shieldbearer, standing at the western wall of Lornhaven, squints into the distance as the first light of dawn breaks over the horizon. The cool morning air carries a hint of damp earth and the distant sound of roosters crowing. As they listen to Rhea's tale of a mysterious figure lurking near the walls, a chill creeps over them, making their patched leather shield feel heavier under their calloused hands.; The Shieldbearer, standing at the western wall of Lornhaven, squints into the distance as the first light of dawn breaks over the horizon. The cool morning air carries a hint of damp earth and the distant sound of roosters crowing. As they listen to Rhea's tale of a mysterious figure lurking near the walls, a chill creeps over them, making their patched leather shield feel heavier under their calloused hands.; The Shieldbearer, standing at the western wall of Lornhaven, squints into the distance as the first light of dawn breaks over the horizon. The cool morning air carries a hint of damp earth and the distant sound of roosters crowing. As they listen to Rhea's tale of a mysterious figure lurking near the walls, a chill creeps over them, making their patched leather shield feel heavier under their calloused hands. Suddenly, a rustling in the bushes catches their attention.
+Recent motifs: stay, stay, explore
+Recent major events: no, no, yes
+Relationship summary: Rhea trusts the player; Boris weighs every trade.
+Character summary: Rhea is loyal but impulsive; Boris is cautious and calculating.
+Metrics: {"risk_applied_total": 1, "major_flag_set": true, "major_events_triggered": 4, "major_event_last_turn": 18}
+2025-10-18 13:58:20,503 [INFO] fortress_director.orchestrator.orchestrator: Starting turn 19 in room lornhaven_wall
+2025-10-18 13:58:20,503 [DEBUG] fortress_director.orchestrator.orchestrator: World agent input: {"WORLD_CONTEXT": "Turn 19 | Day 1 | Time dawn\nLocation: lornhaven_wall\nPlayer: The Shieldbearer — A weary defender holding the western wall.\nInventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"overcast\", \"sensory_details\": \"The weather shifts subtly.\"}\nRecent events: The Shieldbearer, standing at the western wall of Lornhaven, squints into the distance as the first light of dawn breaks over the horizon. The cool morning air carries a hint of damp earth and the distant sound of roosters crowing. As they listen to Rhea's tale of a mysterious figure lurking near...
+2025-10-18 13:58:20,503 [INFO] fortress_director.orchestrator.orchestrator: Calling world_agent.describe...
+2025-10-18 13:58:20,503 [INFO] fortress_director.agents.world_agent: WorldAgent.describe called with variables: {'WORLD_CONTEXT': 'Turn 19 | Day 1 | Time dawn\nLocation: lornhaven_wall\nPlayer: The Shieldbearer — A weary defender holding the western wall.\nInventory: oil lamp, patched shield\nWorld constraint: {"atmosphere": "overcast", "sensory_details": "The weather shifts subtly."}\nRecent events: The Shieldbearer, standing at the western wall of Lornhaven, squints into the distance as the first light of dawn breaks over the horizon. The cool morning air carries a hint of damp earth and the distant sound of roosters crowing. As they listen to Rhea\'s tale of a mysterious figure lurking near the walls, a chill creeps over them, making their patched leather shield feel heavier under their calloused hands.; The Shieldbearer, standing at the western wall of Lornhaven, squints into the distance as the first light of dawn breaks over the horizon. The cool morning air carries a hint of damp earth and the distant sound of roosters crowing. As they listen to Rhea\'s tale of a mysterious figure lurking near the walls, a chill creeps over them, making their patched leather shield feel heavier under their calloused hands.; The Shieldbearer, standing at the western wall of Lornhaven, squints into the distance as the first light of dawn breaks over the horizon. The cool morning air carries a hint of damp earth and the distant sound of roosters crowing. As they listen to Rhea\'s tale of a mysterious figure lurking near the walls, a chill creeps over them, making their patched leather shield feel heavier under their calloused hands. Suddenly, a rustling in the bushes catches their attention.\nRecent motifs: stay, stay, explore\nRecent major events: no, no, yes\nRelationship summary: Rhea trusts the player; Boris weighs every trade.\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating.\nMetrics: {"risk_applied_total": 1, "major_flag_set": true, "major_events_triggered": 4, "major_event_last_turn": 18}', 'room': 'lornhaven_wall'}
+2025-10-18 13:58:24,639 [ERROR] fortress_director.agents.world_agent: Exception in WorldAgent.describe: World agent failed: Cannot reach Ollama server: [WinError 10061] Hedef makine etkin olarak reddettiğinden bağlantı kurulamadı
+Traceback (most recent call last):
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 1344, in do_open
+    h.request(req.get_method(), req.selector, req.data, headers,
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1338, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1384, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1333, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1093, in _send_output
+    self.send(msg)
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1037, in send
+    self.connect()
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1003, in connect
+    self.sock = self._create_connection(
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 865, in create_connection
+    raise exceptions[0]
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 850, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [WinError 10061] Hedef makine etkin olarak reddettiğinden bağlantı kurulamadı
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\llm\ollama_client.py", line 88, in _post
+    with request.urlopen(req, timeout=self._config.timeout) as resp:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 515, in open
+    response = self._open(req, data)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 532, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 1373, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 1347, in do_open
+    raise URLError(err)
+urllib.error.URLError: <urlopen error [WinError 10061] Hedef makine etkin olarak reddettiğinden bağlantı kurulamadı>
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\agents\base_agent.py", line 76, in run
+    response = self._client.generate(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\llm\ollama_client.py", line 56, in generate
+    return self._post("/api/generate", payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\llm\ollama_client.py", line 96, in _post
+    raise OllamaClientError(message) from exc
+fortress_director.llm.ollama_client.OllamaClientError: Cannot reach Ollama server: [WinError 10061] Hedef makine etkin olarak reddettiğinden bağlantı kurulamadı
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\agents\world_agent.py", line 34, in describe
+    result = self.run(variables=variables)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\agents\base_agent.py", line 83, in run
+    raise AgentError(f"{self.name} agent failed: {exc}") from exc
+fortress_director.agents.base_agent.AgentError: World agent failed: Cannot reach Ollama server: [WinError 10061] Hedef makine etkin olarak reddettiğinden bağlantı kurulamadı
+2025-10-18 13:58:24,714 [ERROR] fortress_director.orchestrator.orchestrator: Exception during turn: World agent failed: Cannot reach Ollama server: [WinError 10061] Hedef makine etkin olarak reddettiğinden bağlantı kurulamadı
+Traceback (most recent call last):
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 1344, in do_open
+    h.request(req.get_method(), req.selector, req.data, headers,
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1338, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1384, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1333, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1093, in _send_output
+    self.send(msg)
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1037, in send
+    self.connect()
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1003, in connect
+    self.sock = self._create_connection(
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 865, in create_connection
+    raise exceptions[0]
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 850, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [WinError 10061] Hedef makine etkin olarak reddettiğinden bağlantı kurulamadı
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\llm\ollama_client.py", line 88, in _post
+    with request.urlopen(req, timeout=self._config.timeout) as resp:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 515, in open
+    response = self._open(req, data)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 532, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 1373, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 1347, in do_open
+    raise URLError(err)
+urllib.error.URLError: <urlopen error [WinError 10061] Hedef makine etkin olarak reddettiğinden bağlantı kurulamadı>
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\agents\base_agent.py", line 76, in run
+    response = self._client.generate(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\llm\ollama_client.py", line 56, in generate
+    return self._post("/api/generate", payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\llm\ollama_client.py", line 96, in _post
+    raise OllamaClientError(message) from exc
+fortress_director.llm.ollama_client.OllamaClientError: Cannot reach Ollama server: [WinError 10061] Hedef makine etkin olarak reddettiğinden bağlantı kurulamadı
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\orchestrator\orchestrator.py", line 225, in run_turn
+    world_output = self.world_agent.describe(world_request)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\agents\world_agent.py", line 34, in describe
+    result = self.run(variables=variables)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\agents\base_agent.py", line 83, in run
+    raise AgentError(f"{self.name} agent failed: {exc}") from exc
+fortress_director.agents.base_agent.AgentError: World agent failed: Cannot reach Ollama server: [WinError 10061] Hedef makine etkin olarak reddettiğinden bağlantı kurulamadı
+2025-10-18 13:58:24,716 [INFO] fortress_director.codeaware.rollback_system: Rollback requested (reason=Turn execution failed: AgentError)
+2025-10-18 13:58:24,716 [DEBUG] fortress_director.orchestrator.orchestrator: State persisted to C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\data\world_state.json (turn=19)
+2025-10-18 13:58:24,716 [INFO] fortress_director.codeaware.rollback_system: Rollback applied (turn=19, reason=Turn execution failed: AgentError)
+2025-10-18 13:58:24,716 [INFO] fortress_director.orchestrator.orchestrator: Rollback performed after exception.
