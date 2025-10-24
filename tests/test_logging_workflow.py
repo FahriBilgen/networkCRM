@@ -4,6 +4,7 @@ import hashlib
 import importlib
 import json
 import logging
+import os
 import shutil
 from pathlib import Path
 from typing import Dict
@@ -39,9 +40,12 @@ def test_glitch_manager_deterministic_roll(caplog: pytest.LogCaptureFixture) -> 
     with caplog.at_level(logging.INFO):
         result = glitch_manager.resolve_turn(metrics=metrics, turn=2)
 
-    expected_roll = int.from_bytes(
-        hashlib.sha256(f"{1234}:{2}:{12}".encode("utf-8")).digest()[:4], "big"
-    ) % 101
+    expected_roll = (
+        int.from_bytes(
+            hashlib.sha256(f"{1234}:{2}:{12}".encode("utf-8")).digest()[:4], "big"
+        )
+        % 101
+    )
     assert result["roll"] == expected_roll
     assert any(
         "Glitch roll complete" in record.getMessage() for record in caplog.records
@@ -94,7 +98,7 @@ def test_orchestrator_end_to_end_logging(
         cache_dir=tmp_path / "cache",
         log_dir=tmp_path / "logs",
         ollama_base_url=base_settings.ollama_base_url,
-        ollama_timeout=base_settings.ollama_timeout,
+        ollama_timeout=300.0,  # Increased timeout for real models
         max_active_models=base_settings.max_active_models,
         semantic_cache_ttl=base_settings.semantic_cache_ttl,
         models=dict(base_settings.models),
@@ -109,6 +113,10 @@ def test_orchestrator_end_to_end_logging(
         encoding="utf-8",
     )
 
+    # Force real Ollama models
+    env_copy = os.environ.copy()
+    env_copy["FORTRESS_USE_OLLAMA"] = "1"
+    monkeypatch.setattr(os, "environ", env_copy)
     monkeypatch.setattr(settings_mod, "SETTINGS", sandbox, raising=False)
     monkeypatch.setattr(orchestrator_mod, "SETTINGS", sandbox, raising=False)
     monkeypatch.setattr(base_agent_mod, "SETTINGS", sandbox, raising=False)
@@ -118,16 +126,35 @@ def test_orchestrator_end_to_end_logging(
     with caplog.at_level(logging.INFO):
         result = orchestrator.run_turn()
 
+    # Verify real model outputs
     assert "glitch" in result
     assert "win_loss" in result
+    assert "scene" in result
+    assert "options" in result
+    assert "world" in result
+    assert "character_reactions" in result
+
+    # Verify real model calls in logs
     assert any(
         "Turn execution started." in record.getMessage() for record in caplog.records
     )
     assert any(
-        "Glitch resolution outcome" in record.getMessage()
+        "Glitch resolution outcome" in record.getMessage() for record in caplog.records
+    )
+    assert any(
+        "Win/loss status after turn" in record.getMessage() for record in caplog.records
+    )
+    # Verify agent calls happened
+    assert any(
+        "WorldAgent.describe called" in record.getMessage() for record in caplog.records
+    )
+    assert any(
+        "EventAgent.generate called" in record.getMessage() for record in caplog.records
+    )
+    assert any(
+        "CharacterAgent.react called" in record.getMessage()
         for record in caplog.records
     )
     assert any(
-        "Win/loss status after turn" in record.getMessage()
-        for record in caplog.records
+        "JudgeAgent.evaluate called" in record.getMessage() for record in caplog.records
     )

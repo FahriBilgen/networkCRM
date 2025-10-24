@@ -1,7 +1,7 @@
 {
   "campaign_id": "default_campaign",
   "turn_limit": 10,
-  "current_turn": 0,
+  "current_turn": 1,
   "rng_seed": 12345,
   "scores": {
     "logic_score": 0,
@@ -14,15 +14,19 @@
   "npc_fragments": {},
   "inventory": [],
   "lore": {},
-  "turn": 0,
+  "turn": 1,
   "day": 1,
   "time": "dawn",
   "current_room": "entrance",
-  "recent_events": [],
-  "recent_motifs": [],
+  "recent_events": [
+    "The Shieldbearer, standing at the entrance of Lornhaven, gazes out at the low clouds that hug the battlements. The wind carries grit and the distant drums thud ominously."
+  ],
+  "recent_motifs": [
+    "dialogue"
+  ],
   "world_constraint_from_prev_turn": {
-    "atmosphere": "low clouds hug the battlements",
-    "sensory_details": "Drums thud beyond the walls while the wind carries grit."
+    "atmosphere": "Dawn breaks, a new day at the western wall.",
+    "sensory_details": "The chill morning air bites as dust motes dance in the shafts of light piercing through low clouds."
   },
   "player": {
     "name": "The Shieldbearer",
@@ -44,7 +48,7 @@
     "resources": 40,
     "knowledge": 45,
     "corruption": 10,
-    "glitch": 12,
+    "glitch": 13,
     "risk_applied_total": 0,
     "major_flag_set": false,
     "major_events_triggered": 0,
@@ -53,5 +57,7 @@
   "npc_trust": {},
   "status_effects": [],
   "items": {},
-  "recent_major_events": []
+  "recent_major_events": [
+    false
+  ]
 }

@@ -14,7 +14,6 @@ from llm.ollama_client import (
     OllamaClientError,
 )
 from settings import ModelConfig, SETTINGS
-from llm.offline_client import OfflineOllamaClient
 
 
 class AgentError(RuntimeError):
@@ -132,16 +131,22 @@ def build_prompt_path(filename: str) -> Path:
 
 
 def default_ollama_client(agent_key: Optional[str] = None) -> OllamaClient:
-    """Create an Ollama-compatible client with an offline fallback."""
+    """Create an Ollama client that always talks to a live model service."""
 
-    if os.environ.get("FORTRESS_USE_OLLAMA") == "1":
-        config = OllamaClientConfig(
-            base_url=SETTINGS.ollama_base_url,
-            timeout=SETTINGS.ollama_timeout,
-        )
-        return OllamaClient(config)
+    base_url = os.environ.get("FORTRESS_OLLAMA_BASE_URL", SETTINGS.ollama_base_url)
+    timeout_value = os.environ.get("FORTRESS_OLLAMA_TIMEOUT")
+    try:
+        timeout = float(timeout_value) if timeout_value is not None else SETTINGS.ollama_timeout
+    except ValueError as exc:  # pragma: no cover - defensive guard
+        raise AgentError(
+            "FORTRESS_OLLAMA_TIMEOUT must be a float value"
+        ) from exc
 
-    return OfflineOllamaClient(agent_key or "generic")
+    config = OllamaClientConfig(
+        base_url=base_url,
+        timeout=timeout,
+    )
+    return OllamaClient(config)
 
 
 def get_model_config(agent_key: str) -> ModelConfig:
