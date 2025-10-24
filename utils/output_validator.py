@@ -70,7 +70,17 @@ def validate_turn_output(payload: Dict[str, Any]) -> None:
 
     _require_keys(
         payload,
-        keys=("world", "event", "player_choice", "character_reactions"),
+        keys=(
+            "world",
+            "event",
+            "player_choice",
+            "character_reactions",
+            "metrics_after",
+            "glitch",
+            "logs",
+            "win_loss",
+            "narrative",
+        ),
         context="root payload",
     )
 
@@ -134,3 +144,58 @@ def validate_turn_output(payload: Dict[str, Any]) -> None:
         for warning in warnings:
             if not isinstance(warning, str):
                 raise OutputValidationError("Warnings must be strings")
+
+    metrics_after = payload["metrics_after"]
+    _assert_type(metrics_after, dict, context="metrics_after")
+    required_metrics = (
+        "order",
+        "morale",
+        "resources",
+        "knowledge",
+        "corruption",
+        "glitch",
+    )
+    for metric in required_metrics:
+        if metric not in metrics_after:
+            raise OutputValidationError(f"metrics_after missing '{metric}'")
+        value = metrics_after[metric]
+        if not isinstance(value, int):
+            raise OutputValidationError(
+                f"metrics_after['{metric}'] must be an integer"
+            )
+
+    glitch = payload["glitch"]
+    _assert_type(glitch, dict, context="glitch")
+    _require_keys(glitch, keys=("roll", "effects"), context="glitch")
+    if not isinstance(glitch["roll"], int):
+        raise OutputValidationError("glitch.roll must be an integer")
+    effects = glitch["effects"]
+    _assert_type(effects, list, context="glitch effects")
+    for effect in effects:
+        if not isinstance(effect, str):
+            raise OutputValidationError("glitch effects must be strings")
+
+    logs = payload["logs"]
+    _assert_type(logs, list, context="logs")
+    for entry in logs:
+        if not isinstance(entry, dict):
+            raise OutputValidationError("log entries must be objects")
+        _require_keys(
+            entry,
+            keys=("metric", "delta", "value", "cause"),
+            context="log entry",
+        )
+
+    win_loss = payload["win_loss"]
+    _assert_type(win_loss, dict, context="win_loss")
+    _require_keys(win_loss, keys=("status", "reason"), context="win_loss")
+    status = win_loss["status"]
+    if status not in {"ongoing", "win", "loss"}:
+        raise OutputValidationError("win_loss.status must be ongoing, win, or loss")
+    for key in ("status", "reason"):
+        if not isinstance(win_loss[key], str):
+            raise OutputValidationError(f"win_loss.{key} must be a string")
+
+    narrative = payload["narrative"]
+    if not isinstance(narrative, str):
+        raise OutputValidationError("narrative must be a string")

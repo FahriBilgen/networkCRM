@@ -1,25 +1,15 @@
 {
-  "turn": 24,
+  "turn": 0,
   "day": 1,
   "time": "dawn",
+  "turn_limit": 30,
+  "rng_seed": 12345,
   "current_room": "lornhaven_wall",
-  "recent_events": [
-    "As the Shieldbearer stands watch, a rustling in the bushes catches their attention. The chill in the air intensifies and the wind picks up, carrying with it the scent of damp earth and decay. Suddenly, a figure emerges from the shadows, cloaked and hooded, standing just beyond the reach of the wall's light.",
-    "As the Shieldbearer stands watch, they notice a figure emerging from the shadows beyond the reach of the wall's light. The chill in the air intensifies and the wind picks up, carrying with it the scent of damp earth and decay. Suddenly, the mysterious figure moves towards the wall, stopping just within the reach of the torchlight. The Shieldbearer tenses, ready to defend Lornhaven if necessary.",
-    "As the mysterious figure approaches, the Shieldbearer stands ready to defend Lornhaven. Suddenly, a gust of wind sweeps through, revealing the figure's hood and showing a face that sends a chill down the Shieldbearer's spine. The figure speaks in a low, menacing voice, 'I am here for the artifact.' The Shieldbearer tenses, ready to fight if necessary.",
-    "The Shieldbearer stands ready, the mysterious figure approaching menacingly. Suddenly, a gust of wind sweeps through, revealing the figure's hood and sending a chill down the Shieldbearer's spine. The figure speaks in a low, menacing voice, 'I am here for the artifact.' The Shieldbearer tenses, ready to fight if necessary.",
-    "The Shieldbearer stands ready, the mysterious figure approaching menacingly. Suddenly, a gust of wind sweeps through, revealing the figure's hood and sending a chill down the Shieldbearer's spine. The figure speaks in a low, menacing voice, 'I am here for the artifact.' The Shieldbearer tenses, ready to fight if necessary."
-  ],
-  "recent_motifs": [
-    "interact",
-    "interact",
-    "combat",
-    "combat",
-    "combat"
-  ],
+  "recent_events": [],
+  "recent_motifs": [],
   "world_constraint_from_prev_turn": {
-    "atmosphere": "stormier",
-    "sensory_details": "The weather shifts subtly."
+    "atmosphere": "low clouds hug the battlements",
+    "sensory_details": "Drums thud beyond the walls while the wind carries grit."
   },
   "player": {
     "name": "The Shieldbearer",
@@ -36,102 +26,20 @@
   "character_summary": "Rhea is loyal but impulsive; Boris is cautious and calculating.",
   "relationship_summary": "Rhea trusts the player; Boris weighs every trade.",
   "metrics": {
-    "risk_applied_total": 1,
-    "major_flag_set": true,
-    "major_events_triggered": 9,
-    "major_event_last_turn": 23
+    "order": 50,
+    "morale": 50,
+    "resources": 40,
+    "knowledge": 45,
+    "corruption": 10,
+    "glitch": 12,
+    "risk_applied_total": 0,
+    "major_flag_set": false,
+    "major_events_triggered": 0,
+    "major_event_last_turn": null
   },
-  "npc_trust": {
-    "Rhea": 3,
-    "Shieldbearer": 1,
-    "The Shieldbearer": 2
-  },
-  "status_effects": [
-    {
-      "target": "Rhea",
-      "status": "alert",
-      "duration": 0
-    },
-    {
-      "target": "Rhea_investigation",
-      "status": "active",
-      "duration": 0
-    },
-    {
-      "target": "Rhea",
-      "status": "alert",
-      "duration": 10
-    },
-    {
-      "target": "string",
-      "status": "unknown",
-      "duration": 10
-    },
-    {
-      "target": "lornhaven_wall",
-      "status": "active",
-      "duration": 3
-    },
-    {
-      "target": "The Shieldbearer",
-      "status": "tense_watch",
-      "duration": 3
-    },
-    {
-      "target": "The Shieldbearer",
-      "status": "tense_watch",
-      "duration": 3
-    },
-    {
-      "target": "Rhea",
-      "status": "tense_watch",
-      "duration": 3
-    },
-    {
-      "target": "Rhea",
-      "status": "tense_watch",
-      "duration": 3
-    },
-    {
-      "target": "Shieldbearer",
-      "status": "tense_watch",
-      "duration": 3
-    },
-    {
-      "target": "Rhea",
-      "status": "tense_watch",
-      "duration": 3
-    },
-    {
-      "target": "Rhea",
-      "status": "tense_watch",
-      "duration": 3
-    }
-  ],
-  "flags": [
-    "Rhea_investigation",
-    "mystery_figure",
-    "major_mystery_investigation",
-    "atmosphere",
-    "lornhaven_wall_watcher",
-    "sensory_details"
-  ],
-  "items": {
-    "Rhea": [
-      "oil lamp"
-    ],
-    "string": [
-      "string"
-    ],
-    "lornhaven_wall": [
-      "torch"
-    ]
-  },
-  "recent_major_events": [
-    true,
-    true,
-    true,
-    true,
-    true
-  ]
+  "npc_trust": {},
+  "status_effects": [],
+  "flags": [],
+  "items": {},
+  "recent_major_events": []
 }

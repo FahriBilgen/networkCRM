@@ -52,3 +52,44 @@ class JudgeAgent(BaseAgent):
                 "Exception in JudgeAgent.evaluate: %s", exc, exc_info=True
             )
             raise
+
+
+def check_win_loss(
+    metrics: Dict[str, Any],
+    *,
+    turn: int,
+    turn_limit: int,
+) -> Dict[str, str]:
+    """Evaluate win/loss state using supplied metrics."""
+
+    def _as_int(value: Any, default: int = 0) -> int:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return default
+
+    order = _as_int(metrics.get("order"), 0)
+    morale = _as_int(metrics.get("morale"), 0)
+    resources = _as_int(metrics.get("resources"), 0)
+    glitch = _as_int(metrics.get("glitch"), 0)
+
+    status = "ongoing"
+    reason = "thresholds_not_met"
+
+    if order >= 70 and morale >= 70 and glitch <= 30:
+        status = "win"
+        reason = "fortress_stabilized"
+    elif order <= 20:
+        status = "loss"
+        reason = "order_collapse"
+    elif resources <= 0:
+        status = "loss"
+        reason = "resources_depleted"
+    elif glitch >= 85:
+        status = "loss"
+        reason = "glitch_overload"
+    elif turn >= max(1, turn_limit):
+        status = "loss"
+        reason = "turn_limit_reached"
+
+    return {"status": status, "reason": reason}

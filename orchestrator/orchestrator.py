@@ -12,7 +12,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from agents.character_agent import CharacterAgent
 from agents.event_agent import EventAgent
-from agents.judge_agent import JudgeAgent
+from agents.judge_agent import JudgeAgent, check_win_loss
 from agents.world_agent import WorldAgent
 from settings import SETTINGS
 from rules.rules_engine import (
@@ -31,7 +31,8 @@ from codeaware.function_validator import (
 )
 from codeaware.rollback_system import RollbackSystem
 from utils.output_validator import validate_turn_output
-from utils.output_validator import validate_turn_output
+from utils.glitch_manager import GlitchManager
+from utils.metrics_manager import MetricManager
 
 
 LOGGER = logging.getLogger(__name__)
@@ -46,7 +47,8 @@ DEFAULT_WORLD_STATE: Dict[str, Any] = {
     "turn": 0,
     "day": 1,
     "time": "dawn",
-    "turn_limit": 10,
+    "turn_limit": 30,
+    "rng_seed": 12345,
     "current_room": "lornhaven_wall",
     "recent_events": [],
     "recent_motifs": [],
@@ -66,6 +68,12 @@ DEFAULT_WORLD_STATE: Dict[str, Any] = {
     ),
     "relationship_summary": RELATIONSHIP_SUMMARY_DEFAULT,
     "metrics": {
+        "order": 50,
+        "morale": 50,
+        "resources": 40,
+        "knowledge": 45,
+        "corruption": 10,
+        "glitch": 12,
         "risk_applied_total": 0,
         "major_flag_set": False,
         "major_events_triggered": 0,
@@ -241,6 +249,9 @@ class Orchestrator:
         """Execute a full deterministic turn and persist the new state. Logs every step in detail."""
         LOGGER.info("run_turn called (player_choice_id=%s)", player_choice_id)
 
+        self._metric_log_buffer = []
+        glitch_info: Dict[str, Any] = {"roll": 0, "effects": [], "triggered_loss": False}
+
         checkpoint_metadata = {"phase": "turn_start"}
         if player_choice_id:
             checkpoint_metadata["player_choice_id"] = player_choice_id
@@ -258,7 +269,20 @@ class Orchestrator:
                 "Pre-turn state snapshot: %s",
                 self._stringify(state_snapshot),
             )
-            turn_limit = state_snapshot.get("turn_limit", 10)
+            metric_manager = MetricManager(
+                state_snapshot,
+                log_sink=self._metric_log_sink(),
+            )
+            rng_seed = state_snapshot.get("rng_seed", 0)
+            if not isinstance(rng_seed, int):
+                try:
+                    rng_seed = int(rng_seed)
+                except (TypeError, ValueError):
+                    rng_seed = 0
+            state_snapshot["rng_seed"] = rng_seed
+            glitch_manager = GlitchManager(seed=rng_seed)
+
+            turn_limit = state_snapshot.get("turn_limit", 30)
             current_turn = state_snapshot.get(
                 "current_turn", state_snapshot.get("turn", 0)
             )
@@ -271,7 +295,14 @@ class Orchestrator:
                 try:
                     turn_limit = int(turn_limit)
                 except (TypeError, ValueError):
-                    turn_limit = 10
+                    turn_limit = 30
+            turn_limit = min(turn_limit, 30)
+
+            glitch_info = glitch_manager.resolve_turn(
+                metrics=metric_manager,
+                turn=current_turn + 1,
+            )
+
             is_final_turn = current_turn >= turn_limit
             world_context = self._build_world_context(state_snapshot)
             LOGGER.info("World context built.")
@@ -460,6 +491,26 @@ class Orchestrator:
             )
             LOGGER.info("Safe function queue executed.")
 
+            final_state = self.state_store.snapshot()
+            final_metrics = MetricManager(
+                final_state,
+                log_sink=self._metric_log_sink(),
+            )
+            metrics_after = final_metrics.snapshot()
+            win_loss = check_win_loss(
+                metrics_after,
+                turn=final_state.get("turn", 0),
+                turn_limit=final_state.get("turn_limit", turn_limit),
+            )
+            if glitch_info.get("triggered_loss") and win_loss["status"] == "ongoing":
+                win_loss = {"status": "loss", "reason": "glitch_overload"}
+            narrative = self._compose_turn_narrative(
+                turn=final_state.get("turn", 0),
+                choice=chosen_option,
+                character_output=character_output,
+                glitch_effects=glitch_info.get("effects", []),
+            )
+
             result = {
                 "WORLD_CONTEXT": world_context,
                 "scene": event_output.get("scene", ""),
@@ -478,6 +529,16 @@ class Orchestrator:
                 result["warnings"] = warnings
             if safe_function_results:
                 result["safe_function_results"] = safe_function_results
+            result["metrics_after"] = metrics_after
+            result["glitch"] = {
+                "roll": int(glitch_info.get("roll", 0)),
+                "effects": list(glitch_info.get("effects", [])),
+            }
+            result["logs"] = list(self._metric_log_buffer)
+            result["win_loss"] = win_loss
+            result["narrative"] = narrative
+            if win_loss["status"] != "ongoing":
+                result["options"] = []
             LOGGER.debug(
                 "Turn result before validation: %s",
                 self._stringify(result),
@@ -550,6 +611,16 @@ class Orchestrator:
         self.register_safe_function("adjust_emotion", self._safe_adjust_emotion)
         self.register_safe_function("raise_corruption", self._safe_raise_corruption)
         self.register_safe_function("advance_turn", self._safe_advance_turn)
+        self.register_safe_function(
+            "modify_resources",
+            self._safe_modify_resources,
+            validator=self._validate_modify_resources_call,
+        )
+        self.register_safe_function(
+            "adjust_metric",
+            self._safe_adjust_metric,
+            validator=self._validate_adjust_metric_call,
+        )
 
     def _validate_change_weather_call(
         self,
@@ -641,6 +712,57 @@ class Orchestrator:
             metadata=call.metadata,
         )
 
+    def _validate_modify_resources_call(
+        self,
+        call: FunctionCall,
+    ) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "modify_resources does not accept positional arguments",
+            )
+        kwargs = dict(call.kwargs)
+        amount_raw = kwargs.get("amount", kwargs.get("delta", 0))
+        try:
+            amount = int(amount_raw)
+        except (TypeError, ValueError) as exc:
+            raise FunctionValidationError("modify_resources requires integer amount") from exc
+        cause_raw = kwargs.get("cause", "safe_modify_resources")
+        cause = str(cause_raw).strip() or "safe_modify_resources"
+        sanitized = {"amount": amount, "cause": cause}
+        return FunctionCall(
+            name=call.name,
+            args=(),
+            kwargs=sanitized,
+            metadata=call.metadata,
+        )
+
+    def _validate_adjust_metric_call(
+        self,
+        call: FunctionCall,
+    ) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "adjust_metric does not accept positional arguments",
+            )
+        kwargs = dict(call.kwargs)
+        metric_raw = kwargs.get("metric")
+        if not isinstance(metric_raw, str) or not metric_raw.strip():
+            raise FunctionValidationError("adjust_metric requires a metric name")
+        metric = metric_raw.strip()
+        try:
+            delta = int(kwargs.get("delta", 0))
+        except (TypeError, ValueError) as exc:
+            raise FunctionValidationError("adjust_metric requires integer delta") from exc
+        cause_raw = kwargs.get("cause", f"adjust_metric:{metric}")
+        cause = str(cause_raw).strip() or f"adjust_metric:{metric}"
+        sanitized = {"metric": metric, "delta": delta, "cause": cause}
+        return FunctionCall(
+            name=call.name,
+            args=(),
+            kwargs=sanitized,
+            metadata=call.metadata,
+        )
+
     def _safe_change_weather(
         self,
         *,
@@ -700,6 +822,31 @@ class Orchestrator:
             "location": location,
         }
 
+    def _safe_modify_resources(
+        self,
+        *,
+        amount: int,
+        cause: str,
+    ) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        manager = MetricManager(state, log_sink=self._metric_log_sink())
+        value = manager.modify_resources(amount, cause=cause)
+        self.state_store.persist(state)
+        return {"resources": value}
+
+    def _safe_adjust_metric(
+        self,
+        *,
+        metric: str,
+        delta: int,
+        cause: str,
+    ) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        manager = MetricManager(state, log_sink=self._metric_log_sink())
+        value = manager.adjust_metric(metric, delta, cause=cause)
+        self.state_store.persist(state)
+        return {metric: value}
+
     def _safe_adjust_logic(self) -> Dict[str, Any]:
         return self._adjust_score("logic_score", 1)
 
@@ -731,6 +878,13 @@ class Orchestrator:
         scores[key] = current_value + delta
         self.state_store.persist(state)
         return {"scores": dict(scores)}
+
+    def _metric_log_sink(self) -> List[Dict[str, Any]]:
+        buffer = getattr(self, "_metric_log_buffer", None)
+        if buffer is None:
+            buffer = []
+            self._metric_log_buffer = buffer
+        return buffer
 
     def _execute_safe_function_queue(
         self,
@@ -1128,6 +1282,36 @@ class Orchestrator:
         ]
         return "\n".join(part for part in sections if part)
 
+    def _compose_turn_narrative(
+        self,
+        *,
+        turn: int,
+        choice: Dict[str, Any],
+        character_output: List[Dict[str, Any]],
+        glitch_effects: List[str],
+    ) -> str:
+        """Generate a compact textual summary for the turn result."""
+
+        if not isinstance(choice, dict):
+            choice = {}
+        choice_text = str(choice.get("text", "")).strip()
+        reaction_text = ""
+        if character_output:
+            primary = character_output[0]
+            if isinstance(primary, dict):
+                reaction_text = str(primary.get("speech") or primary.get("action") or "").strip()
+        glitch_text = ""
+        if glitch_effects:
+            glitch_text = str(glitch_effects[0]).strip()
+        parts = [
+            f"Turn {turn}",
+            choice_text,
+            reaction_text,
+            glitch_text,
+        ]
+        narrative = " | ".join(part for part in parts if part)
+        return narrative[:240]
+
     @staticmethod
     def _format_recent_events(state: Dict[str, Any]) -> str:
         events = state.get("recent_events") or []
@@ -1179,3 +1363,54 @@ class Orchestrator:
         if len(text) > 600:
             return text[:597] + "..."
         return text
+
+
+def simulate(n_turns: int = 3, seed: int = 123) -> None:
+    """Run a deterministic mini-simulation and print each turn result."""
+
+    orchestrator = Orchestrator.build_default()
+    baseline = deepcopy(DEFAULT_WORLD_STATE)
+    baseline["rng_seed"] = seed
+    baseline["turn"] = 0
+    baseline["current_turn"] = 0
+    MetricManager(baseline, log_sink=[])
+    orchestrator.state_store.persist(baseline)
+
+    for turn_index in range(n_turns):
+        result = orchestrator.run_turn()
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        status = result.get("win_loss", {}).get("status", "ongoing")
+        if status != "ongoing":
+            break
+        if turn_index == 0:
+            orchestrator.run_safe_function(
+                {
+                    "name": "adjust_metric",
+                    "kwargs": {
+                        "metric": "order",
+                        "delta": 15,
+                        "cause": "demo_order_boost",
+                    },
+                }
+            )
+            orchestrator.run_safe_function(
+                {
+                    "name": "adjust_metric",
+                    "kwargs": {
+                        "metric": "morale",
+                        "delta": 18,
+                        "cause": "demo_morale_boost",
+                    },
+                }
+            )
+        if turn_index == 1:
+            orchestrator.run_safe_function(
+                {
+                    "name": "adjust_metric",
+                    "kwargs": {
+                        "metric": "glitch",
+                        "delta": -10,
+                        "cause": "demo_glitch_stabilisation",
+                    },
+                }
+            )

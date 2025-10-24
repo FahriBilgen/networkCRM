@@ -39,7 +39,8 @@ class Settings:
 DEFAULT_WORLD_STATE = {
     "campaign_id": "default_campaign",
     "turn_limit": 10,
-    "current_turn": 1,
+    "current_turn": 0,
+    "rng_seed": 12345,
     "scores": {
         "logic_score": 0,
         "emotion_score": 0,
@@ -51,13 +52,16 @@ DEFAULT_WORLD_STATE = {
     "npc_fragments": {},
     "inventory": [],
     "lore": {},
-    "turn": 1,
+    "turn": 0,
     "day": 1,
     "time": "dawn",
     "current_room": "entrance",
     "recent_events": [],
     "recent_motifs": [],
-    "world_constraint_from_prev_turn": {},
+    "world_constraint_from_prev_turn": {
+        "atmosphere": "low clouds hug the battlements",
+        "sensory_details": "Drums thud beyond the walls while the wind carries grit.",
+    },
     "player": {
         "name": "The Shieldbearer",
         "inventory": ["oil lamp", "patched shield"],
@@ -67,12 +71,18 @@ DEFAULT_WORLD_STATE = {
     "character_summary": "Rhea is loyal but impulsive; Boris is cautious and calculating.",
     "relationship_summary": "Rhea trusts the player; Boris weighs every trade.",
     "metrics": {
-        "risk_applied_total": 1,
-        "major_flag_set": True,
+        "order": 50,
+        "morale": 50,
+        "resources": 40,
+        "knowledge": 45,
+        "corruption": 10,
+        "glitch": 12,
+        "risk_applied_total": 0,
+        "major_flag_set": False,
         "major_events_triggered": 0,
-        "major_event_last_turn": 0,
+        "major_event_last_turn": None,
     },
-    "npc_trust": {"Rhea": 3, "Shieldbearer": 1, "The Shieldbearer": 2},
+    "npc_trust": {},
 }
 
 SETTINGS = Settings(

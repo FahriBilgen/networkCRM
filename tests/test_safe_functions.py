@@ -110,6 +110,28 @@ def test_move_npc_tracks_location(tmp_path: Path) -> None:
     assert state["npc_locations"]["rhea"] == "wall_tower"
 
 
+def test_modify_resources_and_adjust_metric(tmp_path: Path) -> None:
+    orchestrator = _make_orchestrator(tmp_path)
+
+    orchestrator.run_safe_function(
+        {
+            "name": "modify_resources",
+            "kwargs": {"amount": -5, "cause": "test_consumption"},
+        }
+    )
+    orchestrator.run_safe_function(
+        {
+            "name": "adjust_metric",
+            "kwargs": {"metric": "order", "delta": 7, "cause": "test_boost"},
+        }
+    )
+
+    state = orchestrator.state_store.snapshot()
+    metrics = state["metrics"]
+    assert metrics["resources"] == 35
+    assert metrics["order"] == 57
+
+
 def test_safe_function_failure_rolls_back_state(tmp_path: Path) -> None:
     orchestrator = _make_orchestrator(tmp_path)
 
@@ -241,6 +263,14 @@ def test_run_turn_executes_agent_safe_functions(tmp_path: Path) -> None:
         "change_weather",
         "spawn_item",
     }
+
+    assert "metrics_after" in result
+    assert "glitch" in result
+    assert "logs" in result
+    assert "win_loss" in result
+    assert "narrative" in result
+    assert isinstance(result["metrics_after"]["order"], int)
+    assert result["glitch"]["effects"]
 
     state = orchestrator.state_store.snapshot()
     constraint = state["world_constraint_from_prev_turn"]
