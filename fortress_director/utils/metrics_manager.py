@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, MutableMapping, Optional
+
+LOGGER = logging.getLogger(__name__)
 
 
 MetricDict = MutableMapping[str, Any]
@@ -57,6 +60,7 @@ class MetricManager:
         self._metrics = metrics
         if self.log_sink is None:
             self.log_sink = metrics.setdefault("_log_buffer", [])
+        LOGGER.debug("MetricManager initialised with metrics: %s", self.snapshot())
 
     def snapshot(self, *, include_legacy: bool = True) -> Dict[str, Any]:
         if include_legacy:
@@ -82,9 +86,24 @@ class MetricManager:
             raise ValueError("metric name is required")
         current = self.value(metric)
         limit = self.LIMITS.get(metric, (0, 9999))
+        LOGGER.debug(
+            "Adjusting metric '%s': current=%s, delta=%s, limits=%s (cause=%s)",
+            metric,
+            current,
+            delta,
+            limit,
+            cause,
+        )
         updated = self._clamp(current + int(delta), limit)
         self._metrics[metric] = updated
         self._log_change(metric, updated - current, updated, cause)
+        LOGGER.info(
+            "Metric '%s' updated from %s to %s (cause=%s)",
+            metric,
+            current,
+            updated,
+            cause,
+        )
         return updated
 
     def modify_resources(self, amount: int, *, cause: str) -> int:
@@ -92,11 +111,25 @@ class MetricManager:
 
     def apply_bulk(self, changes: Iterable[tuple[str, int, str]]) -> None:
         for metric, delta, cause in changes:
+            LOGGER.debug(
+                "Applying bulk metric change: metric=%s, delta=%s, cause=%s",
+                metric,
+                delta,
+                cause,
+            )
             self.adjust_metric(metric, delta, cause=cause)
 
     def _clamp(self, value: int, limit: tuple[int, int]) -> int:
         lower, upper = limit
-        return max(lower, min(upper, value))
+        clamped = max(lower, min(upper, value))
+        if clamped != value:
+            LOGGER.debug(
+                "Clamped metric value from %s to %s within bounds %s",
+                value,
+                clamped,
+                limit,
+            )
+        return clamped
 
     def _log_change(self, metric: str, delta: int, value: int, cause: str) -> None:
         entry = {
@@ -107,3 +140,4 @@ class MetricManager:
         }
         if isinstance(self.log_sink, list):
             self.log_sink.append(entry)
+        LOGGER.debug("Metric change logged: %s", entry)

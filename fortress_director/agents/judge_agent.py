@@ -16,8 +16,11 @@ from fortress_director.agents.base_agent import (
 from fortress_director.llm.ollama_client import OllamaClient
 
 
+LOGGER = logging.getLogger(__name__)
+
+
 class JudgeAgent(BaseAgent):
-    LOGGER = logging.getLogger(__name__)
+    LOGGER = LOGGER
     """Validates narrative content against established lore."""
 
     def __init__(
@@ -62,6 +65,13 @@ def check_win_loss(
 ) -> Dict[str, str]:
     """Evaluate win/loss state using supplied metrics."""
 
+    LOGGER.debug(
+        "Evaluating win/loss (turn=%s/%s) with metrics=%s",
+        turn,
+        turn_limit,
+        metrics,
+    )
+
     def _as_int(value: Any, default: int = 0) -> int:
         try:
             return int(value)
@@ -92,4 +102,6 @@ def check_win_loss(
         status = "loss"
         reason = "turn_limit_reached"
 
-    return {"status": status, "reason": reason}
+    outcome = {"status": status, "reason": reason}
+    LOGGER.info("Win/loss evaluation result: %s", outcome)
+    return outcome
