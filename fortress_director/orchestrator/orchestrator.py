@@ -202,7 +202,9 @@ class Orchestrator:
             try:
                 self.function_registry.remove(name)
             except FunctionNotRegisteredError:
-                LOGGER.info("Safe function '%s' not registered; nothing to remove", name)
+                LOGGER.info(
+                    "Safe function '%s' not registered; nothing to remove", name
+                )
             else:
                 LOGGER.info("Safe function removed: %s", name)
             return
@@ -270,7 +272,11 @@ class Orchestrator:
         LOGGER.info("run_turn called (player_choice_id=%s)", player_choice_id)
 
         self._metric_log_buffer = []
-        glitch_info: Dict[str, Any] = {"roll": 0, "effects": [], "triggered_loss": False}
+        glitch_info: Dict[str, Any] = {
+            "roll": 0,
+            "effects": [],
+            "triggered_loss": False,
+        }
 
         checkpoint_metadata = {"phase": "turn_start"}
         if player_choice_id:
@@ -656,6 +662,11 @@ class Orchestrator:
             self._safe_adjust_metric,
             validator=self._validate_adjust_metric_call,
         )
+        self.register_safe_function(
+            "move_room",
+            self._safe_move_room,
+            validator=self._validate_move_room_call,
+        )
 
     def _validate_change_weather_call(
         self,
@@ -760,7 +771,9 @@ class Orchestrator:
         try:
             amount = int(amount_raw)
         except (TypeError, ValueError) as exc:
-            raise FunctionValidationError("modify_resources requires integer amount") from exc
+            raise FunctionValidationError(
+                "modify_resources requires integer amount"
+            ) from exc
         cause_raw = kwargs.get("cause", "safe_modify_resources")
         cause = str(cause_raw).strip() or "safe_modify_resources"
         sanitized = {"amount": amount, "cause": cause}
@@ -787,10 +800,34 @@ class Orchestrator:
         try:
             delta = int(kwargs.get("delta", 0))
         except (TypeError, ValueError) as exc:
-            raise FunctionValidationError("adjust_metric requires integer delta") from exc
+            raise FunctionValidationError(
+                "adjust_metric requires integer delta"
+            ) from exc
         cause_raw = kwargs.get("cause", f"adjust_metric:{metric}")
         cause = str(cause_raw).strip() or f"adjust_metric:{metric}"
         sanitized = {"metric": metric, "delta": delta, "cause": cause}
+        return FunctionCall(
+            name=call.name,
+            args=(),
+            kwargs=sanitized,
+            metadata=call.metadata,
+        )
+
+    def _validate_move_room_call(
+        self,
+        call: FunctionCall,
+    ) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "move_room does not accept positional arguments",
+            )
+        kwargs = dict(call.kwargs)
+        room = kwargs.get("room")
+        if not isinstance(room, str) or not room.strip():
+            raise FunctionValidationError(
+                "move_room requires a non-empty 'room' string",
+            )
+        sanitized = {"room": room.strip()}
         return FunctionCall(
             name=call.name,
             args=(),
@@ -868,6 +905,18 @@ class Orchestrator:
         value = manager.modify_resources(amount, cause=cause)
         self.state_store.persist(state)
         return {"resources": value}
+
+    def _safe_move_room(
+        self,
+        *,
+        room: str,
+    ) -> Dict[str, str]:
+        state = self.state_store.snapshot()
+        state["current_room"] = room
+        self.state_store.persist(state)
+        return {
+            "room": room,
+        }
 
     def _safe_adjust_metric(
         self,
@@ -987,7 +1036,9 @@ class Orchestrator:
             if isinstance(entry, str):
                 try:
                     node = ast.parse(entry, mode="eval").body
-                    if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
+                    if not isinstance(node, ast.Call) or not isinstance(
+                        node.func, ast.Name
+                    ):
                         raise ValueError("Unsupported safe function expression")
                     func_name = node.func.id
                     args = [ast.literal_eval(arg) for arg in node.args]
@@ -1005,7 +1056,11 @@ class Orchestrator:
                     if normalized_kwargs:
                         payload["kwargs"] = normalized_kwargs
                     remaining_args = [value for value in args if value is not None]
-                    if remaining_args and func_name not in {"change_weather", "spawn_item", "move_npc"}:
+                    if remaining_args and func_name not in {
+                        "change_weather",
+                        "spawn_item",
+                        "move_npc",
+                    }:
                         payload["args"] = remaining_args
                     metadata: Dict[str, Any] = {"source": source}
                     normalized.append((payload, metadata))
@@ -1099,9 +1154,7 @@ class Orchestrator:
             }
 
         cleaned = {
-            key: value
-            for key, value in kwargs.items()
-            if key and value is not None
+            key: value for key, value in kwargs.items() if key and value is not None
         }
         return cleaned
 
@@ -1243,10 +1296,9 @@ class Orchestrator:
             candidate = chosen_option.get("text", "")
             if isinstance(candidate, str):
                 speech_hint = candidate.strip()
-        fallback_speech = (
-            speech_hint
-            or "Holding the line until the storm breaks."
-        )[:200]
+        fallback_speech = (speech_hint or "Holding the line until the storm breaks.")[
+            :200
+        ]
         return {
             "name": npc_name,
             "intent": "defend",
@@ -1337,7 +1389,9 @@ class Orchestrator:
         if character_output:
             primary = character_output[0]
             if isinstance(primary, dict):
-                reaction_text = str(primary.get("speech") or primary.get("action") or "").strip()
+                reaction_text = str(
+                    primary.get("speech") or primary.get("action") or ""
+                ).strip()
         glitch_text = ""
         if glitch_effects:
             glitch_text = str(glitch_effects[0]).strip()

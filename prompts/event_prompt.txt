@@ -27,8 +27,8 @@ You may call safe functions to enact changes in the world.
 If you decide that a physical, environmental, or character state change is required, 
 respond in the following JSON format:
 
-Available functions (use only keyword arguments, not positional!): change_weather(weather_type), spawn_item(item_name, location), move_npc(npc_id, location).
-Example: "safe_functions": ["change_weather('rainy')", "spawn_item('torch', 'lornhaven_wall')", "move_npc('Rhea', 'lornhaven_gate')"]
+Available functions (use only keyword arguments, not positional!): change_weather(weather_type), spawn_item(item_name, location), move_npc(npc_id, location), adjust_logic(), adjust_emotion(), raise_corruption(), modify_resources(delta), adjust_metric(metric_name, delta), move_room(room).
+Example: "safe_functions": ["change_weather('rainy')", "spawn_item('torch', 'lornhaven_wall')", "move_npc('Rhea', 'lornhaven_gate')", "adjust_logic()", "adjust_emotion()", "raise_corruption()", "modify_resources(delta=5)", "adjust_metric('morale', delta=10)", "move_room('lornhaven_gate')"]
  If you decide that a physical, environmental, or character state change is required, 
 - Karakterler kendi görevlerine sadık kalmalı (savunucular tetikte, kaçış yok).
 - Eğer flags içinde "mystery_figure" varsa veya recent_major_events'in son iki girdisi false ise, gerilimi artır ve major_event'i true yap.

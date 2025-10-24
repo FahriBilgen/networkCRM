@@ -15,7 +15,7 @@ Include intent, action, speech, and explicit mechanical effects.
 Output (JSON list):
 
 // Output must be a JSON list of objects, one per NPC. Each object should have keys: name, intent, action, speech, effects.
-// effects: trust_delta (int), flag_set (list), item_change (object), status_change (object)
+// effects: trust_delta (int: -1, 0, or 1 only), logic_delta (int: -1, 0, or 1 only), emotion_delta (int: -1, 0, or 1 only), flag_set (list), item_change (object), status_change (object)
 // If a world change is needed, emit a safe_functions array as shown in the comments below.
 // Do not include any example JSON blocks or double curly braces.
 

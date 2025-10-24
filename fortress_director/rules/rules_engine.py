@@ -83,6 +83,8 @@ class RulesEngine:
                 name = entry.get("name", "unknown")
                 LOGGER.debug("Applying effects for %s: %s", name, effects)
                 self._apply_trust(new_state, name, effects.get("trust_delta"))
+                self._apply_logic_delta(new_state, effects.get("logic_delta"))
+                self._apply_emotion_delta(new_state, effects.get("emotion_delta"))
                 applied_flags.update(
                     self._apply_flags(new_state, effects.get("flag_set"))
                 )
@@ -257,6 +259,34 @@ class RulesEngine:
                 current + int(trust_delta),
                 self.trust_floor,
                 self.trust_ceiling,
+            )
+
+    def _apply_logic_delta(
+        self,
+        state: Dict[str, Any],
+        logic_delta: Any,
+    ) -> None:
+        if logic_delta in (-1, 0, 1):
+            scores = state.setdefault("scores", {})
+            current = scores.get("logic_score", 0)
+            scores["logic_score"] = _clamp(
+                current + int(logic_delta),
+                0,
+                100,
+            )
+
+    def _apply_emotion_delta(
+        self,
+        state: Dict[str, Any],
+        emotion_delta: Any,
+    ) -> None:
+        if emotion_delta in (-1, 0, 1):
+            scores = state.setdefault("scores", {})
+            current = scores.get("emotion_score", 0)
+            scores["emotion_score"] = _clamp(
+                current + int(emotion_delta),
+                0,
+                100,
             )
 
     def _apply_flags(self, state: Dict[str, Any], flags: Any) -> List[str]:

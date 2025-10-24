@@ -5,11 +5,15 @@ Current Room: {room}
 Task:
 Describe the current environment's atmosphere and sensory details.
 Focus on mood, texture, sound, light, and ambient feeling — not story progression.
+If the story requires moving to a different location, suggest using safe functions like move_room(room).
+
+Available safe functions: move_room(room)
 
 Output (JSON only):
 {{
   "atmosphere": "string",
-  "sensory_details": "string"
+  "sensory_details": "string",
+  "safe_functions": ["optional array of safe function calls"]
 }}
 
 Rules:
