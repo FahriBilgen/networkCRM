@@ -57,6 +57,9 @@ class SafeFunctionRegistry:
 
     def __init__(self) -> None:
         self._functions: Dict[str, RegisteredFunction] = {}
+        # Backwards compatibility for existing code/tests that expect
+        # a `_registry` attribute exposing the underlying mapping.
+        self._registry = self._functions
 
     def register(
         self,
@@ -85,7 +88,22 @@ class SafeFunctionRegistry:
     def unregister(self, name: str) -> None:
         """Remove a function from the registry if present."""
 
-        self._functions.pop(name, None)
+        try:
+            self.remove(name)
+        except FunctionNotRegisteredError:
+            return
+
+    def remove(self, name: str) -> None:
+        """Explicit removal helper that raises when the function is absent."""
+
+        LOGGER.info("Removing safe function: %s", name)
+        try:
+            del self._functions[name]
+        except KeyError as exc:
+            LOGGER.error("Function '%s' is not registered", name)
+            raise FunctionNotRegisteredError(
+                f"Function '{name}' is not registered"
+            ) from exc
 
     def clear(self) -> None:
         """Remove all registered functions."""

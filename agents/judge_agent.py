@@ -28,7 +28,7 @@ class JudgeAgent(BaseAgent):
             name="Judge",
             prompt_template=template,
             model_config=get_model_config("judge"),
-            client=client or default_ollama_client(),
+            client=client or default_ollama_client("judge"),
         )
 
     def evaluate(self, variables: Dict[str, Any]) -> Dict[str, Any]:

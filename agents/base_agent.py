@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -13,6 +14,7 @@ from llm.ollama_client import (
     OllamaClientError,
 )
 from settings import ModelConfig, SETTINGS
+from llm.offline_client import OfflineOllamaClient
 
 
 class AgentError(RuntimeError):
@@ -45,6 +47,14 @@ class PromptTemplate:
         except KeyError as exc:  # pragma: no cover - defensive guard
             raise AgentError(f"Missing prompt variable: {exc}") from exc
 
+    @property
+    def text(self) -> str:
+        return self.load()
+
+    @text.setter
+    def text(self, value: str) -> None:
+        self._cached_value = value
+
 
 class BaseAgent:
     """Reusable logic for invoking Ollama-backed agents."""
@@ -63,6 +73,10 @@ class BaseAgent:
         self._model = model_config
         self._client = client or OllamaClient()
         self._expects_json = expects_json
+
+    @property
+    def prompt_template(self) -> PromptTemplate:
+        return self._template
 
     def run(
         self,
@@ -117,14 +131,17 @@ def build_prompt_path(filename: str) -> Path:
     return SETTINGS.project_root / "prompts" / filename
 
 
-def default_ollama_client() -> OllamaClient:
-    """Create an Ollama client configured from global settings."""
+def default_ollama_client(agent_key: Optional[str] = None) -> OllamaClient:
+    """Create an Ollama-compatible client with an offline fallback."""
 
-    config = OllamaClientConfig(
-        base_url=SETTINGS.ollama_base_url,
-        timeout=SETTINGS.ollama_timeout,
-    )
-    return OllamaClient(config)
+    if os.environ.get("FORTRESS_USE_OLLAMA") == "1":
+        config = OllamaClientConfig(
+            base_url=SETTINGS.ollama_base_url,
+            timeout=SETTINGS.ollama_timeout,
+        )
+        return OllamaClient(config)
+
+    return OfflineOllamaClient(agent_key or "generic")
 
 
 def get_model_config(agent_key: str) -> ModelConfig:

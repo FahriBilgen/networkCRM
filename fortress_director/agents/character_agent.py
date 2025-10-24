@@ -1,4 +1,5 @@
 from __future__ import annotations
+from __future__ import annotations
 
 import logging
 
@@ -29,7 +30,7 @@ class CharacterAgent(BaseAgent):
             name="Character",
             prompt_template=template,
             model_config=get_model_config("character"),
-            client=client or default_ollama_client(),
+            client=client or default_ollama_client("character"),
         )
 
     def react(self, variables: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -65,19 +66,6 @@ class CharacterAgent(BaseAgent):
                 "Exception in CharacterAgent.react: %s", exc, exc_info=True
             )
             raise
-            # Some models respond with a single character object instead of
-            # the expected list; wrap it for downstream consumers.
-            if {"name", "intent", "action"}.issubset(result.keys()):
-                return self._normalise_entries([result])
-            for key in ("characters", "npcs", "responses"):
-                candidates = result.get(key)
-                if isinstance(candidates, list):
-                    return self._normalise_entries(candidates)
-
-        snippet = str(result)[:200]
-        raise AgentOutputError(
-            "Character agent must return a JSON list; received: " + snippet
-        )
 
     def _normalise_entries(
         self,

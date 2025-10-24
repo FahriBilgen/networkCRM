@@ -25,7 +25,7 @@ class EventAgent(BaseAgent):
             name="Event",
             prompt_template=template,
             model_config=get_model_config("event"),
-            client=client or default_ollama_client(),
+            client=client or default_ollama_client("event"),
         )
 
     def generate(self, variables: Dict[str, Any]) -> Dict[str, Any]:

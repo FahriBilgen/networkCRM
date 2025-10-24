@@ -38,7 +38,7 @@ class Settings:
 
 DEFAULT_WORLD_STATE = {
     "campaign_id": "default_campaign",
-    "turn_limit": 30,
+    "turn_limit": 10,
     "current_turn": 1,
     "scores": {
         "logic_score": 0,

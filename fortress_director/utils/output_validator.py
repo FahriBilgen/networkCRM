@@ -100,7 +100,15 @@ def validate_turn_output(payload: Dict[str, Any]) -> None:
         raise OutputValidationError("Event major_event must be boolean")
     options = event["options"]
     _assert_type(options, list, context="event options")
-    _validate_options(options)
+    if options:
+        _validate_options(options)
+    else:
+        player_choice = payload.get("player_choice", {})
+        action_type = player_choice.get("action_type") if isinstance(player_choice, dict) else None
+        if action_type != "end":
+            raise OutputValidationError(
+                "Event options list cannot be empty unless ending the campaign"
+            )
 
     player_choice = payload["player_choice"]
     _assert_type(player_choice, dict, context="player_choice")

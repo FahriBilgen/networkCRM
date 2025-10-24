@@ -1,17 +1,17 @@
 from __future__ import annotations
+
+import ast
 import json
-from fortress_director.codeaware.function_validator import FunctionCallValidator
-from fortress_director.codeaware.rollback_system import RollbackSystem
-from fortress_director.utils.output_validator import validate_turn_output
-from fortress_director.settings import DEFAULT_WORLD_STATE
-
 import logging
-
-LOGGER = logging.getLogger(__name__)
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
+
+from fortress_director.codeaware.function_validator import FunctionCallValidator
+from fortress_director.codeaware.rollback_system import RollbackSystem
+from fortress_director.utils.output_validator import validate_turn_output
+from fortress_director.settings import DEFAULT_WORLD_STATE
 from fortress_director.agents.character_agent import CharacterAgent
 from fortress_director.agents.event_agent import EventAgent
 from fortress_director.agents.judge_agent import JudgeAgent
@@ -23,10 +23,13 @@ from fortress_director.rules.rules_engine import (
 )
 from fortress_director.codeaware.function_registry import (
     FunctionCall,
+    FunctionNotRegisteredError,
     FunctionValidationError,
     SafeFunctionRegistry,
     Validator,
 )
+
+LOGGER = logging.getLogger(__name__)
 
 RELATIONSHIP_SUMMARY_DEFAULT = "No relationship summary available."
 
@@ -63,22 +66,44 @@ class StateStore:
 
     def _load(self) -> Dict[str, Any]:
         if not self._path.exists():
-            return deepcopy(DEFAULT_WORLD_STATE)
+            return self._fresh_default()
         text = self._path.read_text(encoding="utf-8").strip()
         if not text:
             LOGGER.debug(
                 "World state file %s empty; loading defaults",
                 self._path,
             )
-            return deepcopy(DEFAULT_WORLD_STATE)
+            return self._fresh_default()
         try:
-            return json.loads(text)
+            payload = json.loads(text) or {}
         except json.JSONDecodeError:
             LOGGER.warning(
                 "World state file %s corrupt; loading defaults",
                 self._path,
             )
-            return deepcopy(DEFAULT_WORLD_STATE)
+            return self._fresh_default()
+        if not isinstance(payload, dict):  # pragma: no cover - defensive guard
+            return self._fresh_default()
+        merged = self._merge_with_defaults(payload)
+        return merged
+
+    @staticmethod
+    def _fresh_default() -> Dict[str, Any]:
+        return deepcopy(DEFAULT_WORLD_STATE)
+
+    @classmethod
+    def _merge_with_defaults(cls, overrides: Dict[str, Any]) -> Dict[str, Any]:
+        base = deepcopy(DEFAULT_WORLD_STATE)
+        return cls._deep_merge(base, overrides)
+
+    @staticmethod
+    def _deep_merge(base: Dict[str, Any], overrides: Dict[str, Any]) -> Dict[str, Any]:
+        for key, value in overrides.items():
+            if isinstance(value, dict) and isinstance(base.get(key), dict):
+                base[key] = StateStore._deep_merge(base[key], value)
+            else:
+                base[key] = value
+        return base
 
     def summary(self) -> Dict[str, Any]:
         """Provide a user-facing snapshot for CLI debug output."""
@@ -158,14 +183,34 @@ class Orchestrator:
         else:
             LOGGER.warning(f"Unknown agent for prompt update: {agent}")
 
-    def mutate_safe_function(self, name: str, remove: bool = False) -> None:
+    def mutate_safe_function(
+        self,
+        name: str,
+        function: Optional[Callable[..., Any]] = None,
+        *,
+        remove: bool = False,
+        validator: Optional[Validator] = None,
+    ) -> None:
         """Add or remove a safe function from the registry."""
+
         if remove:
-            self.function_registry.remove(name)
-            LOGGER.info(f"Safe function removed: {name}")
-        else:
-            # For demo, just log; actual add logic would require a function reference
-            LOGGER.info(f"Safe function add requested: {name} (not implemented)")
+            try:
+                self.function_registry.remove(name)
+            except FunctionNotRegisteredError:
+                LOGGER.info("Safe function '%s' not registered; nothing to remove", name)
+            else:
+                LOGGER.info("Safe function removed: %s", name)
+            return
+
+        if function is None:
+            LOGGER.warning(
+                "Safe function '%s' registration requested without a callable; skipping",
+                name,
+            )
+            return
+
+        self.register_safe_function(name, function, validator=validator)
+        LOGGER.info("Safe function registered: %s", name)
 
     """Coordinates the serialized flow of the entire game turn."""
 
@@ -236,6 +281,21 @@ class Orchestrator:
                 "Pre-turn state snapshot: %s",
                 self._stringify(state_snapshot),
             )
+            turn_limit = state_snapshot.get("turn_limit", 10)
+            current_turn = state_snapshot.get(
+                "current_turn", state_snapshot.get("turn", 0)
+            )
+            if not isinstance(current_turn, int):
+                try:
+                    current_turn = int(current_turn)
+                except (TypeError, ValueError):
+                    current_turn = 0
+            if not isinstance(turn_limit, int):
+                try:
+                    turn_limit = int(turn_limit)
+                except (TypeError, ValueError):
+                    turn_limit = 10
+            is_final_turn = current_turn >= turn_limit
             world_context = self._build_world_context(state_snapshot)
             LOGGER.info("World context built.")
             LOGGER.debug("World context payload: %s", world_context)
@@ -292,16 +352,28 @@ class Orchestrator:
             )
 
             LOGGER.info("Resolving player choice...")
-            chosen_option = self._resolve_player_choice(
-                event_output,
-                player_choice_id,
-            )
+            if is_final_turn:
+                event_output["options"] = []
+                chosen_option = {
+                    "id": "end",
+                    "text": "The campaign concludes.",
+                    "action_type": "end",
+                }
+            else:
+                chosen_option = self._resolve_player_choice(
+                    event_output,
+                    player_choice_id,
+                )
             LOGGER.info("Player choice resolved: %s", chosen_option)
             LOGGER.debug(
                 "Player choice resolved: %s",
                 self._stringify(chosen_option),
             )
 
+            player_record = state_snapshot.get("player") or {}
+            player_inventory = player_record.get("inventory")
+            if not isinstance(player_inventory, list):
+                player_inventory = []
             character_request = {
                 "WORLD_CONTEXT": world_context,
                 "scene_short": event_output.get("scene", ""),
@@ -313,7 +385,7 @@ class Orchestrator:
                     "relationship_summary", ""
                 ),
                 "player_inventory_brief": ", ".join(
-                    state_snapshot["player"].get("inventory", [])
+                    item for item in player_inventory if isinstance(item, str)
                 ),
             }
             LOGGER.debug(
@@ -412,6 +484,9 @@ class Orchestrator:
             LOGGER.info("Safe function queue executed.")
 
             result = {
+                "WORLD_CONTEXT": world_context,
+                "scene": event_output.get("scene", ""),
+                "options": event_output.get("options", []),
                 "world": world_output,
                 "event": event_output,
                 "player_choice": chosen_option,
@@ -494,6 +569,10 @@ class Orchestrator:
             self._safe_move_npc,
             validator=self._validate_move_npc_call,
         )
+        self.register_safe_function("adjust_logic", self._safe_adjust_logic)
+        self.register_safe_function("adjust_emotion", self._safe_adjust_emotion)
+        self.register_safe_function("raise_corruption", self._safe_raise_corruption)
+        self.register_safe_function("advance_turn", self._safe_advance_turn)
 
     def _validate_change_weather_call(
         self,
@@ -644,6 +723,38 @@ class Orchestrator:
             "location": location,
         }
 
+    def _safe_adjust_logic(self) -> Dict[str, Any]:
+        return self._adjust_score("logic_score", 1)
+
+    def _safe_adjust_emotion(self) -> Dict[str, Any]:
+        return self._adjust_score("emotion_score", 1)
+
+    def _safe_raise_corruption(self) -> Dict[str, Any]:
+        return self._adjust_score("corruption", 1)
+
+    def _safe_advance_turn(self) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        previous_turn = state.get("current_turn")
+        if not isinstance(previous_turn, int):
+            previous_turn = int(state.get("turn", 0))
+        next_turn = previous_turn + 1
+        state["current_turn"] = next_turn
+        state["turn"] = max(int(state.get("turn", next_turn)), next_turn)
+        self.state_store.persist(state)
+        return {"current_turn": state["current_turn"], "turn": state["turn"]}
+
+    def _adjust_score(self, key: str, delta: int) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        scores = state.setdefault("scores", {})
+        current_value = scores.get(key, 0)
+        try:
+            current_value = int(current_value)
+        except (TypeError, ValueError):
+            current_value = 0
+        scores[key] = current_value + delta
+        self.state_store.persist(state)
+        return {"scores": dict(scores)}
+
     def _execute_safe_function_queue(
         self,
         *,
@@ -708,49 +819,36 @@ class Orchestrator:
         normalized: List[Tuple[Dict[str, Any], Dict[str, Any]]] = []
         for entry in entries:
             if isinstance(entry, str):
-                # Parse string format like "change_weather('overcast')" or "spawn_item('torch', 'lornhaven_wall')"
                 try:
-                    func_name, arg_str = entry.split("(", 1)
-                    func_name = func_name.strip()
-                    args = arg_str.strip(")").strip()
+                    node = ast.parse(entry, mode="eval").body
+                    if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
+                        raise ValueError("Unsupported safe function expression")
+                    func_name = node.func.id
+                    args = [ast.literal_eval(arg) for arg in node.args]
+                    kwargs = {
+                        kw.arg: ast.literal_eval(kw.value)
+                        for kw in node.keywords
+                        if kw.arg is not None
+                    }
                     payload: Dict[str, Any] = {"name": func_name}
-                    if func_name == "change_weather":
-                        # Assume single arg for weather_type, map to atmosphere
-                        arg_value = args.strip("'").strip('"')
-                        payload["kwargs"] = {
-                            "atmosphere": arg_value,
-                            "sensory_details": "The weather shifts subtly.",
-                        }
-                    elif func_name == "spawn_item":
-                        # Parse 'item_name', 'location'
-                        parts = [
-                            p.strip().strip("'").strip('"') for p in args.split(",")
-                        ]
-                        if len(parts) == 2:
-                            payload["kwargs"] = {
-                                "item_id": parts[0],
-                                "target": parts[1],
-                            }
-                        else:
-                            raise ValueError("Invalid spawn_item args")
-                    elif func_name == "move_npc":
-                        # Parse 'npc_name', 'target_room'
-                        parts = [
-                            p.strip().strip("'").strip('"') for p in args.split(",")
-                        ]
-                        if len(parts) == 2:
-                            payload["kwargs"] = {
-                                "npc_name": parts[0],
-                                "target_room": parts[1],
-                            }
-                        else:
-                            raise ValueError("Invalid move_npc args")
-                    else:
-                        payload["kwargs"] = {}
+                    normalized_kwargs = self._normalize_safe_function_kwargs(
+                        func_name,
+                        args,
+                        kwargs,
+                    )
+                    if normalized_kwargs:
+                        payload["kwargs"] = normalized_kwargs
+                    remaining_args = [value for value in args if value is not None]
+                    if remaining_args and func_name not in {"change_weather", "spawn_item", "move_npc"}:
+                        payload["args"] = remaining_args
                     metadata: Dict[str, Any] = {"source": source}
                     normalized.append((payload, metadata))
-                except Exception as e:
-                    LOGGER.warning(f"Failed to parse safe function call: {entry} ({e})")
+                except Exception as exc:
+                    LOGGER.warning(
+                        "Failed to parse safe function call '%s': %s",
+                        entry,
+                        exc,
+                    )
                     continue
             elif isinstance(entry, dict):
                 # Existing dict format
@@ -774,6 +872,73 @@ class Orchestrator:
                 continue
         return normalized
 
+    @staticmethod
+    def _normalize_safe_function_kwargs(
+        name: str,
+        args: List[Any],
+        kwargs: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        def _as_text(value: Any) -> str:
+            text = str(value) if value is not None else ""
+            return text.strip()
+
+        if name == "change_weather":
+            atmosphere = kwargs.get("atmosphere")
+            details = kwargs.get("sensory_details")
+            if args:
+                atmosphere = args[0]
+                if len(args) > 1:
+                    details = args[1]
+            atmosphere_text = _as_text(atmosphere)
+            if not atmosphere_text:
+                raise ValueError("change_weather requires an atmosphere")
+            details_text = _as_text(details) or "The weather shifts subtly."
+            return {
+                "atmosphere": atmosphere_text,
+                "sensory_details": details_text,
+            }
+
+        if name == "spawn_item":
+            item_id = kwargs.get("item_id")
+            target = kwargs.get("target")
+            if args:
+                if len(args) > 0:
+                    item_id = args[0]
+                if len(args) > 1:
+                    target = args[1]
+            item_text = _as_text(item_id)
+            target_text = _as_text(target)
+            if not item_text or not target_text:
+                raise ValueError("spawn_item requires item_id and target")
+            return {
+                "item_id": item_text,
+                "target": target_text,
+            }
+
+        if name == "move_npc":
+            npc_id = kwargs.get("npc_id") or kwargs.get("npc_name")
+            location = kwargs.get("location") or kwargs.get("target")
+            if args:
+                if len(args) > 0:
+                    npc_id = args[0]
+                if len(args) > 1:
+                    location = args[1]
+            npc_text = _as_text(npc_id)
+            location_text = _as_text(location)
+            if not npc_text or not location_text:
+                raise ValueError("move_npc requires npc identifier and location")
+            return {
+                "npc_id": npc_text,
+                "location": location_text,
+            }
+
+        cleaned = {
+            key: value
+            for key, value in kwargs.items()
+            if key and value is not None
+        }
+        return cleaned
+
     def _update_state(
         self,
         state: Dict[str, Any],
@@ -781,7 +946,12 @@ class Orchestrator:
         event_output: Dict[str, Any],
         chosen_option: Dict[str, Any],
     ) -> None:
-        state["turn"] = state.get("turn", 0) + 1
+        previous_turn = state.get("current_turn")
+        if not isinstance(previous_turn, int):
+            previous_turn = int(state.get("turn", 0))
+        next_turn = previous_turn + 1
+        state["turn"] = next_turn
+        state["current_turn"] = next_turn
         state["world_constraint_from_prev_turn"] = world_output
         recent_events = state.setdefault("recent_events", [])
         recent_events.append(event_output.get("scene", ""))
@@ -800,11 +970,36 @@ class Orchestrator:
         event_output: Dict[str, Any],
         player_choice_id: Optional[str],
     ) -> Dict[str, Any]:
-        options = event_output.get("options", [])
+        raw_options = event_output.get("options")
+        options: List[Dict[str, Any]] = []
+        if isinstance(raw_options, list):
+            options = [opt for opt in raw_options if isinstance(opt, dict)]
         if not options:
-            return {}
+            fallback_option = {
+                "id": "opt_1",
+                "text": "Hold position and watch the storm.",
+                "action_type": "observe",
+            }
+            event_output["options"] = [fallback_option]
+            options = [fallback_option]
+
+        selected: Optional[Dict[str, Any]] = None
         if player_choice_id:
-            """Deterministic orchestrator coordinating Fortress Director agents."""
+            for option in options:
+                if str(option.get("id")) == str(player_choice_id):
+                    selected = option
+                    break
+        if selected is None:
+            selected = options[0]
+
+        resolved = {}
+        for key in ("id", "text", "action_type"):
+            value = selected.get(key, "")
+            if not isinstance(value, str):
+                value = str(value)
+            resolved[key] = value.strip() or f"{key}_unknown"
+
+        return resolved
 
     def _inject_major_event_effect(
         self,
@@ -869,6 +1064,29 @@ class Orchestrator:
             "applied_flag": derived_flag,
             "status_change": status_change,
             "applied_to": status_change["target"],
+        }
+
+    def _build_fallback_reaction(
+        self,
+        state: Dict[str, Any],
+        chosen_option: Optional[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        npc_name = self._infer_primary_npc_name(state)
+        speech_hint = ""
+        if isinstance(chosen_option, dict):
+            candidate = chosen_option.get("text", "")
+            if isinstance(candidate, str):
+                speech_hint = candidate.strip()
+        fallback_speech = (
+            speech_hint
+            or "Holding the line until the storm breaks."
+        )[:200]
+        return {
+            "name": npc_name,
+            "intent": "defend",
+            "action": "hold_position",
+            "speech": fallback_speech,
+            "effects": {},
         }
 
     def _build_world_context(self, state: Dict[str, Any]) -> str:

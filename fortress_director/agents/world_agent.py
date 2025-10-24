@@ -25,7 +25,7 @@ class WorldAgent(BaseAgent):
             name="World",
             prompt_template=template,
             model_config=get_model_config("world"),
-            client=client or default_ollama_client(),
+            client=client or default_ollama_client("world"),
         )
 
     def describe(self, variables: Dict[str, Any]) -> Dict[str, Any]:
