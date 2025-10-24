@@ -5,11 +5,13 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, cast
+from typing import Any, Callable, Dict, List, cast
 
+from fortress_director.utils.logging_config import configure_logging
 from orchestrator.orchestrator import (
     DEFAULT_WORLD_STATE,
     Orchestrator,
@@ -93,17 +95,32 @@ def _handle_safe_call(args: argparse.Namespace) -> None:
 
 
 def _handle_run(args: argparse.Namespace) -> None:
-    result = _run_turn(args.choice_id)
-    reactions = result.get("character_reactions", [])
-    for reaction in reactions:
-        effects = reaction.get("effects") or {}
-        if effects:
-            label = reaction.get("name", "unknown")
-            sys.stdout.write(f"Effect summary [{label}]: {effects}\n")
-    major_summary = result.get("major_event_effect_summary")
-    if major_summary:
-        sys.stdout.write(f"Major event impact: {major_summary}\n")
-    _print_json(result)
+    turns = max(1, getattr(args, "turns", 1))
+    run_dir = SETTINGS.project_root / "runs" / "latest_run"
+    if run_dir.exists():
+        shutil.rmtree(run_dir)
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    results: List[Dict[str, Any]] = []
+    for turn_index in range(turns):
+        result = _run_turn(args.choice_id)
+        results.append(result)
+        reactions = result.get("character_reactions", [])
+        for reaction in reactions:
+            effects = reaction.get("effects") or {}
+            if effects:
+                label = reaction.get("name", "unknown")
+                sys.stdout.write(f"Effect summary [{label}]: {effects}\n")
+        major_summary = result.get("major_event_effect_summary")
+        if major_summary:
+            sys.stdout.write(f"Major event impact: {major_summary}\n")
+        _print_json(result)
+        output_path = run_dir / f"turn_{turn_index + 1:03d}.json"
+        output_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
+
+    log_path = SETTINGS.log_dir / "fortress_run.log"
+    if log_path.exists():
+        shutil.copy2(log_path, run_dir / "fortress_run.log")
 
 
 def _handle_debug(_args: argparse.Namespace) -> None:
@@ -160,6 +177,12 @@ def build_parser() -> argparse.ArgumentParser:
         dest="choice_id",
         help="ID of the player option to commit (defaults to first option)",
     )
+    run_parser.add_argument(
+        "--turns",
+        type=int,
+        default=1,
+        help="Number of sequential turns to execute (default: 1)",
+    )
     run_parser.set_defaults(handler=_handle_run)
 
     debug_parser = subparsers.add_parser(
@@ -204,27 +227,15 @@ def build_parser() -> argparse.ArgumentParser:
 
 def _configure_logging(level_name: str, log_file: str | None) -> Path:
     log_path = _prepare_log_file(log_file)
-    root = logging.getLogger()
-    for handler in list(root.handlers):
-        root.removeHandler(handler)
-        handler.close()
-
-    root.setLevel(logging.DEBUG)
-    formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-
     console_level = _normalise_log_level(level_name)
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(console_level)
-    console_handler.setFormatter(formatter)
-    root.addHandler(console_handler)
-
-    file_handler = logging.FileHandler(log_path, encoding="utf-8")
-    file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(formatter)
-    root.addHandler(file_handler)
-
-    root.debug(
-        "Logging configured (console level=%s, file=%s)",
+    configure_logging(
+        console_level=console_level,
+        file_level=logging.DEBUG,
+        log_path=log_path,
+        force=True,
+    )
+    logging.getLogger(__name__).debug(
+        "Logging configured via CLI (console level=%s, path=%s)",
         logging.getLevelName(console_level),
         log_path,
     )

@@ -29,7 +29,10 @@ from fortress_director.codeaware.function_registry import (
     Validator,
 )
 from fortress_director.utils.glitch_manager import GlitchManager
+from fortress_director.utils.logging_config import configure_logging
 from fortress_director.utils.metrics_manager import MetricManager
+
+configure_logging()
 
 LOGGER = logging.getLogger(__name__)
 
@@ -290,6 +293,10 @@ class Orchestrator:
                 state_snapshot,
                 log_sink=self._metric_log_sink(),
             )
+            LOGGER.debug(
+                "Metrics at turn start: %s",
+                metric_manager.snapshot(),
+            )
             rng_seed = state_snapshot.get("rng_seed", 0)
             if not isinstance(rng_seed, int):
                 try:
@@ -318,6 +325,15 @@ class Orchestrator:
             glitch_info = glitch_manager.resolve_turn(
                 metrics=metric_manager,
                 turn=current_turn + 1,
+            )
+            LOGGER.info(
+                "Glitch resolution outcome: roll=%s, triggered_loss=%s",
+                glitch_info.get("roll"),
+                glitch_info.get("triggered_loss"),
+            )
+            LOGGER.debug(
+                "Metrics after glitch resolution: %s",
+                metric_manager.snapshot(),
             )
 
             is_final_turn = current_turn >= turn_limit
@@ -514,6 +530,7 @@ class Orchestrator:
                 log_sink=self._metric_log_sink(),
             )
             metrics_after = final_metrics.snapshot()
+            LOGGER.debug("Final metrics snapshot: %s", metrics_after)
             win_loss = check_win_loss(
                 metrics_after,
                 turn=final_state.get("turn", 0),
@@ -521,6 +538,7 @@ class Orchestrator:
             )
             if glitch_info.get("triggered_loss") and win_loss["status"] == "ongoing":
                 win_loss = {"status": "loss", "reason": "glitch_overload"}
+            LOGGER.info("Win/loss status after turn: %s", win_loss)
             narrative = self._compose_turn_narrative(
                 turn=final_state.get("turn", 0),
                 choice=chosen_option,

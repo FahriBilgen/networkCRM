@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 from dataclasses import dataclass
 from typing import Dict, List
 
 from fortress_director.utils.metrics_manager import MetricManager
+
+LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -22,6 +25,13 @@ class GlitchManager:
         turn: int,
     ) -> Dict[str, object]:
         current_glitch = metrics.value("glitch")
+        LOGGER.info(
+            "Resolving glitch (turn=%s, seed=%s, current_glitch=%s)",
+            turn,
+            self.seed,
+            current_glitch,
+        )
+        LOGGER.debug("Metrics before glitch resolution: %s", metrics.snapshot())
         roll = self._deterministic_roll(turn=turn, glitch=current_glitch)
         effects: List[str] = []
         triggered_loss = False
@@ -51,6 +61,14 @@ class GlitchManager:
             effects.append("Glitch cascade overwhelms containment protocols.")
             metrics.adjust_metric("glitch", 15, cause="glitch:overload")
             triggered_loss = True
+
+        LOGGER.info(
+            "Glitch roll complete: roll=%s, triggered_loss=%s",
+            roll,
+            triggered_loss,
+        )
+        LOGGER.debug("Metrics after glitch resolution: %s", metrics.snapshot())
+        LOGGER.debug("Glitch effects applied: %s", effects)
 
         return {
             "roll": roll,
