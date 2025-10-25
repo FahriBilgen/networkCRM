@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import logging
 
 """Judge Agent implementation providing lore consistency checks."""
@@ -27,6 +28,7 @@ class JudgeAgent(BaseAgent):
         self, *, client: Optional[OllamaClient] = None, tolerance: int = 0
     ) -> None:
         self.tolerance = tolerance
+        self._content_hashes = set()  # For redundancy detection
         template = PromptTemplate(build_prompt_path("judge_prompt.txt"))
         super().__init__(
             name="Judge",
@@ -36,10 +38,21 @@ class JudgeAgent(BaseAgent):
         )
 
     def evaluate(self, variables: Dict[str, Any]) -> Dict[str, Any]:
-        """Return lore consistency verdict for supplied content. Logs every step."""
+        """Return lore consistency verdict for supplied content."""
+        # Redundancy detection: hash the content
+        content = variables.get("content", "")
+        content_hash = hashlib.md5(content.encode("utf-8")).hexdigest()
+        if content_hash in self._content_hashes:
+            LOGGER.info("Redundant content detected, skipping evaluation")
+            return {"consistent": True, "reason": "redundant_content"}
+        self._content_hashes.add(content_hash)
+        # Keep only last 10 hashes
+        if len(self._content_hashes) > 10:
+            self._content_hashes.pop()
+
         variables = dict(variables)
         variables["tolerance"] = self.tolerance
-        self.LOGGER.info("JudgeAgent.evaluate called with variables: %s", variables)
+        self.LOGGER.info("JudgeAgent.evaluate called with variables")
         try:
             result = self.run(variables=variables)
             self.LOGGER.debug("Model returned: %s", result)
@@ -62,6 +75,7 @@ def check_win_loss(
     *,
     turn: int,
     turn_limit: int,
+    triggered_loss: bool = False,
 ) -> Dict[str, str]:
     """Evaluate win/loss state using supplied metrics."""
 
@@ -82,11 +96,16 @@ def check_win_loss(
     morale = _as_int(metrics.get("morale"), 0)
     resources = _as_int(metrics.get("resources"), 0)
     glitch = _as_int(metrics.get("glitch"), 0)
+    corruption = _as_int(metrics.get("corruption"), 0)
 
     status = "ongoing"
     reason = "thresholds_not_met"
 
-    if order >= 70 and morale >= 70 and glitch <= 30:
+    # Check triggered_loss first - overrides all other conditions
+    if triggered_loss:
+        status = "loss"
+        reason = "glitch_overload"
+    elif order >= 70 and morale >= 70 and glitch <= 30:
         status = "win"
         reason = "fortress_stabilized"
     elif order <= 20:
@@ -98,6 +117,14 @@ def check_win_loss(
     elif glitch >= 85:
         status = "loss"
         reason = "glitch_overload"
+    # Multi-condition loss: High glitch + low morale + low resources
+    elif glitch >= 60 and morale <= 30 and resources <= 20:
+        status = "loss"
+        reason = "multi_condition_crisis"
+    # System collapse: High glitch with low morale or high corruption
+    elif glitch > 30 and (morale < 30 or corruption > 80):
+        status = "loss"
+        reason = "system_collapse"
     elif turn >= max(1, turn_limit):
         status = "loss"
         reason = "turn_limit_reached"

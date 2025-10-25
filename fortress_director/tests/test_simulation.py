@@ -39,11 +39,7 @@ def run_simulation():
             result = orchestrator.run_turn()
 
             # Check if this is an ending scene
-            if "WORLD_CONTEXT" in result and "scene" in result and "options" in result:
-                print("🎯 ENDING REACHED!")
-                print("FINAL SCENE:")
-                print(result.get("scene", {}).get("description", "N/A"))
-                return
+            # Removed win/loss check for full 10-turn test
 
             print("WORLD CONTEXT:")
             world = result.get("world", {})
@@ -74,16 +70,11 @@ def run_simulation():
                     print(f"{i}. {option}")
                 print()
 
-                # Make random choice
+                # Random choice for next turn
                 choice_idx = random.randint(0, len(options) - 1)
                 choice = options[choice_idx]
+                choice_id = choice.get("id", str(choice_idx + 1))
                 print(f"🤖 AI chooses: {choice_idx + 1}. {choice}")
-                print()
-
-                # Apply choice
-                choice_result = orchestrator.apply_choice(choice_idx)
-                print("CHOICE RESULT:")
-                print(json.dumps(choice_result, indent=2))
                 print()
 
             # Show speakers if available
@@ -106,9 +97,7 @@ def run_simulation():
                 print()
 
             # Check for ending
-            if result.get("ending_reached", False):
-                print("🎯 ENDING REACHED!")
-                return
+            # Removed: if result.get("ending_reached", False):
 
         except Exception as e:
             print(f"❌ Error in turn {turn}: {e}")

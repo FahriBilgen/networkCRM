@@ -1,61 +1,65 @@
 {
-  "WORLD_CONTEXT": "Turn 0 | Day 1 | Time dawn\nLocation: entrance\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall.\nInventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"low clouds hug the battlements\", \"sensory_details\": \"Drums thud beyond the walls while the wind carries grit.\"}\nRecent events: none\nRecent motifs: none\nRecent major events: none\nRelationship summary: Rhea trusts the player; Boris weighs every trade.\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating.\nMetrics: {\"order\": 50, \"morale\": 50, \"resources\": 40, \"knowledge\": 45, \"corruption\": 10, \"glitch\": 13, \"risk_applied_total\": 0, \"major_flag_set\": false, \"major_events_triggered\": 0, \"major_event_last_turn\": null}",
-  "scene": "The Shieldbearer, standing at the entrance of Lornhaven, gazes out at the low clouds that hug the battlements. The wind carries grit and the distant drums thud ominously.",
+  "WORLD_CONTEXT": "Turn 0 | Day 1 | Time dawn\nLocation: entrance\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall.\nInventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"low clouds hug the battlements\", \"sensory_details\": \"Drums thud beyond the walls while the wind carries grit.\"}\nRecent events: none\nRecent motifs: none\nRecent major events: none\nRelationship summary: Rhea trusts the player; Boris weighs every trade.\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating.\nMetrics: {\"order\": 50, \"morale\": 50, \"resources\": 40, \"knowledge\": 45, \"corruption\": 10, \"glitch\": 12, \"risk_applied_total\": 0, \"major_flag_set\": false, \"major_events_triggered\": 0, \"major_event_last_turn\": null}",
+  "scene": "The Shieldbearer stands watch at the entrance, her oil lamp casting flickering shadows on the stone walls. The low clouds hang heavy over the battlements, and the wind carries grit as drums thud beyond the walls.",
   "options": [
     {
-      "id": "1",
-      "text": "Approach Rhea and ask about the drums you hear.",
-      "action_type": "dialogue"
+      "id": "ask_about_threat",
+      "text": "Ask the Shieldbearer about any threats they've noticed recently.",
+      "action_type": "dialog"
     },
     {
-      "id": "2",
-      "text": "Check the oil lamp to ensure it's lit.",
-      "action_type": "interaction"
+      "id": "check_for_items",
+      "text": "Check if there are any useful items nearby.",
+      "action_type": "search"
     },
     {
-      "id": "3",
-      "text": "Head out to investigate the drums yourself.",
-      "action_type": "action"
+      "id": "patrol_with_shieldbearer",
+      "text": "Offer to patrol with the Shieldbearer for a while.",
+      "action_type": "interact"
     }
   ],
   "world": {
-    "atmosphere": "Dawn breaks, a new day at the western wall.",
-    "sensory_details": "The chill morning air bites as dust motes dance in the shafts of light piercing through low clouds."
+    "atmosphere": "Dawn breaks, casting a pale light over damp battlements.",
+    "sensory_details": "The chill morning air carries the scent of rain and wet stone distant drums echo with promise."
   },
   "event": {
-    "scene": "The Shieldbearer, standing at the entrance of Lornhaven, gazes out at the low clouds that hug the battlements. The wind carries grit and the distant drums thud ominously.",
+    "scene": "The Shieldbearer stands watch at the entrance, her oil lamp casting flickering shadows on the stone walls. The low clouds hang heavy over the battlements, and the wind carries grit as drums thud beyond the walls.",
     "options": [
       {
-        "id": "1",
-        "text": "Approach Rhea and ask about the drums you hear.",
-        "action_type": "dialogue"
+        "id": "ask_about_threat",
+        "text": "Ask the Shieldbearer about any threats they've noticed recently.",
+        "action_type": "dialog"
       },
       {
-        "id": "2",
-        "text": "Check the oil lamp to ensure it's lit.",
-        "action_type": "interaction"
+        "id": "check_for_items",
+        "text": "Check if there are any useful items nearby.",
+        "action_type": "search"
       },
       {
-        "id": "3",
-        "text": "Head out to investigate the drums yourself.",
-        "action_type": "action"
+        "id": "patrol_with_shieldbearer",
+        "text": "Offer to patrol with the Shieldbearer for a while.",
+        "action_type": "interact"
       }
     ],
     "major_event": false,
     "safe_functions": []
   },
   "player_choice": {
-    "id": "1",
-    "text": "Approach Rhea and ask about the drums you hear.",
-    "action_type": "dialogue"
+    "id": "ask_about_threat",
+    "text": "Ask the Shieldbearer about any threats they've noticed recently.",
+    "action_type": "dialog"
   },
   "character_reactions": [
     {
       "name": "Rhea",
-      "intent": "Listen to the wind",
-      "action": "Turn to the north and listen to the wind's whispers.",
-      "speech": "The wind whispers secrets through the clouds, but I cannot decipher them. I sense a faint rhythm, like the pounding of a heart.",
-      "effects": {}
+      "intent": "watch",
+      "action": "stand alert at the entrance",
+      "speech": "The morning stillness is broken by the rhythmic thud of drums. I stand vigilant at the entrance, ever watchful for any sign of danger.",
+      "effects": {
+        "flag_set": [
+          "low_clouds_present"
+        ]
+      }
     }
   ],
   "metrics_after": {
@@ -64,7 +68,7 @@
     "resources": 40,
     "knowledge": 45,
     "corruption": 10,
-    "glitch": 13,
+    "glitch": 12,
     "risk_applied_total": 0,
     "major_flag_set": false,
     "major_events_triggered": 0,
@@ -82,11 +86,17 @@
       "delta": 1,
       "value": 13,
       "cause": "glitch:cosmetic_noise"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 12,
+      "cause": "turn_recovery"
     }
   ],
   "win_loss": {
     "status": "ongoing",
     "reason": "thresholds_not_met"
   },
-  "narrative": "Turn 1 | Approach Rhea and ask about the drums you hear. | The wind whispers secrets through the clouds, but I cannot decipher them. I sense a faint rhythm, like the pounding of a heart. | Minor static ripples along the parapets."
+  "narrative": "Turn 1 | Ask the Shieldbearer about any threats they've noticed recently. | The morning stillness is broken by the rhythmic thud of drums. I stand vigilant at the entrance, ever watchful for any sign of danger. | Minor static ripples along "
 }

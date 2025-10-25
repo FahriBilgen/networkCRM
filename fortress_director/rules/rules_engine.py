@@ -255,10 +255,18 @@ class RulesEngine:
         if trust_delta in (-1, 0, 1):
             trust = state.setdefault("npc_trust", {})
             current = trust.get(character_name, 0)
-            trust[character_name] = _clamp(
+            new_trust = _clamp(
                 current + int(trust_delta),
                 self.trust_floor,
                 self.trust_ceiling,
+            )
+            trust[character_name] = new_trust
+            LOGGER.info(
+                "Trust updated for %s: %s -> %s (delta: %s)",
+                character_name,
+                current,
+                new_trust,
+                trust_delta,
             )
 
     def _apply_logic_delta(
@@ -325,6 +333,18 @@ class RulesEngine:
             elif item in targets:
                 targets.remove(item)
 
+    def tick_status_effects(self, state: Dict[str, Any]) -> None:
+        """Decrement duration of all status effects and remove expired ones."""
+        status_effects = state.get("status_effects", [])
+        updated_effects = []
+        for effect in status_effects:
+            duration = effect.get("duration", 0) - 1
+            if duration > 0:
+                effect["duration"] = duration
+                updated_effects.append(effect)
+        state["status_effects"] = updated_effects
+        LOGGER.debug("Status effects ticked: %s", updated_effects)
+
     def _apply_status_change(self, state: Dict[str, Any], change: Any) -> None:
         if not isinstance(change, dict):
             return
@@ -340,7 +360,18 @@ class RulesEngine:
             return
 
         status_log = state.setdefault("status_effects", [])
-        status_log.append(effect)
+        # Use set-based deduplication: convert to tuple for uniqueness
+        effect_tuple = (effect["target"], effect["status"], effect["duration"])
+        status_set = set()
+        for existing in status_log:
+            existing_tuple = (
+                existing.get("target"),
+                existing.get("status"),
+                existing.get("duration"),
+            )
+            status_set.add(existing_tuple)
+        if effect_tuple not in status_set:
+            status_log.append(effect)
 
     def _update_metrics(
         self,
@@ -379,3 +410,31 @@ class RulesEngine:
                 0,
             ) + len(major_flags)
             metrics["major_event_last_turn"] = state.get("turn", 0)
+
+        # Update relationship summary based on trust changes
+        self._update_relationship_summary(state)
+
+    def _update_relationship_summary(self, state: Dict[str, Any]) -> None:
+        """Update relationship summary based on current NPC trust levels."""
+        npc_trust = state.get("npc_trust", {})
+        if not npc_trust:
+            return
+
+        summaries = []
+        for npc_name, trust_level in npc_trust.items():
+            if trust_level >= 2:
+                status = "trusts the player deeply"
+            elif trust_level >= 1:
+                status = "trusts the player"
+            elif trust_level == 0:
+                status = "is neutral toward the player"
+            elif trust_level >= -1:
+                status = "distrusts the player"
+            else:
+                status = "deeply distrusts the player"
+            summaries.append(f"{npc_name} {status}")
+
+        if summaries:
+            relationship_summary = "; ".join(summaries)
+            state["relationship_summary"] = relationship_summary
+            LOGGER.info("Relationship summary updated: %s", relationship_summary)

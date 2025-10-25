@@ -38,6 +38,21 @@ LOGGER = logging.getLogger(__name__)
 
 RELATIONSHIP_SUMMARY_DEFAULT = "No relationship summary available."
 
+# Dynamic metrics mapping based on action types
+ACTION_METRIC_DELTAS = {
+    "interact": {"morale": 2, "knowledge": 1},  # Positive social interaction
+    "dialogue": {"morale": 1, "knowledge": 2},  # Learning through conversation
+    "explore": {"knowledge": 3, "morale": -1},  # Risky exploration
+    "fight": {"morale": 3, "resources": -2},  # Combat boosts morale but costs resources
+    "defend": {"order": 2, "morale": 1},  # Defense maintains order
+    "trade": {"resources": 3, "morale": 1},  # Trading gains resources
+    "rest": {"morale": 2, "order": -1},  # Rest recovers morale but reduces vigilance
+    "investigate": {"knowledge": 4, "morale": -2},  # High knowledge gain but risky
+    "ask": {"knowledge": 2, "morale": 1},  # Information gathering
+    "ignore": {"order": -1, "morale": -1},  # Ignoring situations reduces morale/order
+    "end": {},  # No changes for campaign end
+}
+
 
 class StateStore:
     """Lightweight JSON-backed state store."""
@@ -295,6 +310,25 @@ class Orchestrator:
                 "Pre-turn state snapshot: %s",
                 self._stringify(state_snapshot),
             )
+            # Check for end flag at turn start
+            flags = state_snapshot.get("flags", [])
+            if "end" in flags:
+                LOGGER.info("End flag detected, terminating early")
+                return {
+                    "WORLD_CONTEXT": self._build_world_context(state_snapshot),
+                    "scene": "The campaign has concluded.",
+                    "options": [],
+                    "world": {},
+                    "event": {},
+                    "player_choice": {
+                        "id": "end",
+                        "text": "Campaign ended.",
+                        "action_type": "end",
+                    },
+                    "character_reactions": [],
+                    "win_loss": {"status": "loss", "reason": "campaign_end"},
+                    "narrative": "Campaign ended.",
+                }
             metric_manager = MetricManager(
                 state_snapshot,
                 log_sink=self._metric_log_sink(),
@@ -331,6 +365,7 @@ class Orchestrator:
             glitch_info = glitch_manager.resolve_turn(
                 metrics=metric_manager,
                 turn=current_turn + 1,
+                finalized=state_snapshot.get("finalized", False),
             )
             LOGGER.info(
                 "Glitch resolution outcome: roll=%s, triggered_loss=%s",
@@ -339,6 +374,13 @@ class Orchestrator:
             )
             LOGGER.debug(
                 "Metrics after glitch resolution: %s",
+                metric_manager.snapshot(),
+            )
+
+            # Periodic glitch recovery: reduce glitch by 1 every turn
+            metric_manager.recover_metric("glitch", 1, cause="turn_recovery")
+            LOGGER.debug(
+                "Metrics after glitch recovery: %s",
                 metric_manager.snapshot(),
             )
 
@@ -385,6 +427,7 @@ class Orchestrator:
                 "lore_continuity_weight": state_snapshot.get("metrics", {}).get(
                     "major_events_triggered", 0
                 ),
+                "memory_layers": state_snapshot.get("memory_layers", []),
             }
             LOGGER.debug(
                 "Event agent input: %s",
@@ -397,6 +440,32 @@ class Orchestrator:
                 "Event agent output: %s",
                 self._stringify(event_output),
             )
+
+            # NPC fallback: if major_event and no move_npc, activate Boris
+            if event_output.get("major_event"):
+                safe_funcs = event_output.get("safe_functions", [])
+                has_move = any("move_npc" in str(func) for func in safe_funcs)
+                if not has_move:
+                    # Add fallback move_npc for Boris
+                    room = state_snapshot.get("current_room", "entrance")
+                    fallback = f"move_npc('Boris', '{room}')"
+                    safe_funcs.append(fallback)
+                    event_output["safe_functions"] = safe_funcs
+                    LOGGER.info("Added NPC fallback: %s", fallback)
+
+            # Apply metric deltas from event agent
+            event_metric_deltas = event_output.get("metric_delta", {})
+            if event_metric_deltas:
+                LOGGER.info("Event metric deltas: %s", event_metric_deltas)
+                for metric_name, delta in event_metric_deltas.items():
+                    if isinstance(delta, (int, float)):
+                        metric_manager.adjust_metric(
+                            metric_name, delta, cause="event_agent"
+                        )
+                LOGGER.debug(
+                    "Metrics after event deltas: %s",
+                    metric_manager.snapshot(),
+                )
 
             LOGGER.info("Resolving player choice...")
             if is_final_turn:
@@ -416,6 +485,44 @@ class Orchestrator:
                 "Player choice resolved: %s",
                 self._stringify(chosen_option),
             )
+
+            # Check for end flag: if action_type is 'end', terminate turn early
+            if chosen_option.get("action_type") == "end":
+                LOGGER.info("End flag detected, terminating turn early")
+                # Build minimal result for end
+                result = {
+                    "WORLD_CONTEXT": world_context,
+                    "scene": event_output.get("scene", ""),
+                    "options": [],
+                    "world": world_output,
+                    "event": event_output,
+                    "player_choice": chosen_option,
+                    "character_reactions": [],
+                    "win_loss": {"status": "loss", "reason": "campaign_end"},
+                    "narrative": f"Turn {state_snapshot.get('turn', 0) + 1} | "
+                    f"{chosen_option.get('text', '')} | | Campaign ended.",
+                }
+                return result
+
+            # Apply dynamic metrics based on action type
+            action_type = chosen_option.get("action_type", "unknown")
+            metric_deltas = ACTION_METRIC_DELTAS.get(action_type.lower(), {})
+            if metric_deltas:
+                LOGGER.info(
+                    "Applying dynamic metrics for action_type '%s': %s",
+                    action_type,
+                    metric_deltas,
+                )
+                for metric_name, delta in metric_deltas.items():
+                    metric_manager.adjust_metric(
+                        metric_name, delta, cause=f"action_{action_type}"
+                    )
+                LOGGER.debug(
+                    "Metrics after dynamic changes: %s",
+                    metric_manager.snapshot(),
+                )
+            else:
+                LOGGER.debug("No dynamic metrics for action_type '%s'", action_type)
 
             player_record = state_snapshot.get("player") or {}
             player_inventory = player_record.get("inventory")
@@ -464,6 +571,32 @@ class Orchestrator:
                 if major_event_effect
                 else None
             )
+
+            # Apply room progression after major events
+            if major_event_effect and event_output.get("major_event"):
+                scene_text = event_output.get("scene", "").lower()
+                if "mystery figure" in scene_text or "mysterious figure" in scene_text:
+                    current_room = state_snapshot.get("current_room", "entrance")
+                    # Use module-level helper for progression (defined below)
+                    next_room = _get_next_room(current_room)
+                    if next_room:
+                        LOGGER.info(
+                            "Major event involves Mystery Figure, progressing from %s to %s",
+                            current_room,
+                            next_room,
+                        )
+                        try:
+                            self.run_safe_function(
+                                {"name": "move_room", "kwargs": {"room": next_room}},
+                                metadata={"cause": "major_event_progression"},
+                            )
+                            LOGGER.info(
+                                "Room progressed to %s after major event", next_room
+                            )
+                        except Exception as exc:
+                            LOGGER.warning(
+                                "Failed to progress room after major event: %s", exc
+                            )
 
             warnings: List[str] = []
             try:
@@ -518,6 +651,8 @@ class Orchestrator:
                 event_output,
                 chosen_option,
             )
+            # Tick status effects
+            self.rules_engine.tick_status_effects(state)
             LOGGER.debug(
                 "State after update: %s",
                 self._stringify(state),
@@ -530,6 +665,22 @@ class Orchestrator:
             )
             LOGGER.info("Safe function queue executed.")
 
+            # Re-describe world if weather or environment changed
+            weather_changed = any(
+                result.get("name") == "change_weather"
+                for result in safe_function_results
+            )
+            if weather_changed:
+                LOGGER.info("Weather changed via safe function, re-describing world...")
+                world_request = {
+                    "WORLD_CONTEXT": self._build_world_context(final_state),
+                    "room": final_state.get("current_room", "unknown"),
+                }
+                new_world_output = self.world_agent.describe(world_request)
+                LOGGER.info("World re-described after safe function.")
+                LOGGER.debug("New world output: %s", self._stringify(new_world_output))
+                world_output = new_world_output  # Update for result
+
             final_state = self.state_store.snapshot()
             final_metrics = MetricManager(
                 final_state,
@@ -541,10 +692,21 @@ class Orchestrator:
                 metrics_after,
                 turn=final_state.get("turn", 0),
                 turn_limit=final_state.get("turn_limit", turn_limit),
+                triggered_loss=glitch_info.get("triggered_loss", False),
             )
-            if glitch_info.get("triggered_loss") and win_loss["status"] == "ongoing":
-                win_loss = {"status": "loss", "reason": "glitch_overload"}
+            # Remove redundant triggered_loss check since it's now handled in check_win_loss
+            # if glitch_info.get("triggered_loss") and win_loss["status"] == "ongoing":
+            #     win_loss = {"status": "loss", "reason": "glitch_overload"}
             LOGGER.info("Win/loss status after turn: %s", win_loss)
+            # Override for end game
+            if chosen_option.get("id") == "end":
+                win_loss = {"status": "loss", "reason": "end_game"}
+                LOGGER.info("End game triggered by player choice.")
+            # Set finalized flag if game ended
+            if win_loss["status"] != "ongoing":
+                final_state["finalized"] = True
+                self.state_store.persist(final_state)
+                LOGGER.info("Game finalized, state persisted.")
             narrative = self._compose_turn_narrative(
                 turn=final_state.get("turn", 0),
                 choice=chosen_option,
@@ -632,6 +794,9 @@ class Orchestrator:
 
     def _register_default_safe_functions(self) -> None:
         """Register baseline safe functions used by the scenario."""
+        if hasattr(self, "_safe_functions_registered"):
+            return
+        self._safe_functions_registered = True
 
         self.register_safe_function(
             "change_weather",
@@ -1158,32 +1323,6 @@ class Orchestrator:
         }
         return cleaned
 
-    def _update_state(
-        self,
-        state: Dict[str, Any],
-        world_output: Dict[str, Any],
-        event_output: Dict[str, Any],
-        chosen_option: Dict[str, Any],
-    ) -> None:
-        previous_turn = state.get("current_turn")
-        if not isinstance(previous_turn, int):
-            previous_turn = int(state.get("turn", 0))
-        next_turn = previous_turn + 1
-        state["turn"] = next_turn
-        state["current_turn"] = next_turn
-        state["world_constraint_from_prev_turn"] = world_output
-        recent_events = state.setdefault("recent_events", [])
-        recent_events.append(event_output.get("scene", ""))
-        state["recent_events"] = recent_events[-5:]
-        recent_motifs = state.setdefault("recent_motifs", [])
-        motif = chosen_option.get("action_type")
-        if motif:
-            recent_motifs.append(motif)
-            state["recent_motifs"] = recent_motifs[-5:]
-        major_events = state.setdefault("recent_major_events", [])
-        major_events.append(bool(event_output.get("major_event")))
-        state["recent_major_events"] = major_events[-5:]
-
     def _resolve_player_choice(
         self,
         event_output: Dict[str, Any],
@@ -1456,6 +1595,83 @@ class Orchestrator:
             return text[:597] + "..."
         return text
 
+    def _update_state(
+        self,
+        state: Dict[str, Any],
+        world_output: Dict[str, Any],
+        event_output: Dict[str, Any],
+        chosen_option: Dict[str, Any],
+    ) -> None:
+        """Update state after turn: increment turn, trim lists, add memory."""
+        # Increment turn
+        current_turn = state.get("current_turn", 0)
+        state["current_turn"] = current_turn + 1
+        state["turn"] = state["current_turn"]
+
+        # Update world constraint from previous turn
+        state["world_constraint_from_prev_turn"] = {
+            "atmosphere": world_output.get("atmosphere", ""),
+            "sensory_details": world_output.get("sensory_details", ""),
+        }
+
+        # Trim recent_motifs to maxlen=3
+        recent_motifs = state.get("recent_motifs", [])
+        if len(recent_motifs) > 3:
+            recent_motifs = recent_motifs[-3:]
+        state["recent_motifs"] = recent_motifs
+
+        # Add new motif if major_event
+        if event_output.get("major_event"):
+            new_motif = chosen_option.get("action_type", "unknown")
+            if new_motif not in recent_motifs:
+                recent_motifs.append(new_motif)
+                if len(recent_motifs) > 3:
+                    recent_motifs.pop(0)
+            state["recent_motifs"] = recent_motifs
+
+        # Trim recent_events to maxlen=3
+        recent_events = state.get("recent_events", [])
+        if len(recent_events) > 3:
+            recent_events = recent_events[-3:]
+        state["recent_events"] = recent_events
+
+        # Add new event summary
+        scene = event_output.get("scene", "")
+        new_event = scene[:200] + "..." if len(scene) > 200 else scene
+        recent_events.append(new_event)
+        if len(recent_events) > 3:
+            recent_events.pop(0)
+        state["recent_events"] = recent_events
+
+        # Add to memory_layers
+        memory_layers = state.get("memory_layers", [])
+        choice_text = chosen_option.get("text", "")
+        scene_part = event_output.get("scene", "")[:100]
+        turn_summary = f"Turn {current_turn + 1}: {choice_text} -> "
+        turn_summary += f"{scene_part}..."
+        memory_layers.append(turn_summary)
+        # Memory summarizer every 3 turns to break token echo loops
+        if (current_turn + 1) % 3 == 0 and len(memory_layers) >= 3:
+            summary = " | ".join(memory_layers[-3:])[:200] + "..."
+            memory_layers.append(f"Memory summary: {summary}")
+        if len(memory_layers) > 5:  # Keep last 5
+            memory_layers = memory_layers[-5:]
+        state["memory_layers"] = memory_layers
+
+        # Reset major_flag_set if it was set
+        if state.get("major_flag_set"):
+            state["major_flag_set"] = False
+
+        # Update major_events_triggered
+        if event_output.get("major_event"):
+            major_triggered = state.get("major_events_triggered", 0) + 1
+            state["major_events_triggered"] = major_triggered
+            state["major_event_last_turn"] = current_turn + 1
+            # Limit major events to prevent over-triggering
+            if major_triggered >= 5:
+                LOGGER.warning("Major event limit %d reached", major_triggered)
+                event_output["major_event"] = False
+
 
 def simulate(n_turns: int = 3, seed: int = 123) -> None:
     """Run a deterministic mini-simulation using the packaged orchestrator."""
@@ -1506,3 +1722,22 @@ def simulate(n_turns: int = 3, seed: int = 123) -> None:
                     },
                 }
             )
+
+    # end simulate()
+
+
+def _get_next_room(current_room: str) -> str | None:
+    """Module-level helper: get the next room in the progression sequence.
+
+    Args:
+        current_room: Current room name
+
+    Returns:
+        Next room name or None if at the end of progression
+    """
+    room_progression = {
+        "entrance": "courtyard",
+        "courtyard": "inner_wall",
+        "inner_wall": None,  # End of progression
+    }
+    return room_progression.get(current_room)

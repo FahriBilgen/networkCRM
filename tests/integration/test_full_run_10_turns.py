@@ -108,7 +108,7 @@ def test_full_run_10_turns(tmp_path: Path) -> None:
                     "turn": turn,
                     "agent": "orchestrator",
                     "message": f"Turn {turn} completed",
-                    "deltas": metrics,
+                    "deltas": result.get("metrics_after", {}),
                 }
                 with open(out_dir / "log.ndjson", "a", encoding="utf-8") as f:
                     f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")

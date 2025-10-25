@@ -17,13 +17,18 @@ class GlitchManager:
     """Compute glitch rolls and apply deterministic side-effects."""
 
     seed: int = 0
+    previous_glitch: int = 0
 
     def resolve_turn(
         self,
         *,
         metrics: MetricManager,
         turn: int,
+        finalized: bool = False,
     ) -> Dict[str, object]:
+        if finalized:
+            LOGGER.info("Game finalized, skipping glitch resolution")
+            return {"roll": 0, "effects": [], "triggered_loss": False}
         current_glitch = metrics.value("glitch")
         LOGGER.info(
             "Resolving glitch (turn=%s, seed=%s, current_glitch=%s)",
@@ -36,7 +41,13 @@ class GlitchManager:
         effects: List[str] = []
         triggered_loss = False
 
-        if roll <= 30:
+        # Trend-based loss trigger: if glitch > 25 and increase > 10, trigger loss
+        glitch_increase = current_glitch - self.previous_glitch
+        if current_glitch > 25 and glitch_increase > 10:
+            effects.append("Glitch momentum overload triggers early cascade.")
+            metrics.adjust_metric("glitch", 10, cause="glitch:momentum_overload")
+            triggered_loss = True
+        elif roll <= 30:
             effects.append("Minor static ripples along the parapets.")
             metrics.adjust_metric("glitch", 1, cause="glitch:cosmetic_noise")
         elif roll <= 60:
@@ -61,6 +72,9 @@ class GlitchManager:
             effects.append("Glitch cascade overwhelms containment protocols.")
             metrics.adjust_metric("glitch", 15, cause="glitch:overload")
             triggered_loss = True
+
+        # Update previous glitch for next turn
+        self.previous_glitch = metrics.value("glitch")
 
         LOGGER.info(
             "Glitch roll complete: roll=%s, triggered_loss=%s",

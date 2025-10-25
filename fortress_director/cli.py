@@ -117,6 +117,9 @@ def _handle_run(args: argparse.Namespace) -> None:
         _print_json(result)
         output_path = run_dir / f"turn_{turn_index + 1:03d}.json"
         output_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
+        # Break if game concluded
+        if result.get("win_loss", {}).get("status") != "ongoing":
+            break
 
     log_path = SETTINGS.log_dir / "fortress_run.log"
     if log_path.exists():

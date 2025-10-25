@@ -105,6 +105,12 @@ def _handle_run(args: argparse.Namespace) -> None:
     for turn_index in range(turns):
         result = _run_turn(args.choice_id)
         results.append(result)
+        win_loss = result.get("win_loss", {})
+        if win_loss.get("status") != "ongoing":
+            sys.stdout.write(
+                f"Game ended: {win_loss.get('status')} - {win_loss.get('reason', '')}\n"
+            )
+            break
         reactions = result.get("character_reactions", [])
         for reaction in reactions:
             effects = reaction.get("effects") or {}

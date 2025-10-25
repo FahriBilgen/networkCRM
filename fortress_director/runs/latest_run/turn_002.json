@@ -1,0 +1,82 @@
+{
+  "WORLD_CONTEXT": "Turn 1 | Day 1 | Time dawn\nLocation: entrance\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall.\nInventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Dawn breaks, casting a pale light over damp battlements.\", \"sensory_details\": \"The chill morning air carries the scent of rain and wet stone distant drums echo with promise.\"}\nRecent events: The Shieldbearer stands watch at the entrance, her oil lamp casting flickering shadows on the stone walls. The low clouds hang heavy over the battlements, and the wind carries grit as drums thud beyon...\nRecent motifs: none\nRecent major events: none\nRelationship summary: Rhea trusts the player; Boris weighs every trade.\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating.\nMetrics: {\"order\": 50, \"morale\": 50, \"resources\": 40, \"knowledge\": 45, \"corruption\": 10, \"glitch\": 26, \"risk_applied_total\": 0, \"major_flag_set\": false, \"major_events_triggered\": 0, \"major_event_last_turn\": null}",
+  "scene": "The Shieldbearer, standing watch at the entrance, notices your approach. Her eyes flicker to the damp battlements and distant drums.",
+  "options": [],
+  "world": {
+    "atmosphere": "Dawn'thin light over damp, battlemented walls",
+    "sensory_details": "Cool air with rain scent and gritty wind distant drums echoing promise"
+  },
+  "event": {
+    "scene": "The Shieldbearer, standing watch at the entrance, notices your approach. Her eyes flicker to the damp battlements and distant drums.",
+    "options": [
+      {
+        "id": "1",
+        "text": "Approach the Shieldbearer and ask about the drums you hear in the distance.",
+        "action_type": "dialog"
+      },
+      {
+        "id": "2",
+        "text": "Ignoring the Shieldbearer, you focus on the distant drums, trying to discern their origin.",
+        "action_type": "exploration"
+      },
+      {
+        "id": "3",
+        "text": "Take a moment to rest, using your oil lamp to light the damp battlements.",
+        "action_type": "interaction"
+      }
+    ],
+    "major_event": false,
+    "safe_functions": []
+  },
+  "player_choice": {
+    "id": "1",
+    "text": "Approach the Shieldbearer and ask about the drums you hear in the distance.",
+    "action_type": "dialog"
+  },
+  "character_reactions": [
+    {
+      "name": "Shieldbearer",
+      "intent": "vigilance",
+      "action": "stand alert",
+      "speech": "I stand vigilant. The shadows lengthen, and whispers of rain paint the air. A symphony of distant drums echoes, promising a storm.",
+      "effects": {}
+    }
+  ],
+  "metrics_after": {
+    "order": 50,
+    "morale": 50,
+    "resources": 40,
+    "knowledge": 45,
+    "corruption": 10,
+    "glitch": 26,
+    "risk_applied_total": 0,
+    "major_flag_set": false,
+    "major_events_triggered": 0,
+    "major_event_last_turn": null
+  },
+  "glitch": {
+    "roll": 99,
+    "effects": [
+      "Glitch cascade overwhelms containment protocols."
+    ]
+  },
+  "logs": [
+    {
+      "metric": "glitch",
+      "delta": 15,
+      "value": 27,
+      "cause": "glitch:overload"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 26,
+      "cause": "turn_recovery"
+    }
+  ],
+  "win_loss": {
+    "status": "loss",
+    "reason": "glitch_overload"
+  },
+  "narrative": "Turn 2 | Approach the Shieldbearer and ask about the drums you hear in the distance. | I stand vigilant. The shadows lengthen, and whispers of rain paint the air. A symphony of distant drums echoes, promising a storm. | Glitch cascade overw"
+}

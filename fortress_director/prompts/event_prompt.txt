@@ -5,6 +5,8 @@ Recent event summary (hash): {recent_events}
 Constraints (World Constraint): {world_constraint_from_prev_turn}
 Motif cooldown: {recent_motifs}
 
+Player Perspective: You are narrating from the player's third-person perspective. The player is the protagonist observing and interacting with the world. Options should be actions the player can take, not self-referential. Avoid phrases like "Approach the Shieldbearer and ask" if the player is already there; instead use "Ask the Shieldbearer about..."
+
 Ekstra bağlam:
 - flags: aktif world-state flag'leri (liste)
 - npc_trust: NPC'lerin oyuncuya güveni (dict)

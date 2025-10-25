@@ -14,21 +14,16 @@ Output (JSON only):
   "reason": "string"
 }}
 
-Rules:
-- Mark as inconsistent (false) if the content contradicts established lore, tone, or world logic.
-- Treat atmospheric variations or added sensory detail as acceptable unless they directly oppose known facts (e.g., night vs sun).
-- Assume defenders may also observe, scan, or speak; these do not break their role unless they abandon their duty.
-- Spectral or mystical elements are fine when hinted in prior lore; only flag hard contradictions (e.g., invoking modern tech).
-- Emotional reactions, concern, or dialogue are acceptable if characters remain at their post and uphold duties.
-- Synonymous wording (e.g., dawn vs sunrise) is acceptable when the underlying fact stays the same.
-- Check for anachronisms, personality violations, or broken world rules.
-- Keep "reason" concise and factual (why it’s inconsistent).
-- Do not suggest rewrites or alternative text.
-- Output must be pure JSON (no markdown, prose, or explanations).
+CRITICAL RULES - REJECT IF ANY APPLY:
+1. PHYSICALLY IMPOSSIBLE: flying without wings, teleportation without magic, walking through walls, etc.
+2. LOCATION INCONSISTENCY: character suddenly appears in different location without explanation of movement
+3. PERSONALITY VIOLATION: established character traits are broken (loyal character becomes traitor instantly)
+4. WORLD RULE BREAK: anachronisms, modern technology in medieval setting, etc.
 
-# If tolerance > 0, small reintroductions of existing mysteries or motifs are allowed, as long as they do not contradict established facts.
+Accept if content follows established lore and logic. Reject only for clear violations above.
 
 Examples:
-- Accept: "The Shieldbearer scans the horizon while staying at the wall." (role intact)
-- Accept: "Mist thickens and drums echo" (atmosphere shift only).
-- Reject: "The Shieldbearer abandons the wall to chase echoes" (duty broken).
+- REJECT: "Shieldbearer flies over wall" (physically impossible)
+- REJECT: "Shieldbearer appears in inner_gate when at entrance" (location inconsistency)
+- REJECT: "Loyal Rhea betrays instantly" (personality violation)
+- ACCEPT: "Shieldbearer stands guard" (consistent with role)

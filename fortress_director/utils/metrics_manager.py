@@ -109,6 +109,10 @@ class MetricManager:
     def modify_resources(self, amount: int, *, cause: str) -> int:
         return self.adjust_metric("resources", int(amount), cause=cause)
 
+    def recover_metric(self, metric: str, amount: int, *, cause: str) -> int:
+        """Recover (reduce) a metric by a positive amount."""
+        return self.adjust_metric(metric, -int(amount), cause=cause)
+
     def apply_bulk(self, changes: Iterable[tuple[str, int, str]]) -> None:
         for metric, delta, cause in changes:
             LOGGER.debug(

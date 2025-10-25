@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 
 """Implementation of the World Agent using the Ollama client stack."""
 from typing import Any, Dict, Optional
@@ -39,6 +40,12 @@ class WorldAgent(BaseAgent):
                     "World agent must return a JSON object, got: %s", result
                 )
                 raise ValueError("World agent must return a JSON object")
+            # Clean up text fields to remove encoding artifacts
+            for key in ["atmosphere", "sensory_details"]:
+                if key in result and isinstance(result[key], str):
+                    result[key] = re.sub(
+                        r"[^A-Za-z0-9\s'.,!?]", "", result[key]
+                    ).strip()
             self.LOGGER.info("World description: %s", result)
             return result
         except Exception as exc:
