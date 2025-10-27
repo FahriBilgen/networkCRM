@@ -500,3 +500,90 @@ class RulesEngine:
             memory["mood"] = mood
 
         LOGGER.info("Environmental effects applied with seed %s", seed)
+
+    def evaluate_win_loss(
+        self, state: Dict[str, Any], turn_number: int
+    ) -> Dict[str, Any]:
+        """Evaluate win/loss conditions based on current game state.
+
+        Args:
+            state: Current game state
+            turn_number: Current turn number
+
+        Returns:
+            Dict with 'status' ('ongoing', 'victory', 'defeat') and 'reason'
+        """
+        metrics = state.get("metrics", {})
+
+        # Extract key metrics
+        morale = metrics.get("morale", 50)
+        resources = metrics.get("resources", 40)
+        order = metrics.get("order", 50)
+        corruption = metrics.get("corruption", 10)
+        glitch = metrics.get("glitch", 0)
+
+        # Victory conditions
+        if turn_number >= 15 and morale >= 60 and order >= 70:
+            return {
+                "status": "victory",
+                "reason": "survived_15_turns_high_morale",
+                "description": "15 tur savunma başarısı!",
+            }
+
+        if morale >= 80 and corruption <= 5:
+            return {
+                "status": "victory",
+                "reason": "perfect_harmony",
+                "description": "Mükemmel uyum!",
+            }
+
+        # Defeat conditions
+        if morale <= 10:
+            return {
+                "status": "defeat",
+                "reason": "morale_crash",
+                "description": "Moral çöktü!",
+            }
+
+        if resources <= 5:
+            return {
+                "status": "defeat",
+                "reason": "resources_depleted",
+                "description": "Kaynaklar tükendi!",
+            }
+
+        if order <= 20:
+            return {
+                "status": "defeat",
+                "reason": "chaos_overwhelms",
+                "description": "Kaos hakim!",
+            }
+
+        if glitch >= 80:
+            return {
+                "status": "defeat",
+                "reason": "system_glitch",
+                "description": "Sistem hatası!",
+            }
+
+        if turn_number >= 20:
+            return {
+                "status": "defeat",
+                "reason": "turn_limit_exceeded",
+                "description": "20 tur limit aşıldı!",
+            }
+
+        # Check for major defeat events
+        major_events = metrics.get("major_events_triggered", 0)
+        if major_events >= 3 and morale <= 30:
+            return {
+                "status": "defeat",
+                "reason": "major_events_overwhelm",
+                "description": "Çok fazla olay!",
+            }
+
+        return {
+            "status": "ongoing",
+            "reason": "conditions_not_met",
+            "description": "Oyun devam ediyor...",
+        }

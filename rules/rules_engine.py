@@ -52,6 +52,45 @@ class RulesEngine:
         self.trust_floor = -5
         self.trust_ceiling = 5
 
+    def _check_physical_impossibility(self, action: str, speech: str) -> bool:
+        """Check for basic physical impossibilities in action or speech.
+
+        Returns True if impossibility detected (should reject).
+        """
+        impossible_patterns = [
+            "fly",
+            "flying",
+            "flies",
+            "flew",
+            "teleport",
+            "teleports",
+            "teleported",
+            "walk through",
+            "walks through",
+            "walked through",
+            "phase through",
+            "phases through",
+            "phased through",
+            "breathe underwater",
+            "breathes underwater",
+            "invisible",
+            "invisibility",
+            "super strength",
+            "superhuman",
+            "float in air",
+            "floating in air",
+            "pass through",
+            "passes through",
+        ]
+
+        combined_text = f"{action} {speech}".lower()
+
+        for pattern in impossible_patterns:
+            if pattern in combined_text:
+                return True
+
+        return False
+
     def process(
         self,
         *,
@@ -117,6 +156,14 @@ class RulesEngine:
             if len(speech) > 200:
                 raise TierOneValidationError(
                     f"Speech for '{entry['name']}' exceeds 200 characters"
+                )
+
+            # Fiziksel imkansızlık kontrolü
+            action = entry.get("action", "").lower()
+            speech_lower = speech.lower()
+            if self._check_physical_impossibility(action, speech_lower):
+                raise TierOneValidationError(
+                    f"Physical impossibility detected in action/speech for '{entry['name']}': {action}"
                 )
 
             effects = entry.get("effects") or {}

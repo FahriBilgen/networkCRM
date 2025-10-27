@@ -14,16 +14,29 @@ Output (JSON only):
   "reason": "string"
 }}
 
-CRITICAL RULES - REJECT IF ANY APPLY:
-1. PHYSICALLY IMPOSSIBLE: flying without wings, teleportation without magic, walking through walls, etc.
-2. LOCATION INCONSISTENCY: character suddenly appears in different location without explanation of movement
-3. PERSONALITY VIOLATION: established character traits are broken (loyal character becomes traitor instantly)
-4. WORLD RULE BREAK: anachronisms, modern technology in medieval setting, etc.
+{WORLD_CONTEXT}
+Role: World-to-Lore Judge
 
-Accept if content follows established lore and logic. Reject only for clear violations above.
+Task: Evaluate content consistency with world rules.
+
+Content to validate:
+{content}
+
+Output (JSON only):
+{{
+  "consistent": boolean,
+  "reason": "string"
+}}
+
+CRITICAL REJECT RULES:
+1. PHYSICALLY IMPOSSIBLE: flying/teleport/walk through walls/breathe underwater/invisible/super strength
+2. LOCATION INCONSISTENCY: sudden unexplained location changes
+3. PERSONALITY VIOLATION: character traits broken
+4. WORLD RULE BREAK: anachronisms/modern tech
+
+ACCEPT: Content following established world physics and logic.
+REJECT: Clear violations above.
 
 Examples:
-- REJECT: "Shieldbearer flies over wall" (physically impossible)
-- REJECT: "Shieldbearer appears in inner_gate when at entrance" (location inconsistency)
-- REJECT: "Loyal Rhea betrays instantly" (personality violation)
-- ACCEPT: "Shieldbearer stands guard" (consistent with role)
+REJECT: "flies over wall" (no wings)
+ACCEPT: "stands guard" (defender role)

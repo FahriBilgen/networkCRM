@@ -1,7 +1,7 @@
 {
   "campaign_id": "default_campaign",
   "turn_limit": 10,
-  "current_turn": 10,
+  "current_turn": 8,
   "rng_seed": 12345,
   "scores": {
     "logic_score": 0,
@@ -12,27 +12,30 @@
     "low_clouds_present",
     "atmosphere",
     "Dawn'thin Rain",
-    "Dawn's Whispers"
+    "Dawn's Whispers",
+    "atmosphere_dawn_rain_heavy_clouds",
+    "weather_watcher_flag",
+    "sensory_details"
   ],
   "memory_layers": [
-    "Turn 7: You ask the Shieldbearer about the heavy clouds rolling in. -> The Shieldbearer, her eyes still focused on the distant drums, glances at you as you approach. 'I've...",
-    "Turn 8: Ask the Shieldbearer if she needs assistance. -> The Shieldbearer, her eyes still focused on the distant drums, glances at you as you approach. 'I've...",
-    "Turn 9: You ask the Shieldbearer about the distant drums. -> The Shieldbearer, her gaze still fixed on the distant drums, glances at you as you approach. 'I've b...",
-    "Memory summary: Turn 7: You ask the Shieldbearer about the heavy clouds rolling in. -> The Shieldbearer, her eyes still focused on the distant drums, glances at you as you approach. 'I've... | Turn 8: Ask the Shieldb...",
-    "Turn 10: You ask the Shieldbearer about her duty here at the entrance to Lornhaven. -> The Shieldbearer, her gaze still fixed on the distant drums, glances at you as you approach. 'I've b..."
+    "Turn 5: Ask the Shieldbearer about the drums. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta...",
+    "Turn 6: Ask the Shieldbearer about the drums. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta...",
+    "Memory summary: Turn 4: Ask the Shieldbearer about the weather. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta... | Turn 5: Ask the Shieldbearer about the drum...",
+    "Turn 7: Ask the Shieldbearer if she needs assistance. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta...",
+    "Turn 8: You offer the Shieldbearer your oil lamp, hoping it might provide some warmth and light. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta..."
   ],
   "active_layer": null,
   "npc_fragments": {},
   "inventory": [],
   "lore": {},
-  "turn": 10,
+  "turn": 8,
   "day": 1,
   "time": "dawn",
   "current_room": "entrance",
   "recent_events": [
-    "The Shieldbearer, her eyes still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her ...",
-    "The Shieldbearer, her gaze still fixed on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her vo...",
-    "The Shieldbearer, her gaze still fixed on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her vo..."
+    "The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her voice. As...",
+    "The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her voice. As...",
+    "The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her voice. As..."
   ],
   "recent_motifs": [],
   "world_constraint_from_prev_turn": {
@@ -55,11 +58,11 @@
   "relationship_summary": "Shieldbearer is neutral toward the player",
   "metrics": {
     "order": 50,
-    "morale": 50,
+    "morale": 53,
     "resources": 40,
-    "knowledge": 45,
+    "knowledge": 48,
     "corruption": 10,
-    "glitch": 18,
+    "glitch": 11,
     "risk_applied_total": 0,
     "major_flag_set": false,
     "major_events_triggered": 0,
@@ -67,6 +70,28 @@
   },
   "npc_trust": {
     "Shieldbearer": 0
+  },
+  "npc_memory": {
+    "Rhea": {
+      "name": "Scout Rhea",
+      "location": "scout_post",
+      "personality": "loyal but impulsive",
+      "trust": 50,
+      "last_action": "monitoring perimeter",
+      "mood": {
+        "morale_delta": -0.2334643568730447
+      }
+    },
+    "Boris": {
+      "name": "Merchant Boris",
+      "location": "merchant_quarters",
+      "personality": "cautious and calculating",
+      "trust": 45,
+      "last_action": "inventory check",
+      "mood": {
+        "morale_delta": -1.3715263255202086
+      }
+    }
   },
   "status_effects": [],
   "finalized": true

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -14,6 +15,7 @@ from llm.ollama_client import (
     OllamaClientError,
 )
 from settings import ModelConfig, SETTINGS
+from utils.agent_monitor import AGENT_MONITOR
 
 
 class AgentError(RuntimeError):
@@ -83,6 +85,7 @@ class BaseAgent:
         variables: Dict[str, Any],
         options_override: Optional[Dict[str, Any]] = None,
     ) -> Any:
+        start_time = time.time()
         prompt = self._template.render(**variables)
         options = self._build_options(options_override)
         try:
@@ -93,12 +96,22 @@ class BaseAgent:
                 response_format="json" if self._expects_json else None,
             )
         except OllamaClientError as exc:
+            AGENT_MONITOR.record_failure(self.name, "api_error")
             raise AgentError(f"{self.name} agent failed: {exc}") from exc
+
+        end_time = time.time()
+        response_time = end_time - start_time
+        AGENT_MONITOR.record_response_time(self.name, response_time)
 
         text = response.get("response", "").strip()
         if not self._expects_json:
+            AGENT_MONITOR.record_success(self.name)
             return text
-        return self._parse_json(text)
+
+        parsed = self._parse_json(text)
+        self._validate_output_quality(parsed)
+        AGENT_MONITOR.record_success(self.name)
+        return parsed
 
     def _build_options(
         self,
@@ -112,6 +125,44 @@ class BaseAgent:
         if options_override:
             options.update(options_override)
         return options
+
+    def _validate_output_quality(self, output: Any) -> None:
+        """Validate agent output quality and consistency."""
+        from utils.output_validator import (
+            validate_agent_output_consistency,
+            validate_character_output_quality,
+            validate_event_output_quality,
+        )
+
+        # Convert output to string for consistency checking
+        if isinstance(output, dict):
+            output_str = json.dumps(output)
+        elif isinstance(output, list):
+            output_str = json.dumps(output)
+        else:
+            output_str = str(output)
+
+        # Check for physical impossibilities and inconsistencies
+        if not validate_agent_output_consistency(output_str):
+            AGENT_MONITOR.record_failure(self.name, "consistency_violation")
+            raise AgentOutputError(
+                f"{self.name} agent output contains consistency violations: {output_str[:200]}..."
+            )
+
+        # Agent-specific quality validation
+        if self.name == "character" and isinstance(output, list):
+            for reaction in output:
+                if not validate_character_output_quality(reaction):
+                    AGENT_MONITOR.record_failure(self.name, "quality_issue")
+                    raise AgentOutputError(
+                        f"{self.name} agent output quality issues in reaction: {reaction}"
+                    )
+        elif self.name == "event" and isinstance(output, dict):
+            if not validate_event_output_quality(output):
+                AGENT_MONITOR.record_failure(self.name, "quality_issue")
+                raise AgentOutputError(
+                    f"{self.name} agent output quality issues: {output}"
+                )
 
     def _parse_json(self, text: str) -> Any:
         if not text:
@@ -136,11 +187,13 @@ def default_ollama_client(agent_key: Optional[str] = None) -> OllamaClient:
     base_url = os.environ.get("FORTRESS_OLLAMA_BASE_URL", SETTINGS.ollama_base_url)
     timeout_value = os.environ.get("FORTRESS_OLLAMA_TIMEOUT")
     try:
-        timeout = float(timeout_value) if timeout_value is not None else SETTINGS.ollama_timeout
+        timeout = (
+            float(timeout_value)
+            if timeout_value is not None
+            else SETTINGS.ollama_timeout
+        )
     except ValueError as exc:  # pragma: no cover - defensive guard
-        raise AgentError(
-            "FORTRESS_OLLAMA_TIMEOUT must be a float value"
-        ) from exc
+        raise AgentError("FORTRESS_OLLAMA_TIMEOUT must be a float value") from exc
 
     config = OllamaClientConfig(
         base_url=base_url,

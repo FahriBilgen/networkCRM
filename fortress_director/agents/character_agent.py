@@ -182,3 +182,81 @@ class CharacterAgent(BaseAgent):
 
             normalised.append(clone)
         return normalised
+
+    def autonomous_action(
+        self, npc_name: str, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Generate autonomous NPC actions when not reacting to player input.
+
+        Args:
+            npc_name: Name of the NPC taking autonomous action
+            context: Game context including world state, relationships, etc.
+
+        Returns:
+            Dict with autonomous action details
+        """
+        self.LOGGER.info("Autonomous action for %s", npc_name)
+
+        # Build context for autonomous decision
+        variables = {
+            "WORLD_CONTEXT": context.get("world_context", ""),
+            "scene_short": f"Autonomous behavior for {npc_name} during {context.get('current_situation', 'normal operations')}",
+            "player_choice": f"Autonomous action - {npc_name} acts independently",
+            "atmosphere": context.get("atmosphere", ""),
+            "sensory_details": context.get("sensory_details", ""),
+            "char_brief": context.get("npc_personality", "neutral"),
+            "relationship_summary_from_state": str(context.get("relationships", {})),
+            "player_inventory_brief": "",
+        }
+
+        try:
+            result = self.run(variables=variables)
+            self.LOGGER.debug("Autonomous action result: %s", result)
+
+            # Normalize the result
+            if isinstance(result, dict):
+                return self._normalize_autonomous_action(result)
+            elif isinstance(result, list) and result:
+                return self._normalize_autonomous_action(result[0])
+
+            # Fallback autonomous action
+            return {
+                "npc_name": npc_name,
+                "action": "stand_guard",
+                "reason": "Maintaining defensive position",
+                "safe_functions": [],
+            }
+
+        except Exception as e:
+            self.LOGGER.error("Autonomous failed for %s: %s", npc_name, e)
+            return {
+                "npc_name": npc_name,
+                "action": "idle",
+                "reason": "Unable to determine action",
+                "safe_functions": [],
+            }
+
+    def _normalize_autonomous_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize autonomous action output."""
+        normalized = {
+            "npc_name": action.get("npc_name", "unknown"),
+            "action": action.get("action", "idle"),
+            "reason": action.get("reason", "No reason given"),
+            "safe_functions": action.get("safe_functions", []),
+        }
+
+        # Clean safe functions
+        if normalized["safe_functions"]:
+            cleaned = []
+            for func in normalized["safe_functions"]:
+                if isinstance(func, dict) and "name" in func:
+                    cleaned.append(
+                        {
+                            "name": func["name"],
+                            "args": func.get("args", []),
+                            "kwargs": func.get("kwargs", {}),
+                        }
+                    )
+            normalized["safe_functions"] = cleaned
+
+        return normalized

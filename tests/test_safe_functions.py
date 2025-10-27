@@ -40,6 +40,8 @@ def _make_orchestrator(tmp_path: Path) -> Orchestrator:
         restore_callback=store.persist,
         max_checkpoints=3,
     )
+    orchestrator.runs_dir = tmp_path / "runs"
+    orchestrator.runs_dir.mkdir(parents=True, exist_ok=True)
     orchestrator._register_default_safe_functions()
     return orchestrator
 

@@ -1,28 +1,22 @@
 {WORLD_CONTEXT}
-Role: Character Director (handles all NPCs)
+Role: Character Director
 Scene: {scene_short}
 Player choice: "{player_choice}"
 Environment: {atmosphere}
 Sensory details: {sensory_details}
 Character summary: {char_brief}
-Relationship matrix summary: {relationship_summary_from_state}
+Relationship summary: {relationship_summary_from_state}
 Player inventory: {player_inventory_brief}
 
 Task:
-For each NPC, generate their immediate reaction to the scene and player action.
-Include intent, action, speech, and explicit mechanical effects.
+Generate immediate reactions for each NPC to the scene and player action.
 
 Output (JSON list):
-
-// Output must be a JSON list of objects, one per NPC. Each object should have keys: name, intent, action, speech, effects.
-// effects: trust_delta (int: -1, 0, or 1 only), logic_delta (int: -1, 0, or 1 only), emotion_delta (int: -1, 0, or 1 only), flag_set (list), item_change (object), status_change (object)
-// If a world change is needed, emit a safe_functions array as shown in the comments below.
-// Do not include any example JSON blocks or double curly braces.
+// Each object: name, intent, action, speech (≤50 chars), effects (trust_delta: -1/0/1 only)
 
 Rules:
-- Every NPC must have exactly one intent and one action.
-- Speech MUST be a short phrase, <= 200 characters. Keep it natural but very brief, under 50 characters if possible. Example: "I stand vigilant."
-- Include NPC-NPC interactions where relevant.
-- Maintain established roles: defenders stay vigilant at their post, observers still guard while watching.
-- Output must be pure JSON (no markdown or extra text).
-- Do not modify world state directly. If a world change is needed, emit a safe_functions array as shown above.
+- Every NPC must have exactly one intent and one action
+- Speech must be brief natural phrases
+- Include NPC-NPC interactions when relevant
+- Maintain established roles and personalities
+- Output must be pure JSON

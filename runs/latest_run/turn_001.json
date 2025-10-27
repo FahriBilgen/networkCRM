@@ -1,75 +1,73 @@
 {
-  "WORLD_CONTEXT": "Turn 2 | Day 1 | Time dawn\nLocation: entrance\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall.\nInventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Dawn'thin light over damp, battlemented walls\", \"sensory_details\": \"Cool air with rain scent and gritty wind distant drums echoing promise\"}\nRecent events: The Shieldbearer stands watch at the entrance, her oil lamp casting flickering shadows on the stone walls. The low clouds hang heavy over the battlements, and the wind carries grit as drums thud beyon...; The Shieldbearer, standing watch at the entrance, notices your approach. Her eyes flicker to the damp battlements and distant drums.\nRecent motifs: none\nRecent major events: none\nRelationship summary: Rhea trusts the player; Boris weighs every trade.\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating.\nMetrics: {\"order\": 50, \"morale\": 50, \"resources\": 40, \"knowledge\": 45, \"corruption\": 10, \"glitch\": 25, \"risk_applied_total\": 0, \"major_flag_set\": false, \"major_events_triggered\": 0, \"major_event_last_turn\": null}",
-  "scene": "The Shieldbearer, standing watch at the entrance, notices your approach. Her eyes flicker to the damp battlements and distant drums. As you draw near, she speaks in a weary voice.",
+  "WORLD_CONTEXT": "Turn 7 | Day 1 | Time dawn\nLocation: entrance\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall.\nInventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Dawn'thin rain, heavy clouds hang\", \"sensory_details\": \"Cool mist clings to stone drums beat steady rhythm\"}\nRecent events: The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her voice. As...; The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her voice. As...; The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her voice. As...\nRecent motifs: none\nRecent major events: none\nRelationship summary: Shieldbearer is neutral toward the player\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating.\nMetrics: {\"order\": 50, \"morale\": 51, \"resources\": 40, \"knowledge\": 47, \"corruption\": 10, \"glitch\": 11, \"risk_applied_total\": 0, \"major_flag_set\": false, \"major_events_triggered\": 0, \"major_event_last_turn\": null}",
+  "scene": "The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her voice. As the rain continues to fall, she looks to you with a weary expression.",
   "options": [
     {
-      "id": "ask_about_duty",
-      "text": "Ask the Shieldbearer about her duties.",
-      "action_type": "dialog"
+      "id": "comfort",
+      "text": "You offer the Shieldbearer your oil lamp, hoping it might provide some warmth and light.",
+      "action_type": "interact"
     },
     {
-      "id": "offer_help",
-      "text": "Offer to help with the watch.",
-      "action_type": "dialog"
+      "id": "ask",
+      "text": "You ask the Shieldbearer about the drums you've heard in the distance.",
+      "action_type": "interact"
     },
     {
-      "id": "inquire_about_drums",
-      "text": "Ask about the distant drums.",
-      "action_type": "dialog"
+      "id": "leave",
+      "text": "You decide to leave Rhea to her post and continue on your journey.",
+      "action_type": "move"
     }
   ],
   "world": {
-    "atmosphere": "Dawn's light filters through rain clouds",
-    "sensory_details": "Cool mist clings to stone, drums beat a steady rhythm"
+    "atmosphere": "Dawn'thin rain, heavy clouds hang",
+    "sensory_details": "Cool mist clings to stone drums beat steady rhythm"
   },
   "event": {
-    "scene": "The Shieldbearer, standing watch at the entrance, notices your approach. Her eyes flicker to the damp battlements and distant drums. As you draw near, she speaks in a weary voice.",
+    "scene": "The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her voice. As the rain continues to fall, she looks to you with a weary expression.",
     "options": [
       {
-        "id": "ask_about_duty",
-        "text": "Ask the Shieldbearer about her duties.",
-        "action_type": "dialog"
+        "id": "comfort",
+        "text": "You offer the Shieldbearer your oil lamp, hoping it might provide some warmth and light.",
+        "action_type": "interact"
       },
       {
-        "id": "offer_help",
-        "text": "Offer to help with the watch.",
-        "action_type": "dialog"
+        "id": "ask",
+        "text": "You ask the Shieldbearer about the drums you've heard in the distance.",
+        "action_type": "interact"
       },
       {
-        "id": "inquire_about_drums",
-        "text": "Ask about the distant drums.",
-        "action_type": "dialog"
+        "id": "leave",
+        "text": "You decide to leave Rhea to her post and continue on your journey.",
+        "action_type": "move"
       }
     ],
     "major_event": false,
     "safe_functions": []
   },
   "player_choice": {
-    "id": "ask_about_duty",
-    "text": "Ask the Shieldbearer about her duties.",
-    "action_type": "dialog"
+    "id": "comfort",
+    "text": "You offer the Shieldbearer your oil lamp, hoping it might provide some warmth and light.",
+    "action_type": "interact"
   },
   "character_reactions": [
     {
       "name": "Shieldbearer",
       "intent": "vigilance",
-      "action": "stand_watch",
-      "speech": "I stand vigilant, my senses alert to any sign of danger. The storm rages on, a symphony of rain and wind.",
+      "action": "look around",
+      "speech": "I've been standing here for hours, watching the clouds roll in.",
       "effects": {
-        "flag_set": [
-          "atmosphere"
-        ]
+        "trust_delta": 0
       }
     }
   ],
   "safe_function_results": [],
   "metrics_after": {
     "order": 50,
-    "morale": 50,
+    "morale": 53,
     "resources": 40,
-    "knowledge": 45,
+    "knowledge": 48,
     "corruption": 10,
-    "glitch": 25,
+    "glitch": 11,
     "risk_applied_total": 0,
     "major_flag_set": false,
     "major_events_triggered": 0,
@@ -83,13 +81,26 @@
     {
       "metric": "glitch",
       "delta": -1,
-      "value": 25,
+      "value": 11,
       "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 2,
+      "value": 53,
+      "cause": "action_interact"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 1,
+      "value": 48,
+      "cause": "action_interact"
     }
   ],
   "win_loss": {
     "status": "ongoing",
-    "reason": "thresholds_not_met"
+    "reason": "conditions_not_met",
+    "description": "Oyun devam ediyor..."
   },
-  "narrative": "Turn 3 | Ask the Shieldbearer about her duties. | I stand vigilant, my senses alert to any sign of danger. The storm rages on, a symphony of rain and wind."
+  "narrative": "Turn 8 | You offer the Shieldbearer your oil lamp, hoping it might provide some warmth and light. | I've been standing here for hours, watching the clouds roll in."
 }

@@ -114,7 +114,11 @@ def validate_turn_output(payload: Dict[str, Any]) -> None:
         _validate_options(options)
     else:
         player_choice = payload.get("player_choice", {})
-        action_type = player_choice.get("action_type") if isinstance(player_choice, dict) else None
+        action_type = (
+            player_choice.get("action_type")
+            if isinstance(player_choice, dict)
+            else None
+        )
         if action_type != "end":
             raise OutputValidationError(
                 "Event options list cannot be empty unless ending the campaign"
@@ -160,9 +164,7 @@ def validate_turn_output(payload: Dict[str, Any]) -> None:
             raise OutputValidationError(f"metrics_after missing '{metric}'")
         value = metrics_after[metric]
         if not isinstance(value, int):
-            raise OutputValidationError(
-                f"metrics_after['{metric}'] must be an integer"
-            )
+            raise OutputValidationError(f"metrics_after['{metric}'] must be an integer")
 
     glitch = payload["glitch"]
     _assert_type(glitch, dict, context="glitch")
@@ -199,3 +201,123 @@ def validate_turn_output(payload: Dict[str, Any]) -> None:
     narrative = payload["narrative"]
     if not isinstance(narrative, str):
         raise OutputValidationError("narrative must be a string")
+
+
+# Agent-level validation functions for real-time output checking
+
+
+def validate_agent_output_consistency(content: str) -> bool:
+    """Check agent output for physical impossibilities and inconsistencies.
+
+    Returns True if content is consistent, False if violations detected.
+    """
+    if not isinstance(content, str):
+        return False
+
+    content_lower = content.lower()
+
+    # Physical impossibilities
+    physical_impossibilities = [
+        "fly",
+        "flying",
+        "flies",
+        "flew",
+        "teleport",
+        "teleports",
+        "teleported",
+        "walk through",
+        "walks through",
+        "walked through",
+        "phase through",
+        "phases through",
+        "phased through",
+        "breathe underwater",
+        "breathes underwater",
+        "invisible",
+        "invisibility",
+        "super strength",
+        "superhuman",
+        "float in air",
+        "floating in air",
+        "pass through",
+        "passes through",
+    ]
+
+    for impossible in physical_impossibilities:
+        if impossible in content_lower:
+            return False
+
+    # Location inconsistencies
+    location_issues = [
+        "suddenly appears in",
+        "instantly teleports to",
+        "magically appears",
+        "mysteriously vanishes",
+    ]
+
+    for issue in location_issues:
+        if issue in content_lower:
+            return False
+
+    return True
+
+
+def validate_character_output_quality(reaction: Dict[str, Any]) -> bool:
+    """Validate character agent output quality."""
+    if not isinstance(reaction, dict):
+        return False
+
+    # Required fields
+    required = ["name", "intent", "action", "speech", "effects"]
+    if not all(key in reaction for key in required):
+        return False
+
+    # Speech quality checks
+    speech = reaction.get("speech", "")
+    if len(speech) > 200:  # Too long
+        return False
+    if len(speech.strip()) < 3:  # Too short
+        return False
+
+    # Effects validation
+    effects = reaction.get("effects", {})
+    if not isinstance(effects, dict):
+        return False
+
+    # Trust delta validation
+    trust_delta = effects.get("trust_delta")
+    if trust_delta is not None and trust_delta not in (-1, 0, 1):
+        return False
+
+    return True
+
+
+def validate_event_output_quality(event: Dict[str, Any]) -> bool:
+    """Validate event agent output quality."""
+    if not isinstance(event, dict):
+        return False
+
+    # Required fields
+    required = ["scene", "options", "major_event", "safe_functions"]
+    if not all(key in event for key in required):
+        return False
+
+    # Scene quality
+    scene = event.get("scene", "")
+    if len(scene) < 10 or len(scene) > 500:  # Reasonable length
+        return False
+
+    # Options validation
+    options = event.get("options", [])
+    if not isinstance(options, list) or len(options) != 3:
+        return False
+
+    for option in options:
+        if not isinstance(option, dict):
+            return False
+        if not all(k in option for k in ["id", "text", "action_type"]):
+            return False
+        if len(option.get("text", "")) < 5:  # Too short option
+            return False
+
+    return True

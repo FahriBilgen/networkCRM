@@ -1,43 +1,31 @@
 {WORLD_CONTEXT}
 Role: Event Manager
 Day: {day}, Time: {time}, Room: {room}
-Recent event summary (hash): {recent_events}
-Constraints (World Constraint): {world_constraint_from_prev_turn}
-Motif cooldown: {recent_motifs}
+Recent events: {recent_events}
+World constraint: {world_constraint_from_prev_turn}
+Recent motifs: {recent_motifs}
 
-Ekstra bağlam:
-- flags: aktif world-state flag'leri (liste)
-- npc_trust: NPC'lerin oyuncuya güveni (dict)
-- recent_major_events: son birkaç turdaki büyük olaylar (bool listesi)
-- lore_continuity_weight: Hikaye bütünlüğü ağırlığı (şu ana kadar tetiklenen büyük olay sayısı, tamsayı)
+Task:
+Write a short scene description and generate exactly 3 diegetic player options.
 
+CRITICAL RULES:
+1. REFERENCE RECENT EVENTS: Continue story from {recent_events}
+2. AVOID MOTIF REPETITION: Don't repeat {recent_motifs} consecutively
+3. MAINTAIN LORE: Keep world consistency
 
-Görev:
-Kısa bir sahne betimi yaz ve ardından tam olarak 3 diegetik oyuncu seçeneği üret.
-Her seçenek dünyaya doğal şekilde uymalı ve tonunu korumalı.
-
-KRİTİK LORE CONTINUITY KURALLARI:
-1. RECENT_EVENTS ANALİZİ: {recent_events} içeriğini dikkatlice incele ve önceki olaylara doğrudan referans vererek hikaye akışını sürdür.
-   - Eğer önceki olay "ışık arayışı" ile ilgiliyse, şimdi "ışık kullanımı" veya "karanlıkta ilerleme" yap.
-   - Eğer önceki olay "gizemli figür karşılaşması" ise, şimdi "gizemli figür etkileşimi" veya "figürün amacı" keşfi yap.
-   - Geçmiş olayların sonuçlarını aktif olarak kullan (örn: spawn edilmiş item'lar, değişmiş hava durumu).
-
-2. MOTİF REPETITION ÖNLENMESİ: {recent_motifs} listesini kontrol et ve aynı motifi 2 tur üst üste KESİNLİKLE tekrar etme.
-   - Son 3 motif: {recent_motifs}
-   - Eğer son motifler "dialogue, dialogue, dialogue" ise, şimdi "interact, explore, defend" gibi farklı motifler kullan.
-   - Varyasyon yarat: dialogue→investigate, interact→ask, defend→rest
-
-3. LORE CONTINUITY WEIGHT: {lore_continuity_weight} değeri yüksekse, hikaye bütünlüğünü ön planda tut.
-   - Yüksek weight: Geçmiş olaylara referans ver, karakter gelişimini göster, dünya değişikliklerini sürdür.
-   - Düşük weight: Yeni unsurlar ekle ama mevcut lore'a ters düşme.
-
-4. NPC DYNAMICS: Boris gibi mevcut NPC'leri aktif olarak devreye al.
-   - Boris (cautious and calculating merchant): Trade, resource management, or strategic advice
-   - Yeni karakterleri tanıt: Guards, scouts, civilians based on story needs
-   - NPC'leri olaylara dahil et: move_npc() ile konum değiştir, dialogue seçeneklerinde referans ver
-   - NPC güven seviyelerini kullan: Yüksek güven = işbirliği, düşük güven = şüphe
+Available functions: change_weather(weather_type), spawn_item(item_name, location), move_npc(npc_id, location), adjust_logic(), adjust_emotion(), raise_corruption(), modify_resources(delta), adjust_metric(metric_name, delta), move_room(room)
 
 Output (JSON only):
+{{
+  "scene": "string",
+  "options": [
+    {{"id": "1", "text": "string", "action_type": "dialog/interaction/exploration"}},
+    {{"id": "2", "text": "string", "action_type": "dialog/interaction/exploration"}},
+    {{"id": "3", "text": "string", "action_type": "dialog/interaction/exploration"}}
+  ],
+  "major_event": false,
+  "safe_functions": []
+}}
 
 
 - Kurallar:

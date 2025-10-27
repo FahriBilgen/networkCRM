@@ -55,9 +55,9 @@ SETTINGS = Settings(
         ),
         "world": ModelConfig(
             name="phi3:mini",
-            temperature=0.1,
-            top_p=0.4,
-            max_tokens=384,
+            temperature=0.1,  # Geri yükselttim
+            top_p=0.4,  # Geri yükselttim
+            max_tokens=256,  # Kısa açıklamalar için yeterli
         ),
         "character": ModelConfig(
             name="gemma:2b",
@@ -67,9 +67,9 @@ SETTINGS = Settings(
         ),
         "judge": ModelConfig(
             name="qwen2:1.5b",
-            temperature=0.05,
-            top_p=0.2,
-            max_tokens=256,
+            temperature=0.01,  # Daha deterministik
+            top_p=0.1,  # Daha odaklı
+            max_tokens=128,  # Daha kısa yanıtlar
         ),
     },
 )

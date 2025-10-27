@@ -12,7 +12,7 @@ from fortress_director.utils.output_validator import validate_turn_output
 from fortress_director.settings import DEFAULT_WORLD_STATE
 from fortress_director.agents.character_agent import CharacterAgent
 from fortress_director.agents.event_agent import EventAgent
-from fortress_director.agents.judge_agent import JudgeAgent, check_win_loss
+from fortress_director.agents.judge_agent import JudgeAgent
 from fortress_director.agents.world_agent import WorldAgent
 from fortress_director.settings import SETTINGS
 from fortress_director.rules.rules_engine import (
@@ -69,6 +69,10 @@ class StateStore:
             snapshot.get("turn"),
         )
         return snapshot
+
+    def test_method(self):
+        """Test method to check if class parsing works."""
+        return "test"
 
     def persist(self, state: Dict[str, Any]) -> None:
         """Replace current state with provided snapshot and flush to disk."""
@@ -147,6 +151,59 @@ class Orchestrator:
         state["recent_motifs"] = motifs[-5:]
         self.state_store.persist(state)
         LOGGER.info(f"Motif updated: {motif}")
+
+    def autonomous_actions_method(self, state):
+        """Generate autonomous actions for NPCs."""
+        if not self.character_agent:
+            return []
+
+        # Get NPCs from state
+        npcs = []
+        character_summary = state.get("character_summary", "")
+        if character_summary:
+            # Parse character summary like "Scout Rhea cautious; Merchant Boris opportunistic"
+            entries = [e.strip() for e in character_summary.split(";") if e.strip()]
+            for entry in entries:
+                if " " in entry:
+                    name = (
+                        entry.split(" ")[0] + " " + entry.split(" ")[1]
+                    )  # First two words as name
+                    npcs.append(name)
+
+        if not npcs:
+            return []
+
+        actions = []
+        for npc_name in npcs:
+            try:
+                # Build context for autonomous action
+                context = {
+                    "world_context": self._build_world_context(state),
+                    "current_situation": f"Turn {state.get('turn', 1)} in the siege",
+                    "atmosphere": state.get("world_constraint_from_prev_turn", {}).get(
+                        "atmosphere", ""
+                    ),
+                    "sensory_details": state.get(
+                        "world_constraint_from_prev_turn", {}
+                    ).get("sensory_details", ""),
+                    "npc_personality": (
+                        "loyal but impulsive"
+                        if "Rhea" in npc_name
+                        else "cautious and calculating"
+                    ),
+                    "relationships": {},  # Could be expanded
+                    "recent_events": state.get("recent_events", []),
+                }
+
+                action = self.character_agent.autonomous_action(npc_name, context)
+                if action and action.get("safe_functions"):
+                    actions.append(action)
+            except Exception as e:
+                LOGGER.error(
+                    "Failed to generate autonomous action for %s: %s", npc_name, e
+                )
+
+        return actions
 
     def update_character(
         self, name: str, summary: str, stats: dict = None, inventory: list = None
@@ -580,7 +637,7 @@ class Orchestrator:
                 if "mystery figure" in scene_text or "mysterious figure" in scene_text:
                     current_room = state_snapshot.get("current_room", "entrance")
                     # Use module-level helper for progression (defined below)
-                    next_room = _get_next_room(current_room)
+                    next_room = self._get_next_room(current_room)
                     if next_room:
                         LOGGER.info(
                             "Major event involves Mystery Figure, progressing from %s to %s",
@@ -647,6 +704,27 @@ class Orchestrator:
                     else None
                 )
 
+            # Generate autonomous NPC actions
+            autonomous_actions = self.autonomous_actions_method(state_snapshot)
+            if autonomous_actions:
+                LOGGER.info("Applying %d autonomous actions", len(autonomous_actions))
+            if autonomous_actions:
+                LOGGER.info("Applying %d autonomous actions", len(autonomous_actions))
+                # Apply autonomous actions through safe function system
+                for action in autonomous_actions:
+                    if action.get("safe_functions"):
+                        for func in action["safe_functions"]:
+                            try:
+                                self._execute_safe_function(
+                                    func, f"autonomous_{action['npc_name']}"
+                                )
+                            except Exception as e:
+                                LOGGER.warning(
+                                    "Autonomous failed for %s: %s",
+                                    action["npc_name"],
+                                    e,
+                                )
+
             LOGGER.info("Updating state and persisting...")
             self._update_state(
                 state,
@@ -693,13 +771,10 @@ class Orchestrator:
             )
             metrics_after = final_metrics.snapshot()
             LOGGER.debug("Final metrics snapshot: %s", metrics_after)
-            win_loss = check_win_loss(
-                metrics_after,
-                turn=final_state.get("turn", 0),
-                turn_limit=final_state.get("turn_limit", turn_limit),
-                triggered_loss=glitch_info.get("triggered_loss", False),
+            win_loss = self.rules_engine.evaluate_win_loss(
+                final_state, final_state.get("turn", 0)
             )
-            # Remove redundant triggered_loss check since it's now handled in check_win_loss
+            # Win/loss evaluation now handled in rules_engine
             # if glitch_info.get("triggered_loss") and win_loss["status"] == "ongoing":
             #     win_loss = {"status": "loss", "reason": "glitch_overload"}
             LOGGER.info("Win/loss status after turn: %s", win_loss)
@@ -1777,22 +1852,20 @@ def simulate(n_turns: int = 3, seed: int = 123) -> None:
                     },
                 }
             )
-
     # end simulate()
 
+    def _get_next_room(self, current_room: str) -> str | None:
+        """Get the next room in the progression sequence.
 
-def _get_next_room(current_room: str) -> str | None:
-    """Module-level helper: get the next room in the progression sequence.
+        Args:
+            current_room: Current room name
 
-    Args:
-        current_room: Current room name
-
-    Returns:
-        Next room name or None if at the end of progression
-    """
-    room_progression = {
-        "entrance": "courtyard",
-        "courtyard": "inner_wall",
-        "inner_wall": None,  # End of progression
-    }
-    return room_progression.get(current_room)
+        Returns:
+            Next room name or None if at the end of progression
+        """
+        room_progression = {
+            "entrance": "courtyard",
+            "courtyard": "inner_wall",
+            "inner_wall": None,  # End of progression
+        }
+        return room_progression.get(current_room)
