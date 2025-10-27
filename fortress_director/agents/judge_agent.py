@@ -37,7 +37,9 @@ class JudgeAgent(BaseAgent):
             client=client or default_ollama_client("judge"),
         )
 
-    def evaluate(self, variables: Dict[str, Any]) -> Dict[str, Any]:
+    def evaluate(
+        self, variables: Dict[str, Any], seed: Optional[int] = None
+    ) -> Dict[str, Any]:
         """Return lore consistency verdict for supplied content."""
         # Redundancy detection: hash the content
         content = variables.get("content", "")
@@ -52,6 +54,8 @@ class JudgeAgent(BaseAgent):
 
         variables = dict(variables)
         variables["tolerance"] = self.tolerance
+        if seed is not None:
+            variables["seed"] = seed
         self.LOGGER.info("JudgeAgent.evaluate called with variables")
         try:
             result = self.run(variables=variables)

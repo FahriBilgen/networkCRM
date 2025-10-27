@@ -1,10 +1,23 @@
 {
+  "campaign_id": "default_campaign",
+  "turn_limit": 10,
+  "current_turn": 0,
+  "rng_seed": 12345,
+  "scores": {
+    "logic_score": 0,
+    "emotion_score": 0,
+    "corruption": 0
+  },
+  "flags": [],
+  "memory_layers": [],
+  "active_layer": null,
+  "npc_fragments": {},
+  "inventory": [],
+  "lore": {},
   "turn": 0,
   "day": 1,
   "time": "dawn",
-  "turn_limit": 30,
-  "rng_seed": 12345,
-  "current_room": "lornhaven_wall",
+  "current_room": "entrance",
   "recent_events": [],
   "recent_motifs": [],
   "world_constraint_from_prev_turn": {
@@ -37,9 +50,5 @@
     "major_events_triggered": 0,
     "major_event_last_turn": null
   },
-  "npc_trust": {},
-  "status_effects": [],
-  "flags": [],
-  "items": {},
-  "recent_major_events": []
+  "npc_trust": {}
 }

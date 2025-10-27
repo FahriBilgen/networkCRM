@@ -6,7 +6,7 @@ import json
 import logging
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, Iterable, List, Optional
 
 from fortress_director.agents.base_agent import AgentError
 from fortress_director.agents.judge_agent import JudgeAgent
@@ -60,6 +60,7 @@ class RulesEngine:
         world_context: str,
         scene: str,
         player_choice: Dict[str, Any],
+        seed: Optional[int] = None,
     ) -> Dict[str, Any]:
         """Apply validated character events to the world state copy. Logs every step."""
         LOGGER.info("RulesEngine.process called.")
@@ -74,7 +75,9 @@ class RulesEngine:
         try:
             events = self._validate_tier_one(character_events)
             LOGGER.info("Tier one validation passed.")
-            self._validate_tier_two(events, world_context, scene, player_choice, state)
+            self._validate_tier_two(
+                events, world_context, scene, player_choice, state, seed
+            )
             LOGGER.info("Tier two validation passed.")
             new_state = deepcopy(state)
             applied_flags = set()
@@ -181,6 +184,7 @@ class RulesEngine:
         scene: str,
         player_choice: Dict[str, Any],
         state: Dict[str, Any] = None,
+        seed: Optional[int] = None,
     ) -> None:
         choice_summary: Dict[str, Any] = {}
         if isinstance(player_choice, dict):
@@ -210,7 +214,7 @@ class RulesEngine:
                 # Pass tolerance to JudgeAgent if supported
                 if hasattr(self.judge_agent, "tolerance"):
                     self.judge_agent.tolerance = self.tolerance
-                verdict = self.judge_agent.evaluate(judge_context)
+                verdict = self.judge_agent.evaluate(judge_context, seed=seed)
             except AgentError as exc:  # pragma: no cover - defensive
                 raise TierTwoValidationError(f"Judge call failed: {exc}") from exc
 
@@ -438,3 +442,61 @@ class RulesEngine:
             relationship_summary = "; ".join(summaries)
             state["relationship_summary"] = relationship_summary
             LOGGER.info("Relationship summary updated: %s", relationship_summary)
+
+    def apply_environmental_effects(
+        self, state: Dict[str, Any], seed: Optional[int] = None
+    ) -> None:
+        """Apply deterministic environmental effects like weather and NPC drift."""
+        import random
+
+        rng = random.Random(seed) if seed is not None else random.Random()
+
+        weather = state.get("weather", {})
+        if weather.get("type") == "rain":
+            # Apply wetness to items
+            items = state.get("items", {})
+            for item_id, item in items.items():
+                wetness = item.get("wetness", 0.0)
+                wetness += rng.uniform(0.1, 0.3)  # Deterministic increase
+                item["wetness"] = min(wetness, 1.0)
+                durability = item.get("durability", 1.0)
+                if wetness > 0.5 and durability > 0.1:
+                    durability -= rng.uniform(0.01, 0.05)
+                    item["durability"] = max(durability, 0.0)
+                item["last_soaked_turn"] = state.get("turn", 0)
+
+            # Update NPC memory and mood
+            npc_memory = state.get("npc_memory", {})
+            for npc_id, memory in npc_memory.items():
+                memory["last_seen_weather"] = weather
+                recent_events = memory.get("recent_events", [])
+                recent_events.append(
+                    {"turn": state.get("turn", 0), "desc": "Rain affected the area"}
+                )
+                memory["recent_events"] = recent_events[-5:]  # Keep last 5
+                mood = memory.get("mood", {})
+                morale_delta = mood.get("morale_delta", 0.0)
+                morale_delta -= rng.uniform(0.1, 0.5)  # Rain lowers morale
+                mood["morale_delta"] = morale_delta
+                memory["mood"] = mood
+
+            # Update global metrics
+            metrics = state.get("metrics", {})
+            morale = metrics.get("morale", 0.0)
+            morale -= rng.uniform(1, 3)
+            metrics["morale"] = max(morale, -100)
+            supplies = metrics.get("supplies", 0.0)
+            supplies -= rng.uniform(0.5, 1.5)  # Rain affects supplies
+            metrics["supplies"] = max(supplies, 0)
+            state["metrics"] = metrics
+
+        # NPC drift: small random changes
+        npc_memory = state.get("npc_memory", {})
+        for npc_id, memory in npc_memory.items():
+            mood = memory.get("mood", {})
+            morale_delta = mood.get("morale_delta", 0.0)
+            morale_delta += rng.uniform(-0.2, 0.2)  # Small drift
+            mood["morale_delta"] = morale_delta
+            memory["mood"] = mood
+
+        LOGGER.info("Environmental effects applied with seed %s", seed)

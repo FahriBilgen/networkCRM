@@ -1,0 +1,93 @@
+{
+  "WORLD_CONTEXT": "Turn 5 | Day 1 | Time dawn\nLocation: entrance\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall.\nInventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Dawn'thin rain, heavy clouds hang\", \"sensory_details\": \"Cool mist clings to stone drums beat steady rhythm\"}\nRecent events: The Shieldbearer, standing watch at the entrance, notices your approach. Her eyes flicker to the damp battlements and distant drums. As you draw near, she speaks in a weary voice.; The Shieldbearer, her eyes weary and focused, speaks to you as the drums echo in the distance. 'I've been standing here for hours, watching the clouds roll in.', she says, glancing up at the sky.; The Shieldbearer, her eyes weary and focused, speaks to you as the drums echo in the distance. 'I've been standing here for hours, watching the clouds roll in.', she says, glancing up at the sky.\nRecent motifs: none\nRecent major events: none\nRelationship summary: Rhea trusts the player; Boris weighs every trade.\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating.\nMetrics: {\"order\": 50, \"morale\": 50, \"resources\": 40, \"knowledge\": 45, \"corruption\": 10, \"glitch\": 22, \"risk_applied_total\": 0, \"major_flag_set\": false, \"major_events_triggered\": 0, \"major_event_last_turn\": null}",
+  "scene": "The Shieldbearer, her eyes weary and focused, continues to watch the heavy clouds roll in. As you approach, she glances at you, her gaze momentarily breaking from the distant drums.",
+  "options": [
+    {
+      "id": "ask_about_drums",
+      "text": "Ask the Shieldbearer about the drums you hear in the distance.",
+      "action_type": "dialog"
+    },
+    {
+      "id": "offer_assistance",
+      "text": "Offer to take over her watch for a while, allowing her some rest.",
+      "action_type": "dialog"
+    },
+    {
+      "id": "investigate_drums",
+      "text": "Investigate the source of the drums in the distance.",
+      "action_type": "exploration"
+    }
+  ],
+  "world": {
+    "atmosphere": "Dawn'thin rain, heavy clouds hang",
+    "sensory_details": "Cool mist clings to stone drums beat steady rhythm"
+  },
+  "event": {
+    "scene": "The Shieldbearer, her eyes weary and focused, continues to watch the heavy clouds roll in. As you approach, she glances at you, her gaze momentarily breaking from the distant drums.",
+    "options": [
+      {
+        "id": "ask_about_drums",
+        "text": "Ask the Shieldbearer about the drums you hear in the distance.",
+        "action_type": "dialog"
+      },
+      {
+        "id": "offer_assistance",
+        "text": "Offer to take over her watch for a while, allowing her some rest.",
+        "action_type": "dialog"
+      },
+      {
+        "id": "investigate_drums",
+        "text": "Investigate the source of the drums in the distance.",
+        "action_type": "exploration"
+      }
+    ],
+    "major_event": false,
+    "safe_functions": []
+  },
+  "player_choice": {
+    "id": "ask_about_drums",
+    "text": "Ask the Shieldbearer about the drums you hear in the distance.",
+    "action_type": "dialog"
+  },
+  "character_reactions": [
+    {
+      "name": "Shieldbearer",
+      "intent": "vigilance",
+      "action": "stand_vigilance",
+      "speech": "I stand vigilant, my eyes scanning the sky for any sign of movement.",
+      "effects": {
+        "trust_delta": 0
+      }
+    }
+  ],
+  "safe_function_results": [],
+  "metrics_after": {
+    "order": 50,
+    "morale": 50,
+    "resources": 40,
+    "knowledge": 45,
+    "corruption": 10,
+    "glitch": 22,
+    "risk_applied_total": 0,
+    "major_flag_set": false,
+    "major_events_triggered": 0,
+    "major_event_last_turn": null
+  },
+  "glitch": {
+    "roll": 0,
+    "effects": []
+  },
+  "logs": [
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 22,
+      "cause": "turn_recovery"
+    }
+  ],
+  "win_loss": {
+    "status": "ongoing",
+    "reason": "thresholds_not_met"
+  },
+  "narrative": "Turn 6 | Ask the Shieldbearer about the drums you hear in the distance. | I stand vigilant, my eyes scanning the sky for any sign of movement."
+}

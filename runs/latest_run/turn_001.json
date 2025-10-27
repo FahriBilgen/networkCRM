@@ -1,0 +1,95 @@
+{
+  "WORLD_CONTEXT": "Turn 2 | Day 1 | Time dawn\nLocation: entrance\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall.\nInventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Dawn'thin light over damp, battlemented walls\", \"sensory_details\": \"Cool air with rain scent and gritty wind distant drums echoing promise\"}\nRecent events: The Shieldbearer stands watch at the entrance, her oil lamp casting flickering shadows on the stone walls. The low clouds hang heavy over the battlements, and the wind carries grit as drums thud beyon...; The Shieldbearer, standing watch at the entrance, notices your approach. Her eyes flicker to the damp battlements and distant drums.\nRecent motifs: none\nRecent major events: none\nRelationship summary: Rhea trusts the player; Boris weighs every trade.\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating.\nMetrics: {\"order\": 50, \"morale\": 50, \"resources\": 40, \"knowledge\": 45, \"corruption\": 10, \"glitch\": 25, \"risk_applied_total\": 0, \"major_flag_set\": false, \"major_events_triggered\": 0, \"major_event_last_turn\": null}",
+  "scene": "The Shieldbearer, standing watch at the entrance, notices your approach. Her eyes flicker to the damp battlements and distant drums. As you draw near, she speaks in a weary voice.",
+  "options": [
+    {
+      "id": "ask_about_duty",
+      "text": "Ask the Shieldbearer about her duties.",
+      "action_type": "dialog"
+    },
+    {
+      "id": "offer_help",
+      "text": "Offer to help with the watch.",
+      "action_type": "dialog"
+    },
+    {
+      "id": "inquire_about_drums",
+      "text": "Ask about the distant drums.",
+      "action_type": "dialog"
+    }
+  ],
+  "world": {
+    "atmosphere": "Dawn's light filters through rain clouds",
+    "sensory_details": "Cool mist clings to stone, drums beat a steady rhythm"
+  },
+  "event": {
+    "scene": "The Shieldbearer, standing watch at the entrance, notices your approach. Her eyes flicker to the damp battlements and distant drums. As you draw near, she speaks in a weary voice.",
+    "options": [
+      {
+        "id": "ask_about_duty",
+        "text": "Ask the Shieldbearer about her duties.",
+        "action_type": "dialog"
+      },
+      {
+        "id": "offer_help",
+        "text": "Offer to help with the watch.",
+        "action_type": "dialog"
+      },
+      {
+        "id": "inquire_about_drums",
+        "text": "Ask about the distant drums.",
+        "action_type": "dialog"
+      }
+    ],
+    "major_event": false,
+    "safe_functions": []
+  },
+  "player_choice": {
+    "id": "ask_about_duty",
+    "text": "Ask the Shieldbearer about her duties.",
+    "action_type": "dialog"
+  },
+  "character_reactions": [
+    {
+      "name": "Shieldbearer",
+      "intent": "vigilance",
+      "action": "stand_watch",
+      "speech": "I stand vigilant, my senses alert to any sign of danger. The storm rages on, a symphony of rain and wind.",
+      "effects": {
+        "flag_set": [
+          "atmosphere"
+        ]
+      }
+    }
+  ],
+  "safe_function_results": [],
+  "metrics_after": {
+    "order": 50,
+    "morale": 50,
+    "resources": 40,
+    "knowledge": 45,
+    "corruption": 10,
+    "glitch": 25,
+    "risk_applied_total": 0,
+    "major_flag_set": false,
+    "major_events_triggered": 0,
+    "major_event_last_turn": null
+  },
+  "glitch": {
+    "roll": 0,
+    "effects": []
+  },
+  "logs": [
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 25,
+      "cause": "turn_recovery"
+    }
+  ],
+  "win_loss": {
+    "status": "ongoing",
+    "reason": "thresholds_not_met"
+  },
+  "narrative": "Turn 3 | Ask the Shieldbearer about her duties. | I stand vigilant, my senses alert to any sign of danger. The storm rages on, a symphony of rain and wind."
+}

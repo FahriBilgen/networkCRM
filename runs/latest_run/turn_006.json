@@ -1,0 +1,95 @@
+{
+  "WORLD_CONTEXT": "Turn 7 | Day 1 | Time dawn\nLocation: entrance\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall.\nInventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Dawn'thin rain, heavy clouds hang\", \"sensory_details\": \"Cool mist clings to stone drums beat steady rhythm\"}\nRecent events: The Shieldbearer, her eyes weary and focused, speaks to you as the drums echo in the distance. 'I've been standing here for hours, watching the clouds roll in.', she says, glancing up at the sky.; The Shieldbearer, her eyes weary and focused, continues to watch the heavy clouds roll in. As you approach, she glances at you, her gaze momentarily breaking from the distant drums.; The Shieldbearer, her eyes still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her ...\nRecent motifs: none\nRecent major events: none\nRelationship summary: Shieldbearer is neutral toward the player\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating.\nMetrics: {\"order\": 50, \"morale\": 50, \"resources\": 40, \"knowledge\": 45, \"corruption\": 10, \"glitch\": 20, \"risk_applied_total\": 0, \"major_flag_set\": false, \"major_events_triggered\": 0, \"major_event_last_turn\": null}",
+  "scene": "The Shieldbearer, her eyes still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her voice. As you speak to her, the cool mist clings to your clothes and the steady rhythm of the drums echoes through the entrance.",
+  "options": [
+    {
+      "id": "1",
+      "text": "Ask the Shieldbearer if she needs assistance.",
+      "action_type": "dialog"
+    },
+    {
+      "id": "2",
+      "text": "Offer her a drink from your water flask.",
+      "action_type": "item_use"
+    },
+    {
+      "id": "3",
+      "text": "Inquire about the drums you've been hearing.",
+      "action_type": "dialog"
+    }
+  ],
+  "world": {
+    "atmosphere": "Dawn'thin rain, heavy clouds hang",
+    "sensory_details": "Cool mist clings to stone drums beat steady rhythm"
+  },
+  "event": {
+    "scene": "The Shieldbearer, her eyes still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her voice. As you speak to her, the cool mist clings to your clothes and the steady rhythm of the drums echoes through the entrance.",
+    "options": [
+      {
+        "id": "1",
+        "text": "Ask the Shieldbearer if she needs assistance.",
+        "action_type": "dialog"
+      },
+      {
+        "id": "2",
+        "text": "Offer her a drink from your water flask.",
+        "action_type": "item_use"
+      },
+      {
+        "id": "3",
+        "text": "Inquire about the drums you've been hearing.",
+        "action_type": "dialog"
+      }
+    ],
+    "major_event": false,
+    "safe_functions": []
+  },
+  "player_choice": {
+    "id": "1",
+    "text": "Ask the Shieldbearer if she needs assistance.",
+    "action_type": "dialog"
+  },
+  "character_reactions": [
+    {
+      "name": "Shieldbearer",
+      "intent": "vigilance",
+      "action": "stand_watch",
+      "speech": "I've been standing here for hours, watching the clouds roll in.",
+      "effects": {
+        "flag_set": [
+          "Dawn'thin Rain"
+        ]
+      }
+    }
+  ],
+  "safe_function_results": [],
+  "metrics_after": {
+    "order": 50,
+    "morale": 50,
+    "resources": 40,
+    "knowledge": 45,
+    "corruption": 10,
+    "glitch": 20,
+    "risk_applied_total": 0,
+    "major_flag_set": false,
+    "major_events_triggered": 0,
+    "major_event_last_turn": null
+  },
+  "glitch": {
+    "roll": 0,
+    "effects": []
+  },
+  "logs": [
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 20,
+      "cause": "turn_recovery"
+    }
+  ],
+  "win_loss": {
+    "status": "ongoing",
+    "reason": "thresholds_not_met"
+  },
+  "narrative": "Turn 8 | Ask the Shieldbearer if she needs assistance. | I've been standing here for hours, watching the clouds roll in."
+}

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import ast
 import json
 import logging
@@ -245,6 +243,7 @@ class Orchestrator:
     function_registry: SafeFunctionRegistry
     function_validator: FunctionCallValidator
     rollback_system: RollbackSystem
+    runs_dir: Path
 
     @classmethod
     def build_default(cls) -> "Orchestrator":
@@ -264,6 +263,8 @@ class Orchestrator:
             max_checkpoints=3,
             logger=LOGGER,
         )
+        runs_dir = Path("runs") / "latest_run"
+        runs_dir.mkdir(parents=True, exist_ok=True)
         orchestrator = cls(
             state_store=state_store,
             event_agent=EventAgent(),
@@ -274,6 +275,7 @@ class Orchestrator:
             function_registry=registry,
             function_validator=validator,
             rollback_system=rollback_system,
+            runs_dir=runs_dir,
         )
         orchestrator._register_default_safe_functions()
         return orchestrator
@@ -611,6 +613,7 @@ class Orchestrator:
                     world_context=world_context,
                     scene=event_output.get("scene", ""),
                     player_choice=chosen_option,
+                    seed=rng_seed,
                 )
                 LOGGER.info(
                     "Rules engine accepted updates (turn=%s)",
@@ -653,6 +656,8 @@ class Orchestrator:
             )
             # Tick status effects
             self.rules_engine.tick_status_effects(state)
+            # Apply environmental effects
+            self.rules_engine.apply_environmental_effects(state, seed=rng_seed)
             LOGGER.debug(
                 "State after update: %s",
                 self._stringify(state),
@@ -730,8 +735,7 @@ class Orchestrator:
                 result["major_event_effect_summary"] = major_event_summary
             if warnings:
                 result["warnings"] = warnings
-            if safe_function_results:
-                result["safe_function_results"] = safe_function_results
+            result["safe_function_results"] = safe_function_results
             result["metrics_after"] = metrics_after
             result["glitch"] = {
                 "roll": int(glitch_info.get("roll", 0)),
@@ -785,12 +789,51 @@ class Orchestrator:
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Any:
         """Execute a safe function with validation and rollback support."""
+        import time
 
-        return self.rollback_system.run_validated_call(
-            self.function_validator,
-            payload,
-            metadata=metadata,
-        )
+        timestamp = int(time.time() * 1000)
+        turn_index = self.state_store._state.get("turn", 0)
+        caller = metadata.get("source", "unknown") if metadata else "unknown"
+        applied = False
+        validator_verdict = "pending"
+        reasons = []
+        result_diff = None
+        try:
+            outcome = self.rollback_system.run_validated_call(
+                self.function_validator,
+                payload,
+                metadata=metadata,
+            )
+            applied = True
+            validator_verdict = "approved"
+            result_diff = outcome  # Simplified diff
+        except Exception as exc:
+            validator_verdict = "rejected"
+            reasons = [str(exc)]
+            raise
+        finally:
+            # Log to audit.jsonl
+            audit_entry = {
+                "timestamp": timestamp,
+                "turn_index": turn_index,
+                "caller": caller,
+                "safe_call": payload,
+                "validator_verdict": validator_verdict,
+                "reasons": reasons,
+                "applied": applied,
+            }
+            self._log_audit(audit_entry)
+            # Log to replay.jsonl if applied
+            if applied:
+                replay_entry = {
+                    "timestamp": timestamp,
+                    "turn_index": turn_index,
+                    "caller": caller,
+                    "safe_call": payload,
+                    "applied_result_diff": result_diff,
+                }
+                self._log_replay(replay_entry)
+        return outcome if applied else None
 
     def _register_default_safe_functions(self) -> None:
         """Register baseline safe functions used by the scenario."""
@@ -832,6 +875,18 @@ class Orchestrator:
             self._safe_move_room,
             validator=self._validate_move_room_call,
         )
+
+    def _log_audit(self, entry: Dict[str, Any]) -> None:
+        """Append audit entry to audit.jsonl."""
+        audit_file = self.runs_dir / "audit.jsonl"
+        with open(audit_file, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry) + "\n")
+
+    def _log_replay(self, entry: Dict[str, Any]) -> None:
+        """Append replay entry to replay.jsonl."""
+        replay_file = self.runs_dir / "replay.jsonl"
+        with open(replay_file, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry) + "\n")
 
     def _validate_change_weather_call(
         self,
