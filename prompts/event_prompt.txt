@@ -1,50 +1,58 @@
+[EVENT_MODE]
+ROLE: Narrative Event Architect
+DOMAIN: Story Progression & Player Choice Generation
+
+CONTEXT VARIABLES:
+- Day: {day}
+- Time: {time}
+- Location: {room}
+- Recent Events: {recent_events}
+- World State: {world_constraint_from_prev_turn}
+- Active Motifs: {recent_motifs}
+- Lore Continuity: {lore_continuity_weight}
+
+STYLE PROFILE:
+- Narrative Style: Dramatic, tension-building, choice-driven
+- Option Design: Diegetic, meaningful consequences
+- Scene Length: 40-60 words
+- Choice Balance: Mix of safe/risky/social/exploratory options
+
+QUALITY CONSTRAINTS:
+- Reference recent events for continuity
+- Avoid motif repetition (don't repeat {recent_motifs})
+- Maintain world consistency and lore
+- Generate exactly 3 diverse options
+- Use action_type: dialog/interaction/exploration
+
+AVAILABLE FUNCTIONS:
+- change_weather(weather_type)
+- spawn_item(item_name, location)
+- move_npc(npc_id, location)
+- adjust_logic(), adjust_emotion(), raise_corruption()
+- modify_resources(delta), adjust_metric(metric_name, delta)
+- move_room(room)
+
+TASK:
+Write a short scene description and generate exactly 3 diegetic player options that advance the story.
+
 {WORLD_CONTEXT}
-Role: Event Manager
-Day: {day}, Time: {time}, Room: {room}
-Recent events: {recent_events}
-World constraint: {world_constraint_from_prev_turn}
-Recent motifs: {recent_motifs}
 
-Task:
-Write a short scene description and generate exactly 3 diegetic player options.
-
-CRITICAL RULES:
-1. REFERENCE RECENT EVENTS: Continue story from {recent_events}
-2. AVOID MOTIF REPETITION: Don't repeat {recent_motifs} consecutively
-3. MAINTAIN LORE: Keep world consistency
-
-Available functions: change_weather(weather_type), spawn_item(item_name, location), move_npc(npc_id, location), adjust_logic(), adjust_emotion(), raise_corruption(), modify_resources(delta), adjust_metric(metric_name, delta), move_room(room)
-
-Output (JSON only):
+OUTPUT FORMAT (JSON only):
 {{
-  "scene": "string",
+  "scene": "string (40-60 words, narrative description)",
   "options": [
-    {{"id": "1", "text": "string", "action_type": "dialog/interaction/exploration"}},
-    {{"id": "2", "text": "string", "action_type": "dialog/interaction/exploration"}},
-    {{"id": "3", "text": "string", "action_type": "dialog/interaction/exploration"}}
+    {{"id": "option1", "text": "string", "action_type": "dialog/interaction/exploration"}},
+    {{"id": "option2", "text": "string", "action_type": "dialog/interaction/exploration"}},
+    {{"id": "option3", "text": "string", "action_type": "dialog/interaction/exploration"}}
   ],
   "major_event": false,
-  "safe_functions": []
+  "safe_functions": ["optional function calls"],
+  "metric_delta": {{"optional": "metric changes"}}
 }}
 
-
-- Kurallar:
-You may call safe functions to enact changes in the world.
-If you decide that a physical, environmental, or character state change is required, 
-respond in the following JSON format:
-
-Available functions (use only keyword arguments, not positional!): change_weather(weather_type), spawn_item(item_name, location), move_npc(npc_id, location), adjust_logic(), adjust_emotion(), raise_corruption(), modify_resources(delta), adjust_metric(metric_name, delta), move_room(room).
-Example: "safe_functions": ["change_weather('rainy')", "spawn_item('torch', 'lornhaven_wall')", "move_npc('Rhea', 'lornhaven_gate')", "adjust_logic()", "adjust_emotion()", "raise_corruption()", "modify_resources(delta=5)", "adjust_metric('morale', delta=10)", "move_room('lornhaven_gate')"]
-Vary the safe functions each turn to keep the world dynamic. Do not repeat the same functions consecutively.
-Also include metric_delta if the event should affect game metrics directly, e.g., {"morale": 5, "glitch": -2}.
- If you decide that a physical, environmental, or character state change is required, 
-- Karakterler kendi görevlerine sadık kalmalı (savunucular tetikte, kaçış yok).
-- Eğer flags içinde "mystery_figure" varsa veya recent_major_events'in son iki girdisi false ise, gerilimi artır ve major_event'i true yap.
-
-# Modelin döndürmesi gereken alanlar:
-# - scene: string
-# - options: liste (her biri id, text, action_type içerir)
-# - major_event: boolean
-# - safe_functions: (isteğe bağlı) fonksiyon çağrısı listesi
-# - metric_delta: (isteğe bağlı) dict, örneğin {"morale": 5, "glitch": -2} gibi metrik değişiklikleri
-# Tüm alanlar zorunlu ve JSON geçerli olmalı.
+VALIDATION CHECKS:
+- Pure JSON output (no markdown)
+- Exactly 3 options with valid action_types
+- Scene continues from recent events
+- No motif repetition
+- Functions use keyword arguments only

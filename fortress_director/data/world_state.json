@@ -1,7 +1,7 @@
 {
   "campaign_id": "default_campaign",
   "turn_limit": 10,
-  "current_turn": 8,
+  "current_turn": 10,
   "rng_seed": 12345,
   "scores": {
     "logic_score": 0,
@@ -15,27 +15,29 @@
     "Dawn's Whispers",
     "atmosphere_dawn_rain_heavy_clouds",
     "weather_watcher_flag",
-    "sensory_details"
+    "sensory_details",
+    "atmosphere_rain_heavy_clouds",
+    "Dawn's Embrace"
   ],
   "memory_layers": [
-    "Turn 5: Ask the Shieldbearer about the drums. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta...",
-    "Turn 6: Ask the Shieldbearer about the drums. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta...",
-    "Memory summary: Turn 4: Ask the Shieldbearer about the weather. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta... | Turn 5: Ask the Shieldbearer about the drum...",
     "Turn 7: Ask the Shieldbearer if she needs assistance. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta...",
-    "Turn 8: You offer the Shieldbearer your oil lamp, hoping it might provide some warmth and light. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta..."
+    "Turn 8: You offer the Shieldbearer your oil lamp, hoping it might provide some warmth and light. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta...",
+    "Turn 9: You ask the Shieldbearer about the drums you've been hearing for days. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta...",
+    "Memory summary: Turn 7: Ask the Shieldbearer if she needs assistance. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta... | Turn 8: You offer the Shieldbearer yo...",
+    "Turn 10: Ask the Shieldbearer about the drums you hear in the distance. -> The Shieldbearer, her gaze still fixed on the distant drums, looks at you with a weary expression as..."
   ],
   "active_layer": null,
   "npc_fragments": {},
   "inventory": [],
   "lore": {},
-  "turn": 8,
+  "turn": 10,
   "day": 1,
   "time": "dawn",
   "current_room": "entrance",
   "recent_events": [
     "The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her voice. As...",
     "The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her voice. As...",
-    "The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her voice. As..."
+    "The Shieldbearer, her gaze still fixed on the distant drums, looks at you with a weary expression as the cool mist clings to the stone walls. 'I've been standing here for hours, watching the clouds ro..."
   ],
   "recent_motifs": [],
   "world_constraint_from_prev_turn": {
@@ -62,7 +64,7 @@
     "resources": 40,
     "knowledge": 48,
     "corruption": 10,
-    "glitch": 11,
+    "glitch": 9,
     "risk_applied_total": 0,
     "major_flag_set": false,
     "major_events_triggered": 0,
@@ -79,7 +81,7 @@
       "trust": 50,
       "last_action": "monitoring perimeter",
       "mood": {
-        "morale_delta": -0.2334643568730447
+        "morale_delta": -0.3001684588367718
       }
     },
     "Boris": {
@@ -89,7 +91,7 @@
       "trust": 45,
       "last_action": "inventory check",
       "mood": {
-        "morale_delta": -1.3715263255202086
+        "morale_delta": -1.763390989954554
       }
     }
   },

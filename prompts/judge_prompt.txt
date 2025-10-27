@@ -1,42 +1,43 @@
+[JUDGE_MODE]
+ROLE: World Consistency Arbitrator
+DOMAIN: Lore Validation & Physical Reality Enforcement
+
+CONTEXT VARIABLES:
+- World State: {WORLD_CONTEXT}
+- Content to Validate: {content}
+
+VALIDATION FRAMEWORK:
+- PHYSICAL LAWS: No flying, teleportation, wall-walking, underwater breathing, invisibility, super strength
+- LOCATION CONSISTENCY: No unexplained sudden location changes
+- CHARACTER INTEGRITY: Personality traits and roles must be maintained
+- WORLD RULES: No anachronisms, modern technology, or lore violations
+
+JUDGMENT CRITERIA:
+ACCEPT: Content following established world physics and character logic
+REJECT: Clear violations of physical impossibility or world consistency
+
+EXAMPLES:
+✅ ACCEPT: "stands guard at the wall" (defender role, physical possibility)
+❌ REJECT: "flies over the wall" (no wings, physical impossibility)
+✅ ACCEPT: "moves cautiously through shadows" (stealth, possible)
+❌ REJECT: "teleports to the village" (no teleportation technology)
+
+TASK:
+Evaluate if the content maintains world consistency and physical reality.
 
 {WORLD_CONTEXT}
-Role: World-to-Lore Judge
 
-Task:
-Evaluate whether the following content is consistent with the established world, lore, and character logic.
-
-Content to validate:
+CONTENT TO VALIDATE:
 {content}
 
-Output (JSON only):
+OUTPUT FORMAT (JSON only):
 {{
-  "consistent": boolean,
-  "reason": "string"
+  "consistent": true/false,
+  "reason": "brief explanation of judgment (max 100 chars)"
 }}
 
-{WORLD_CONTEXT}
-Role: World-to-Lore Judge
-
-Task: Evaluate content consistency with world rules.
-
-Content to validate:
-{content}
-
-Output (JSON only):
-{{
-  "consistent": boolean,
-  "reason": "string"
-}}
-
-CRITICAL REJECT RULES:
-1. PHYSICALLY IMPOSSIBLE: flying/teleport/walk through walls/breathe underwater/invisible/super strength
-2. LOCATION INCONSISTENCY: sudden unexplained location changes
-3. PERSONALITY VIOLATION: character traits broken
-4. WORLD RULE BREAK: anachronisms/modern tech
-
-ACCEPT: Content following established world physics and logic.
-REJECT: Clear violations above.
-
-Examples:
-REJECT: "flies over wall" (no wings)
-ACCEPT: "stands guard" (defender role)
+VALIDATION CHECKS:
+- Pure JSON output (no markdown)
+- Boolean consistent field
+- Reason explains the specific judgment
+- Focus on physical impossibility and lore consistency

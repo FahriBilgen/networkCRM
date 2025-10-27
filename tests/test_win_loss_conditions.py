@@ -1,77 +1,83 @@
-"""Test for long game runs and win/loss conditions."""
+"""Test for long game runs and win/loss conditions with real AI."""
 
 import pytest
+import os
 from fortress_director.rules.rules_engine import RulesEngine
-
-
-class MockJudge:
-    """Mock judge agent for testing."""
-
-    def evaluate(self, variables):
-        return {"consistent": True, "reason": "Mock response"}
+from fortress_director.agents.judge_agent import JudgeAgent
 
 
 @pytest.fixture
-def rules_engine():
-    """Create rules engine for testing."""
-    judge = MockJudge()
-    return RulesEngine(judge_agent=judge, tolerance=1)
+def real_judge_agent():
+    """Create real judge agent for testing."""
+    return JudgeAgent()
 
 
-def test_win_loss_conditions(rules_engine):
-    """Test all win/loss conditions work correctly."""
+@pytest.fixture
+def rules_engine(real_judge_agent):
+    """Create rules engine with real judge agent."""
+    return RulesEngine(judge_agent=real_judge_agent, tolerance=1)
+
+
+@pytest.mark.integration
+def test_win_loss_conditions_real_ai(rules_engine):
+    """Test all win/loss conditions work correctly with real AI judge."""
+    if os.environ.get("FORTRESS_USE_OLLAMA") != "1":
+        pytest.skip("Skipping real AI test; set FORTRESS_USE_OLLAMA=1 to run")
 
     # Victory: survived 15+ turns with high morale and order
     state = {"metrics": {"morale": 65, "order": 75}}
     result = rules_engine.evaluate_win_loss(state, 16)
-    assert result["status"] == "victory"
+    assert result["status"] == "win"
     assert result["reason"] == "survived_15_turns_high_morale"
 
     # Victory: perfect harmony
     state = {"metrics": {"morale": 85, "corruption": 3}}
     result = rules_engine.evaluate_win_loss(state, 5)
-    assert result["status"] == "victory"
+    assert result["status"] == "win"
     assert result["reason"] == "perfect_harmony"
 
     # Defeat: morale crash
     state = {"metrics": {"morale": 5}}
     result = rules_engine.evaluate_win_loss(state, 5)
-    assert result["status"] == "defeat"
+    assert result["status"] == "loss"
     assert result["reason"] == "morale_crash"
 
     # Defeat: resources depleted
     state = {"metrics": {"resources": 3}}
     result = rules_engine.evaluate_win_loss(state, 5)
-    assert result["status"] == "defeat"
+    assert result["status"] == "loss"
     assert result["reason"] == "resources_depleted"
 
     # Defeat: chaos overwhelms
     state = {"metrics": {"order": 15}}
     result = rules_engine.evaluate_win_loss(state, 5)
-    assert result["status"] == "defeat"
+    assert result["status"] == "loss"
     assert result["reason"] == "chaos_overwhelms"
 
     # Defeat: system glitch
     state = {"metrics": {"glitch": 85}}
     result = rules_engine.evaluate_win_loss(state, 5)
-    assert result["status"] == "defeat"
+    assert result["status"] == "loss"
     assert result["reason"] == "system_glitch"
 
     # Defeat: turn limit exceeded
     state = {"metrics": {"morale": 50}}
     result = rules_engine.evaluate_win_loss(state, 21)
-    assert result["status"] == "defeat"
+    assert result["status"] == "loss"
     assert result["reason"] == "turn_limit_exceeded"
 
     # Defeat: major events overwhelm
     state = {"metrics": {"morale": 25, "major_events_triggered": 4}}
     result = rules_engine.evaluate_win_loss(state, 5)
-    assert result["status"] == "defeat"
+    assert result["status"] == "loss"
     assert result["reason"] == "major_events_overwhelm"
 
 
-def test_game_progression_simulation(rules_engine):
-    """Simulate a game that eventually leads to victory or defeat."""
+@pytest.mark.integration
+def test_game_progression_simulation_real_ai(rules_engine):
+    """Simulate game progression with real AI judge."""
+    if os.environ.get("FORTRESS_USE_OLLAMA") != "1":
+        pytest.skip("Skipping real AI test; set FORTRESS_USE_OLLAMA=1 to run")
 
     # Start with neutral state
     base_state = {
@@ -99,21 +105,24 @@ def test_game_progression_simulation(rules_engine):
             assert result["status"] == "ongoing"
         else:
             # At turn 20, should be defeat due to turn limit
-            assert result["status"] == "defeat"
+            assert result["status"] == "loss"
             assert result["reason"] == "turn_limit_exceeded"
 
 
-def test_early_victory_conditions(rules_engine):
-    """Test that victory can be achieved before turn limit."""
+@pytest.mark.integration
+def test_early_victory_conditions_real_ai(rules_engine):
+    """Test that victory can be achieved before turn limit with real AI."""
+    if os.environ.get("FORTRESS_USE_OLLAMA") != "1":
+        pytest.skip("Skipping real AI test; set FORTRESS_USE_OLLAMA=1 to run")
 
     # Perfect harmony victory
     state = {"metrics": {"morale": 85, "corruption": 3}}
     result = rules_engine.evaluate_win_loss(state, 3)
-    assert result["status"] == "victory"
+    assert result["status"] == "win"
     assert result["reason"] == "perfect_harmony"
 
     # Survival victory
     state = {"metrics": {"morale": 65, "order": 75}}
     result = rules_engine.evaluate_win_loss(state, 16)
-    assert result["status"] == "victory"
+    assert result["status"] == "win"
     assert result["reason"] == "survived_15_turns_high_morale"

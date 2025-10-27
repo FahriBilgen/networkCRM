@@ -833,3 +833,4 @@ Metrics: {"order": 50, "morale": 50, "resources": 40, "knowledge": 45, "corrupti
 2025-10-28 00:11:02,873 [DEBUG] root: Logging configured (console=INFO, file=DEBUG, path=C:\Users\Fahri\OneDrive\Masaüstü\oyun\logs\fortress_run.log)
 2025-10-28 00:16:56,826 [DEBUG] root: Logging configured (console=INFO, file=DEBUG, path=C:\Users\Fahri\OneDrive\Masaüstü\oyun\logs\fortress_run.log)
 2025-10-28 00:20:35,703 [DEBUG] root: Logging configured (console=INFO, file=DEBUG, path=C:\Users\Fahri\OneDrive\Masaüstü\oyun\logs\fortress_run.log)
+2025-10-28 00:35:39,269 [DEBUG] root: Logging configured (console=INFO, file=DEBUG, path=C:\Users\Fahri\OneDrive\Masaüstü\oyun\logs\fortress_run.log)

@@ -511,7 +511,7 @@ class RulesEngine:
             turn_number: Current turn number
 
         Returns:
-            Dict with 'status' ('ongoing', 'victory', 'defeat') and 'reason'
+            Dict with 'status' ('ongoing', 'win', 'loss') and 'reason'
         """
         metrics = state.get("metrics", {})
 
@@ -525,14 +525,14 @@ class RulesEngine:
         # Victory conditions
         if turn_number >= 15 and morale >= 60 and order >= 70:
             return {
-                "status": "victory",
+                "status": "win",
                 "reason": "survived_15_turns_high_morale",
                 "description": "15 tur savunma başarısı!",
             }
 
         if morale >= 80 and corruption <= 5:
             return {
-                "status": "victory",
+                "status": "win",
                 "reason": "perfect_harmony",
                 "description": "Mükemmel uyum!",
             }
@@ -540,35 +540,35 @@ class RulesEngine:
         # Defeat conditions
         if morale <= 10:
             return {
-                "status": "defeat",
+                "status": "loss",
                 "reason": "morale_crash",
                 "description": "Moral çöktü!",
             }
 
         if resources <= 5:
             return {
-                "status": "defeat",
+                "status": "loss",
                 "reason": "resources_depleted",
                 "description": "Kaynaklar tükendi!",
             }
 
         if order <= 20:
             return {
-                "status": "defeat",
+                "status": "loss",
                 "reason": "chaos_overwhelms",
                 "description": "Kaos hakim!",
             }
 
         if glitch >= 80:
             return {
-                "status": "defeat",
+                "status": "loss",
                 "reason": "system_glitch",
                 "description": "Sistem hatası!",
             }
 
         if turn_number >= 20:
             return {
-                "status": "defeat",
+                "status": "loss",
                 "reason": "turn_limit_exceeded",
                 "description": "20 tur limit aşıldı!",
             }
@@ -577,7 +577,7 @@ class RulesEngine:
         major_events = metrics.get("major_events_triggered", 0)
         if major_events >= 3 and morale <= 30:
             return {
-                "status": "defeat",
+                "status": "loss",
                 "reason": "major_events_overwhelm",
                 "description": "Çok fazla olay!",
             }

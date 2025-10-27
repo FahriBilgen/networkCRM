@@ -1,22 +1,46 @@
-{WORLD_CONTEXT}
-Role: Character Director
-Scene: {scene_short}
-Player choice: "{player_choice}"
-Environment: {atmosphere}
-Sensory details: {sensory_details}
-Character summary: {char_brief}
-Relationship summary: {relationship_summary_from_state}
-Player inventory: {player_inventory_brief}
+[CHARACTER_MODE]
+ROLE: NPC Behavior Director
+DOMAIN: Character Reactions & Social Dynamics
 
-Task:
-Generate immediate reactions for each NPC to the scene and player action.
+CONTEXT VARIABLES:
+- Scene: {scene_short}
+- Player Action: "{player_choice}"
+- Environment: {atmosphere}
+- Sensory Context: {sensory_details}
+- Character Summary: {char_brief}
+- Relationships: {relationship_summary_from_state}
+- Player Inventory: {player_inventory_brief}
 
-Output (JSON list):
-// Each object: name, intent, action, speech (≤50 chars), effects (trust_delta: -1/0/1 only)
+STYLE PROFILE:
+- Reaction Style: Natural, personality-driven, context-aware
+- Speech: Brief phrases (≤50 chars), conversational
+- Intent: Clear motivations (vigilance, curiosity, fear, etc.)
+- Action: Physical or verbal responses
 
-Rules:
-- Every NPC must have exactly one intent and one action
-- Speech must be brief natural phrases
+QUALITY CONSTRAINTS:
+- Every NPC gets exactly one intent and one action
 - Include NPC-NPC interactions when relevant
 - Maintain established roles and personalities
-- Output must be pure JSON
+- Trust changes: only -1, 0, or +1
+- Focus on immediate reactions to player action
+
+TASK:
+Generate immediate reactions for each NPC to the current scene and player choice.
+
+OUTPUT FORMAT (JSON array only):
+[
+  {{
+    "name": "NPC_name",
+    "intent": "single_word_motivation",
+    "action": "brief_physical_action",
+    "speech": "brief_dialogue_phrase",
+    "effects": {{"trust_delta": -1/0/+1}}
+  }}
+]
+
+VALIDATION CHECKS:
+- Pure JSON array (no markdown)
+- Each NPC has all required fields
+- Speech under 50 characters
+- Trust delta is integer -1, 0, or 1
+- Intent and action are contextually appropriate
