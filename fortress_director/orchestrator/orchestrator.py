@@ -442,6 +442,15 @@ class Orchestrator:
                 "Metrics after glitch recovery: %s",
                 metric_manager.snapshot(),
             )
+            LOGGER.info(
+                "Glitch resolution outcome: roll=%s, triggered_loss=%s",
+                glitch_info.get("roll"),
+                glitch_info.get("triggered_loss"),
+            )
+            LOGGER.debug(
+                "Metrics after glitch resolution: %s",
+                metric_manager.snapshot(),
+            )
 
             is_final_turn = current_turn >= turn_limit
             world_context = self._build_world_context(state_snapshot)

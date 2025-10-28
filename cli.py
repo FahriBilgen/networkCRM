@@ -108,7 +108,7 @@ def _handle_run(args: argparse.Namespace) -> None:
         win_loss = result.get("win_loss", {})
         if win_loss.get("status") != "ongoing":
             sys.stdout.write(
-                f"Game ended: {win_loss.get('status')} - {win_loss.get('reason', '')}\n"
+                f"Game ended: {win_loss.get("status")} - {win_loss.get("reason", "")}\n"
             )
             break
         reactions = result.get("character_reactions", [])
