@@ -825,6 +825,52 @@ class Orchestrator:
                 "roll": int(glitch_info.get("roll", 0)),
                 "effects": list(glitch_info.get("effects", [])),
             }
+            # Provide structured helper fields for UI consumption to avoid fragile parsing
+            # Build a structured `npcs` list if not already present in the state
+            try:
+                npcs = final_state.get("npcs")
+                if not npcs:
+                    npcs = []
+                    npc_fragments = final_state.get("npc_fragments", {}) or {}
+                    npc_locations = final_state.get("npc_locations", {}) or {}
+                    if isinstance(npc_fragments, dict) and npc_fragments:
+                        for name, frag in npc_fragments.items():
+                            npcs.append(
+                                {
+                                    "name": name,
+                                    "description": frag.get("description", ""),
+                                    "location": npc_locations.get(
+                                        name, final_state.get("current_room", "Unknown")
+                                    ),
+                                }
+                            )
+                    else:
+                        # Fallback: parse character_summary into simple name/description entries
+                        character_summary = (
+                            final_state.get("character_summary", "") or ""
+                        )
+                        for entry in [
+                            e.strip() for e in character_summary.split(";") if e.strip()
+                        ]:
+                            parts = entry.split()
+                            name = parts[0] if parts else "Unknown"
+                            description = " ".join(parts[1:]) if len(parts) > 1 else ""
+                            npcs.append(
+                                {
+                                    "name": name,
+                                    "description": description,
+                                    "location": final_state.get(
+                                        "current_room", "Unknown"
+                                    ),
+                                }
+                            )
+                result["npcs"] = npcs
+            except Exception:
+                result["npcs"] = []
+
+            # Expose safe function call history and recent room/event history for the UI
+            result["safe_function_history"] = safe_function_results
+            result["room_history"] = list(final_state.get("recent_events", []))[-5:]
             result["logs"] = list(self._metric_log_buffer)
             result["win_loss"] = win_loss
             result["narrative"] = narrative

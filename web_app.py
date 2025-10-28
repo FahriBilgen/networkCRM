@@ -192,32 +192,31 @@ def display_metrics_sidebar(result: Dict[str, Any]):
 def display_npc_sidebar(result: Dict[str, Any]):
     """Display NPC information in the sidebar."""
     st.sidebar.markdown("## NPCs")
-
-    # Get NPC locations from state
-    orchestrator = st.session_state.orchestrator
-    state = orchestrator.state_store.snapshot()
-
-    npc_locations = state.get("npc_locations", {})
-    character_summary = state.get("character_summary", "")
-
-    # Parse character summary for NPC info
-    npcs = []
-    if character_summary:
-        entries = [e.strip() for e in character_summary.split(";") if e.strip()]
-        for entry in entries:
-            if " " in entry:
-                name = entry.split(" ")[0] + " " + entry.split(" ")[1]
-                description = " ".join(entry.split(" ")[2:])
-                location = npc_locations.get(name, "Unknown")
+    # Prefer structured NPC data from the turn result (added by orchestrator). Fallback
+    # to state snapshot only if structured data is not available.
+    npcs = result.get("npcs")
+    if not npcs:
+        orchestrator = st.session_state.orchestrator
+        state = orchestrator.state_store.snapshot()
+        npc_locations = state.get("npc_locations", {})
+        character_summary = state.get("character_summary", "")
+        npcs = []
+        if character_summary:
+            entries = [e.strip() for e in character_summary.split(";") if e.strip()]
+            for entry in entries:
+                parts = entry.split()
+                name = parts[0] if parts else "Unknown"
+                description = " ".join(parts[1:]) if len(parts) > 1 else ""
+                location = npc_locations.get(name, state.get("current_room", "Unknown"))
                 npcs.append(
                     {"name": name, "description": description, "location": location}
                 )
 
     if npcs:
         for npc in npcs:
-            with st.sidebar.expander(f"{npc['name']}", expanded=False):
-                st.write(f"**Location:** {npc['location']}")
-                st.write(f"**Description:** {npc['description']}")
+            with st.sidebar.expander(f"{npc.get('name', 'Unknown')}", expanded=False):
+                st.write(f"**Location:** {npc.get('location', 'Unknown')}")
+                st.write(f"**Description:** {npc.get('description', '')}")
     else:
         st.sidebar.write("No NPC information available")
 
@@ -307,7 +306,10 @@ def display_functions_sidebar(result: Dict[str, Any]):
     """Display safe function calls in the sidebar."""
     st.sidebar.markdown("## AI Actions")
 
-    safe_functions = result.get("safe_function_results", [])
+    # Prefer the structured safe function history if provided by the orchestrator
+    safe_functions = result.get("safe_function_history") or result.get(
+        "safe_function_results", []
+    )
 
     if safe_functions:
         for func_result in safe_functions[-3:]:  # Show last 3
@@ -367,8 +369,8 @@ def display_map_sidebar(result: Dict[str, Any]):
     st.sidebar.write(f"**Day:** {day}")
     st.sidebar.write(f"**Time:** {time}")
 
-    # Show recent rooms if available
-    recent_events = state.get("recent_events", [])
+    # Show recent rooms if available (prefer turn-level room_history)
+    recent_events = result.get("room_history") or state.get("recent_events", [])
     if recent_events:
         st.sidebar.markdown("**Recent Locations:**")
         for event in recent_events[-2:]:  # Show last 2
