@@ -876,6 +876,25 @@ class Orchestrator:
             result["narrative"] = narrative
             if win_loss["status"] != "ongoing":
                 result["options"] = []
+            # Persist structured helper fields into final_state so the UI and
+            # any external tools can read canonical `npcs`, `safe_function_history`
+            # and `room_history` directly from the persisted state.
+            try:
+                # write structured fields into final_state
+                final_state["npcs"] = result.get("npcs", final_state.get("npcs", []))
+                final_state["safe_function_history"] = result.get(
+                    "safe_function_history",
+                    final_state.get("safe_function_history", []),
+                )
+                final_state["room_history"] = result.get(
+                    "room_history", list(final_state.get("recent_events", []))[-5:]
+                )
+                # Persist final_state to disk so UI clients reading the world_state
+                # file see the structured fields immediately.
+                self.state_store.persist(final_state)
+            except Exception:
+                LOGGER.exception("Failed to persist structured helper fields to state")
+
             LOGGER.debug(
                 "Turn result before validation: %s",
                 self._stringify(result),
