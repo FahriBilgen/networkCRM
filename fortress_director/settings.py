@@ -38,7 +38,7 @@ class Settings:
 
 DEFAULT_WORLD_STATE = {
     "campaign_id": "default_campaign",
-    "turn_limit": 10,
+    "turn_limit": 30,
     "current_turn": 0,
     "rng_seed": 12345,
     "scores": {
@@ -120,8 +120,66 @@ SETTINGS = Settings(
             top_p=0.2,
             max_tokens=256,
         ),
+        "planner": ModelConfig(
+            name="qwen2:1.5b",
+            temperature=0.05,
+            top_p=0.2,
+            max_tokens=256,
+        ),
+        "creativity": ModelConfig(
+            name="gemma:2b",
+            temperature=0.8,
+            top_p=0.95,
+            max_tokens=256,
+        ),
     },
 )
+
+# Runtime tuning knobs for creativity and judge behaviour.
+# These are intentionally module-level constants (simple to tweak during
+# local testing). They are read by agent implementations.
+# How often to consider injecting a motif (lower -> more frequent).
+CREATIVITY_MOTIF_INTERVAL = 2
+# When motif interval check passes, injection also happens stochastically
+# according to this probability (0.0-1.0).
+CREATIVITY_MOTIF_PROBABILITY = 0.35
+# If True, creativity agent will be allowed to run in a lightweight
+# "sandbox" mode that more aggressively rewrites scenes even if the
+# surrounding filters are conservative.
+CREATIVITY_FORCE_SANDBOX = False
+# A suggested entropy/novelty threshold that higher-level orchestrator
+# or event agent can consult (0.0-1.0). Lowering this makes creative
+# triggers easier to pass.
+CREATIVITY_TRIGGER_ENTROPY_THRESHOLD = 0.35
+
+# Judge tuning: lower values make judge less biased toward always-approving
+# (i.e., reduce conservative bias). Values should be (0.0-1.0).
+JUDGE_BIAS_REWEIGHT = 0.3
+# Judge thresholds
+# If a Judge returns a tone_alignment score below this value the content
+# will be considered misaligned and rejected by post-processing.
+JUDGE_TONE_ALIGNMENT_THRESHOLD = 90
+# Base stochastic veto probability (0.0-1.0); lowered to reduce aggressiveness.
+JUDGE_BASE_VETO_PROB = 0.02
+# Minimum turn gap before allowing veto on identical content.
+JUDGE_MIN_TURN_GAP = 3
+# Minimum interval between major events (turns).
+MAJOR_EVENT_MIN_INTERVAL = 5
+# Maximum motif injections per window (e.g., per 5 turns).
+MAX_MOTIF_INJECTIONS_PER_WINDOW = 1
+# Interval for motif injection attempts (every N turns) defined above as CREATIVITY_MOTIF_INTERVAL.
+# Probability and sandbox flags are also defined above; avoid duplicate definitions.
+# Pool of diverse event types to ensure variety and break repetition.
+EVENT_DIVERSITY_POOL = [
+    "siege_incident",
+    "internal_conflict",
+    "resource_scarcity",
+    "diplomatic_encounter",
+    "mystical_occurrence",
+    "environmental_hazard",
+    "personal_drama",
+    "strategic_opportunity",
+]
 
 
 def ensure_runtime_paths(settings: Settings = SETTINGS) -> None:

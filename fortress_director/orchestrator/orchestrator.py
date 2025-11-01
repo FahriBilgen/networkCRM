@@ -17,6 +17,7 @@ from fortress_director.agents.event_agent import EventAgent
 from fortress_director.agents.judge_agent import JudgeAgent
 from fortress_director.agents.world_agent import WorldAgent
 from fortress_director.agents.creativity_agent import CreativityAgent
+from fortress_director.agents.planner_agent import PlannerAgent
 from fortress_director.settings import (
     SETTINGS,
     JUDGE_MIN_TURN_GAP,
@@ -295,6 +296,7 @@ class Orchestrator:
     event_agent: EventAgent
     world_agent: WorldAgent
     creativity_agent: CreativityAgent
+    planner_agent: PlannerAgent
     character_agent: CharacterAgent
     judge_agent: JudgeAgent
     rules_engine: RulesEngine
@@ -328,6 +330,7 @@ class Orchestrator:
             event_agent=EventAgent(),
             world_agent=WorldAgent(),
             creativity_agent=CreativityAgent(),
+            planner_agent=PlannerAgent(),
             character_agent=CharacterAgent(),
             judge_agent=judge_agent,
             rules_engine=RulesEngine(judge_agent=judge_agent, tolerance=tolerance),
@@ -1170,6 +1173,32 @@ class Orchestrator:
             self.state_store.persist(state)
             # ...existing code...
 
+            # Give Planner a chance to propose a tiny plan (best-effort)
+            planner_calls_proposed = 0
+            planner_calls_used = 0
+            try:
+                available = list(self.function_registry.list_functions())
+                objective = (
+                    (event_output.get("scene", "") or chosen_option.get("text", ""))[:120]
+                )
+                planner_request = {
+                    "WORLD_CONTEXT": self._build_world_context(state),
+                    "objective": objective,
+                    "available_functions": ", ".join(sorted(available)),
+                }
+                plan = self.planner_agent.plan(planner_request)
+                gas = int(plan.get("gas", 1) or 1)
+                calls = plan.get("calls") or []
+                if isinstance(calls, list) and calls:
+                    planner_calls_proposed = len(calls)
+                    trimmed = calls[: max(0, gas)]
+                    lst = event_output.setdefault("safe_functions", [])
+                    if isinstance(lst, list):
+                        lst.extend(trimmed)
+                        planner_calls_used = len(trimmed)
+            except Exception:
+                pass
+
             LOGGER.info("Executing safe function queue...")
             safe_function_results = self._execute_safe_function_queue(
                 event_output=event_output,
@@ -1342,6 +1371,11 @@ class Orchestrator:
                 "room_history": self.build_room_history(final_state),
                 # --- Feedback summary layer ---
                 "summary_text": final_state.get("summary_text", ""),
+                "telemetry": {
+                    "planner_calls_proposed": planner_calls_proposed,
+                    "planner_calls_executed": planner_calls_used,
+                    "safe_functions_executed": len(safe_function_results),
+                },
             }
             if result["summary_text"]:
                 LOGGER.info(f"Turn summary: {result['summary_text']}")
@@ -1607,6 +1641,18 @@ class Orchestrator:
             "despawn_npc",
             self._safe_despawn_npc,
             validator=self._validate_despawn_npc_call,
+        )
+
+        # Macro helpers
+        self.register_safe_function(
+            "move_and_take_item",
+            self._safe_move_and_take_item,
+            validator=self._validate_move_and_take_item_call,
+        )
+        self.register_safe_function(
+            "patrol_and_report",
+            self._safe_patrol_and_report,
+            validator=self._validate_patrol_and_report_call,
         )
 
     def _log_audit(self, entry: Dict[str, Any]) -> None:
@@ -1929,6 +1975,38 @@ class Orchestrator:
             metadata=call.metadata,
         )
 
+    def _validate_move_and_take_item_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "move_and_take_item does not accept positional arguments",
+            )
+        kwargs = dict(call.kwargs)
+        npc_id = kwargs.get("npc_id")
+        item_id = kwargs.get("item_id")
+        if not isinstance(npc_id, str) or not npc_id.strip():
+            raise FunctionValidationError("move_and_take_item requires 'npc_id'")
+        if not isinstance(item_id, str) or not item_id.strip():
+            raise FunctionValidationError("move_and_take_item requires 'item_id'")
+        location = kwargs.get("location")
+        if location is not None and (not isinstance(location, str) or not location.strip()):
+            raise FunctionValidationError("location must be a non-empty string if provided")
+        sanitized = {"npc_id": npc_id.strip(), "item_id": item_id.strip()}
+        if isinstance(location, str) and location.strip():
+            sanitized["location"] = location.strip()
+        return FunctionCall(name=call.name, args=(), kwargs=sanitized, metadata=call.metadata)
+
+    def _validate_patrol_and_report_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "patrol_and_report does not accept positional arguments",
+            )
+        kwargs = dict(call.kwargs)
+        npc_id = kwargs.get("npc_id")
+        if not isinstance(npc_id, str) or not npc_id.strip():
+            raise FunctionValidationError("patrol_and_report requires 'npc_id'")
+        sanitized = {"npc_id": npc_id.strip()}
+        return FunctionCall(name=call.name, args=(), kwargs=sanitized, metadata=call.metadata)
+
     def _safe_change_weather(
         self,
         *,
@@ -2143,6 +2221,31 @@ class Orchestrator:
         state["turn"] = max(int(state.get("turn", next_turn)), next_turn)
         self.state_store.persist(state)
         return {"current_turn": state["current_turn"], "turn": state["turn"]}
+
+    def _safe_move_and_take_item(
+        self, *, npc_id: str, item_id: str, location: Optional[str] = None
+    ) -> Dict[str, Any]:
+        result: Dict[str, Any] = {"steps": []}
+        if location:
+            moved = self._safe_move_npc(npc_id=npc_id, location=str(location))
+            result["steps"].append({"move_npc": moved})
+        taken = self._safe_add_item_to_npc(npc_id=npc_id, item_id=item_id)
+        result["steps"].append({"add_item_to_npc": taken})
+        return result
+
+    def _safe_patrol_and_report(self, *, npc_id: str) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        current_room = str(state.get("current_room", "entrance"))
+        next_room = self._get_next_room(current_room) or current_room
+        moved = self._safe_move_npc(npc_id=npc_id, location=next_room)
+        order_up = self._safe_adjust_metric(metric="order", delta=1, cause="patrol")
+        report = {
+            "npc": npc_id,
+            "from": current_room,
+            "to": next_room,
+            "note": "Patrol completed; order reinforced.",
+        }
+        return {"move": moved, "order": order_up, "report": report}
 
     def _adjust_score(self, key: str, delta: int) -> Dict[str, Any]:
         state = self.state_store.snapshot()
