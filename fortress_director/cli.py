@@ -11,6 +11,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, List, cast
 
+# Add parent directory to path for module imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from fortress_director.utils.logging_config import configure_logging
 from fortress_director.orchestrator.orchestrator import (
     DEFAULT_WORLD_STATE,

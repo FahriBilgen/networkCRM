@@ -2,6 +2,7 @@
 Role: Event Manager
 Day: {day}, Time: {time}, Room: {room}
 Recent event summary (hash): {recent_events}
+Memory layers: {memory_layers}
 Constraints (World Constraint): {world_constraint_from_prev_turn}
 Motif cooldown: {recent_motifs}
 
@@ -29,12 +30,38 @@ You may call safe functions to enact changes in the world.
 If you decide that a physical, environmental, or character state change is required, 
 respond in the following JSON format:
 
-Available functions (use only keyword arguments, not positional!): change_weather(weather_type), spawn_item(item_name, location), move_npc(npc_name, target_room).
-Example: "safe_functions": ["change_weather('rainy')", "spawn_item('torch', 'lornhaven_wall')", "move_npc('Rhea', 'lornhaven_gate')"]
+Available functions (use only keyword arguments, not positional!):
+- change_weather(atmosphere: str, sensory_details: str)
+- spawn_item(item_id: str, target: str)
+- move_npc(npc_id: str, location: str)
+Example (dict form):
+  "safe_functions": [
+    {{
+      "name": "change_weather",
+      "args": [],
+      "kwargs": {{"atmosphere": "rainy", "sensory_details": "cold drizzle"}},
+      "metadata": {{"source": "event_autoinject"}}
+    }},
+    {{
+      "name": "spawn_item",
+      "args": [],
+      "kwargs": {{"item_id": "torch", "target": "lornhaven_wall"}}
+    }},
+    {{
+      "name": "move_npc",
+      "args": [],
+      "kwargs": {{"npc_id": "Rhea", "location": "lornhaven_gate"}}
+    }}
+  ]
  If you decide that a physical, environmental, or character state change is required, 
 - Karakterler kendi görevlerine sadık kalmalı (savunucular tetikte, kaçış yok).
 - Eğer flags içinde "mystery_figure" varsa veya recent_major_events'in son iki girdisi false ise, gerilimi artır ve major_event'i true yap.
 
+
+# Action çeşitliliği kuralı:
+# Her sahnede en az 4 farklı action_type üretmeye çalış (ör: dialogue, exploration, item_use, diplomacy, stealth, assistance, observation, planning, trade, stealth, etc.).
+# Seçeneklerin action_type'ları mümkün olduğunca çeşitli olmalı, tekrar eden türlerden kaçın.
+#
 # Modelin döndürmesi gereken alanlar:
 # - scene: string
 # - options: liste (her biri id, text, action_type içerir)

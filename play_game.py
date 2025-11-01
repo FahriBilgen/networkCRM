@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Interactive Fortress Director Game Player."""
+"""Interactive Fortress Director Game Player (ASCII-safe)."""
 
 import sys
 from pathlib import Path
@@ -20,14 +20,14 @@ def print_scene(result):
     """Print the current scene description."""
     scene = result.get("scene", "")
     if scene:
-        print(f"📖 {scene}")
+        print(f"- {scene}")
 
 
 def print_options(result):
     """Print available player options."""
     options = result.get("options", [])
     if options:
-        print("\n🎯 Available Actions:")
+        print("\nAvailable Actions:")
         for i, option in enumerate(options, 1):
             print(f"  {i}. {option.get('text', 'Unknown action')}")
 
@@ -36,20 +36,22 @@ def print_character_reactions(result):
     """Print NPC reactions."""
     reactions = result.get("character_reactions", [])
     if reactions:
-        print("\n👥 Character Reactions:")
+        print("\nCharacter Reactions:")
         for reaction in reactions:
             name = reaction.get("name", "Unknown")
             speech = reaction.get("speech", "")
             if speech:
-                print(f'  💬 {name}: "{speech}"')
+                print(f"  {name}: \"{speech}\"")
 
 
 def print_atmosphere(result):
     """Print atmospheric description."""
-    atmosphere = result.get("atmosphere", "")
-    sensory = result.get("sensory_details", "")
+    # Prefer nested world output; fall back to top-level keys if present
+    world = result.get("world", {}) if isinstance(result.get("world"), dict) else {}
+    atmosphere = world.get("atmosphere") or result.get("atmosphere", "")
+    sensory = world.get("sensory_details") or result.get("sensory_details", "")
     if atmosphere or sensory:
-        print("\n🌤️  Atmosphere:")
+        print("\nAtmosphere:")
         if atmosphere:
             print(f"  {atmosphere}")
         if sensory:
@@ -60,7 +62,7 @@ def print_metrics(result):
     """Print current game metrics."""
     metrics = result.get("metrics", {})
     if metrics:
-        print("\n📊 Current Status:")
+        print("\nCurrent Status:")
         important_metrics = {
             "morale": "Morale",
             "order": "Order",
@@ -81,7 +83,7 @@ def print_win_loss(result):
     if status != "ongoing":
         reason = win_loss.get("reason", "")
         description = win_loss.get("description", "")
-        print(f"\n🏁 Game {status.upper()}: {reason}")
+        print(f"\nGame {status.upper()}: {reason}")
         if description:
             print(f"   {description}")
 
@@ -90,7 +92,7 @@ def get_player_choice(options):
     """Get player's choice from available options."""
     while True:
         try:
-            choice = input("\n🎮 Your choice (number): ").strip()
+            choice = input("\nYour choice (number): ").strip()
             choice_num = int(choice) - 1  # Convert to 0-based index
 
             if 0 <= choice_num < len(options):
@@ -99,22 +101,22 @@ def get_player_choice(options):
                 if choice_id:
                     return choice_id
                 else:
-                    print("❌ Invalid option selected.")
+                    print("Invalid option selected.")
             else:
-                print(f"❌ Please enter a number between 1 and {len(options)}")
+                print(f"Please enter a number between 1 and {len(options)}")
 
         except (ValueError, KeyboardInterrupt):
-            print("❌ Please enter a valid number.")
+            print("Please enter a valid number.")
 
 
 def play_game():
     """Main interactive game loop."""
-    print("🏰 Welcome to Fortress Director!")
+    print("Welcome to Fortress Director!")
     print("A deterministic AI-powered siege defense game.")
     print_separator()
 
     # Reset game state
-    print("🔄 Initializing game state...")
+    print("Initializing game state...")
     orchestrator = Orchestrator.build_default()
 
     turn_count = 0
@@ -140,13 +142,13 @@ def play_game():
             win_loss = result.get("win_loss", {})
             if win_loss.get("status") != "ongoing":
                 print_separator()
-                print("🎮 Game Over!")
+                print("Game Over!")
                 break
 
             # Get player choice for next turn
             options = result.get("options", [])
             if not options:
-                print("❌ No options available.")
+                print("No options available.")
                 print("Game might be in an error state.")
                 break
 
@@ -156,12 +158,12 @@ def play_game():
             print_separator()
 
     except KeyboardInterrupt:
-        print("\n\n👋 Game interrupted by player. Thanks for playing!")
+        print("\n\nGame interrupted by player. Thanks for playing!")
     except Exception as e:
-        print(f"\n❌ Game error: {e}")
+        print(f"\nGame error: {e}")
         print("Check the logs for more details.")
 
-    print("\n💾 Game session ended.")
+    print("\nGame session ended.")
 
 
 if __name__ == "__main__":

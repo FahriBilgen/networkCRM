@@ -87,7 +87,26 @@ class BaseAgent:
         variables: Dict[str, Any],
         options_override: Optional[Dict[str, Any]] = None,
     ) -> Any:
-        prompt = self._template.render(**variables)
+        # Ensure commonly-required prompt variables exist to make templates
+        # tolerant of callers that only pass WORLD_CONTEXT. This helps
+        # integration tests which construct minimal inputs.
+        vars_copy = dict(variables)
+        # Provide an empty memory_layers if not present
+        vars_copy.setdefault("memory_layers", [])
+        # If no explicit time token was provided, try to extract it from
+        # the WORLD_CONTEXT string (e.g. 'Time morning'). Fall back to
+        # 'morning' to avoid raising errors in downstream agents.
+        if "time" not in vars_copy or not vars_copy.get("time"):
+            wc = vars_copy.get("WORLD_CONTEXT", "")
+            import re
+
+            m = re.search(r"Time\s+([^\n]+)", wc)
+            if m:
+                vars_copy["time"] = m.group(1).strip()
+            else:
+                vars_copy.setdefault("time", "morning")
+
+        prompt = self._template.render(**vars_copy)
         options = self._build_options(options_override)
         try:
             response = self._client.generate(
@@ -140,11 +159,13 @@ def default_ollama_client(agent_key: Optional[str] = None) -> OllamaClient:
     base_url = os.environ.get("FORTRESS_OLLAMA_BASE_URL", SETTINGS.ollama_base_url)
     timeout_value = os.environ.get("FORTRESS_OLLAMA_TIMEOUT")
     try:
-        timeout = float(timeout_value) if timeout_value is not None else SETTINGS.ollama_timeout
+        timeout = (
+            float(timeout_value)
+            if timeout_value is not None
+            else SETTINGS.ollama_timeout
+        )
     except ValueError as exc:  # pragma: no cover - defensive guard
-        raise AgentError(
-            "FORTRESS_OLLAMA_TIMEOUT must be a float value"
-        ) from exc
+        raise AgentError("FORTRESS_OLLAMA_TIMEOUT must be a float value") from exc
 
     config = OllamaClientConfig(
         base_url=base_url,

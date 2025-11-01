@@ -1,6 +1,6 @@
 {
   "campaign_id": "default_campaign",
-  "turn_limit": 10,
+  "turn_limit": 30,
   "current_turn": 0,
   "rng_seed": 12345,
   "scores": {

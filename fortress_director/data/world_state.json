@@ -1,7 +1,7 @@
 {
   "campaign_id": "default_campaign",
-  "turn_limit": 10,
-  "current_turn": 10,
+  "turn_limit": 30,
+  "current_turn": 20,
   "rng_seed": 12345,
   "scores": {
     "logic_score": 0,
@@ -9,40 +9,33 @@
     "corruption": 0
   },
   "flags": [
-    "low_clouds_present",
-    "atmosphere",
-    "Dawn'thin Rain",
-    "Dawn's Whispers",
-    "atmosphere_dawn_rain_heavy_clouds",
-    "weather_watcher_flag",
-    "sensory_details",
-    "atmosphere_rain_heavy_clouds",
-    "Dawn's Embrace"
+    "hidden_room_search",
+    "major_wall_alert",
+    "has_visited_castle",
+    "hidden_room_key",
+    "force_major_event",
+    "major_starvation_hint"
   ],
-  "memory_layers": [
-    "Turn 7: Ask the Shieldbearer if she needs assistance. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta...",
-    "Turn 8: You offer the Shieldbearer your oil lamp, hoping it might provide some warmth and light. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta...",
-    "Turn 9: You ask the Shieldbearer about the drums you've been hearing for days. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta...",
-    "Memory summary: Turn 7: Ask the Shieldbearer if she needs assistance. -> The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been sta... | Turn 8: You offer the Shieldbearer yo...",
-    "Turn 10: Ask the Shieldbearer about the drums you hear in the distance. -> The Shieldbearer, her gaze still fixed on the distant drums, looks at you with a weary expression as..."
-  ],
+  "memory_layers": [],
   "active_layer": null,
   "npc_fragments": {},
   "inventory": [],
   "lore": {},
-  "turn": 10,
-  "day": 1,
+  "turn": 20,
+  "day": 5,
   "time": "dawn",
-  "current_room": "entrance",
+  "current_room": "keep",
   "recent_events": [
-    "The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her voice. As...",
-    "The Shieldbearer, still focused on the distant drums, glances at you as you approach. 'I've been standing here for hours, watching the clouds roll in.', she says, a hint of exhaustion in her voice. As...",
-    "The Shieldbearer, her gaze still fixed on the distant drums, looks at you with a weary expression as the cool mist clings to the stone walls. 'I've been standing here for hours, watching the clouds ro..."
+    "The Shieldbearer stands guard, his weary eyes scanning the horizon as the shadows deepen. The cool breeze carries the scent of salt and damp earth, a stark contrast to the warmth of yesterday' sun. Su...",
+    "The Shieldbearer, standing watch on the battlements, turns to face you as you approach. His weary eyes scan your presence before returning to their vigil over the horizon. Suddenly, intruders are spot...",
+    "The Shieldbearer, standing watch on the battlements, turns to face you as you approach. His weary eyes scan your presence before returning to their vigil over the horizon. You ask him about the rumore..."
   ],
-  "recent_motifs": [],
+  "recent_motifs": [
+    "communication"
+  ],
   "world_constraint_from_prev_turn": {
-    "atmosphere": "Dawn'thin rain, heavy clouds hang",
-    "sensory_details": "Cool mist clings to stone drums beat steady rhythm"
+    "atmosphere": "Nighttime calmness envelops stone battlements.",
+    "sensory_details": "The cool breeze carries the tangy scent of salt and damp earth, contrasting with memories of sunwarmed surfaces."
   },
   "player": {
     "name": "The Shieldbearer",
@@ -57,44 +50,72 @@
     "summary": "A weary defender holding the western wall."
   },
   "character_summary": "Rhea is loyal but impulsive; Boris is cautious and calculating.",
-  "relationship_summary": "Shieldbearer is neutral toward the player",
+  "relationship_summary": "Rhea trusts the player deeply; Shieldbearer is neutral toward the player",
   "metrics": {
-    "order": 50,
-    "morale": 53,
-    "resources": 40,
-    "knowledge": 48,
+    "order": 57,
+    "morale": 91,
+    "resources": 45,
+    "knowledge": 79,
     "corruption": 10,
-    "glitch": 9,
+    "glitch": 32,
     "risk_applied_total": 0,
     "major_flag_set": false,
     "major_events_triggered": 0,
     "major_event_last_turn": null
   },
   "npc_trust": {
+    "Rhea": 4,
     "Shieldbearer": 0
   },
-  "npc_memory": {
-    "Rhea": {
-      "name": "Scout Rhea",
-      "location": "scout_post",
-      "personality": "loyal but impulsive",
-      "trust": 50,
-      "last_action": "monitoring perimeter",
-      "mood": {
-        "morale_delta": -0.3001684588367718
-      }
-    },
-    "Boris": {
-      "name": "Merchant Boris",
-      "location": "merchant_quarters",
-      "personality": "cautious and calculating",
-      "trust": 45,
-      "last_action": "inventory check",
-      "mood": {
-        "morale_delta": -1.763390989954554
-      }
-    }
+  "_glitch_buffer": 0,
+  "previous_judge_verdict": {
+    "consistent": true,
+    "reason": "The content is consistent with established world, lore, and character logic. The events described are logical for a defender standing watch on battlements."
   },
-  "status_effects": [],
-  "finalized": true
+  "player_choice_history": [
+    "dialogue",
+    "dialogue",
+    "dialogue",
+    "dialogue",
+    "dialogue",
+    "dialogue",
+    "dialogue",
+    "dialogue",
+    "dialogue",
+    "dialogue"
+  ],
+  "summary_text": "Another uneventful watch passes by.",
+  "memory_short": [
+    "Turn 17: You ask the Shieldbearer if he knows anything about the rumored hidden room deep within the castle grounds. -> The Shieldbearer stands guard, his weary eyes scanning the horizon as the shadows deepen. The cool b...",
+    "Turn 18: You ask the Shieldbearer if he knows anything about the rumored hidden room deep within the castle grounds. -> The Shieldbearer, standing watch on the battlements, turns to face you as you approach. His weary ey...",
+    "Memory summary: Turn 16: You ask the Shieldbearer if he knows anything about the rumored hidden room deep within the castle grounds. -> ... | Turn 17: You ask the Shieldbearer if he knows anything about the rumored h...",
+    "Turn 19: Ask the Shieldbearer if he knows more about the hidden room. -> The Shieldbearer, standing watch on the battlements, turns to face you as you approach. His weary ey...",
+    "Turn 20: Ask the Shieldbearer if he knows more about the hidden room. -> The Shieldbearer, standing watch on the battlements, turns to face you as you approach. His weary ey..."
+  ],
+  "memory_long": [
+    "Turn 8: Major event triggered (major_starvation_hint)",
+    "Turn 10: Major event triggered (major_wall_alert)",
+    "Turn 11: Major event triggered (major_wall_alert)",
+    "Turn 12: Major event triggered (major_wall_alert, major_starvation_hint)",
+    "Turn 13: Major event triggered (major_wall_alert)",
+    "Turn 14: Major event triggered (major_wall_alert)",
+    "Turn 15: Major event triggered (major_wall_alert)",
+    "Turn 16: Major event triggered (major_wall_alert, major_starvation_hint)",
+    "Turn 17: Major event triggered (major_wall_alert)",
+    "Turn 18: Major event triggered (major_wall_alert)",
+    "Turn 19: Major event triggered (major_wall_alert)",
+    "Turn 20: Major event triggered (major_wall_alert, major_starvation_hint)"
+  ],
+  "status_effects": [
+    {
+      "target": "Shieldbearer",
+      "status": "tense_watch",
+      "duration": 1
+    }
+  ],
+  "last_major_event_turn": 18,
+  "major_events_triggered": 10,
+  "major_event_last_turn": 19,
+  "finalized": true,
+  "final_summary": "Defeat - turn_limit_exceeded | Morale: 91, Order: 57, Resources: 45 | Glitch level: 32, Major events: 10 | Last major event: turn 19 | Notable characters: Rhea is loyal but impulsive; Boris is cautious and calculating."
 }

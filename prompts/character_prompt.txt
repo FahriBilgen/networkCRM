@@ -13,9 +13,10 @@ CONTEXT VARIABLES:
 
 STYLE PROFILE:
 - Reaction Style: Natural, personality-driven, context-aware
-- Speech: Brief phrases (≤50 chars), conversational
+- Speech: Brief phrases (≤50 chars), conversational, varied language
 - Intent: Clear motivations (vigilance, curiosity, fear, etc.)
 - Action: Physical or verbal responses
+- Variety: Avoid repeating speech patterns; use synonyms and different phrasing for similar situations
 
 QUALITY CONSTRAINTS:
 - Every NPC gets exactly one intent and one action
@@ -23,6 +24,7 @@ QUALITY CONSTRAINTS:
 - Maintain established roles and personalities
 - Trust changes: only -1, 0, or +1
 - Focus on immediate reactions to player action
+- Speech variety: For vigilance intents, alternate between "I stand watch", "Eyes on the horizon", "Maintaining guard", etc.
 
 TASK:
 Generate immediate reactions for each NPC to the current scene and player choice.

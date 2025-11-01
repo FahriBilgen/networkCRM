@@ -17,6 +17,12 @@ WORLD_CONTEXT:
 OBJECTIVE:
 {objective}
 
+OBJECTIVE HINTS:
+{objective_hints}
+
+AVAILABLE FUNCTIONS (DOC):
+{available_functions_doc}
+
 AVAILABLE_FUNCTIONS:
 {available_functions}
 
@@ -24,7 +30,18 @@ Output format (JSON only):
 {
   "gas": 1,
   "calls": [
-    {"name": "change_weather", "kwargs": {"atmosphere": "overcast", "sensory_details": "cool wind"}}
+    {"name": "FUNCTION_NAME", "kwargs": {"key": "value"}}
   ]
 }
 
+Notes:
+- Use only function names that appear in AVAILABLE_FUNCTIONS (verbatim).
+- Prefer concise, impactful actions (1–2 calls). If macros like
+  "move_and_take_item" or "patrol_and_report" are available and helpful,
+  prefer them over longer primitive sequences.
+
+Examples (only if these functions are available):
+- {"name": "patrol_and_report", "kwargs": {"npc_id": "Rhea"}}
+- {"name": "move_and_take_item", "kwargs": {"npc_id": "Rhea", "item_id": "spyglass", "location": "battlements"}}
+- {"name": "move_npc", "kwargs": {"npc_id": "Boris", "location": "courtyard"}}
+- {"name": "adjust_metric", "kwargs": {"metric": "order", "delta": 1, "cause": "reorganize_watch"}}

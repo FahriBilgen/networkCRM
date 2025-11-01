@@ -55,8 +55,8 @@ SETTINGS = Settings(
         ),
         "world": ModelConfig(
             name="phi3:mini",
-            temperature=0.1,  # Geri yükselttim
-            top_p=0.4,  # Geri yükselttim
+            temperature=0.35,  # Daha akıcı dil için
+            top_p=0.6,  # Mikro hataları azaltmak için çeşitlilik
             max_tokens=256,  # Kısa açıklamalar için yeterli
         ),
         "character": ModelConfig(

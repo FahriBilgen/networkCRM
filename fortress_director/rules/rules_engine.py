@@ -75,10 +75,12 @@ class RulesEngine:
         try:
             events = self._validate_tier_one(character_events)
             LOGGER.info("Tier one validation passed.")
-            self._validate_tier_two(
+            judge_penalties = self._validate_tier_two(
                 events, world_context, scene, player_choice, state, seed
             )
-            LOGGER.info("Tier two validation passed.")
+            LOGGER.info(
+                "Tier two validation passed with penalties: %s", judge_penalties
+            )
             new_state = deepcopy(state)
             applied_flags = set()
             for entry in events:
@@ -93,7 +95,86 @@ class RulesEngine:
                 )
                 self._apply_item_change(new_state, effects.get("item_change"))
                 self._apply_status_change(new_state, effects.get("status_change"))
+                self._apply_metric_changes(new_state, effects.get("metric_changes"))
             self._update_metrics(new_state, player_choice, applied_flags)
+            # Apply judge penalties to metrics
+            metrics = new_state.setdefault("metrics", {})
+            metrics["glitch"] = max(
+                0, metrics.get("glitch", 0) + judge_penalties.get("glitch_penalty", 0)
+            )
+            metrics["morale"] = max(
+                0, metrics.get("morale", 0) - judge_penalties.get("morale_penalty", 0)
+            )
+            metrics["resources"] = max(
+                0,
+                metrics.get("resources", 0)
+                - judge_penalties.get("resources_penalty", 0),
+            )
+            metrics["corruption"] = max(
+                0,
+                metrics.get("corruption", 0)
+                + judge_penalties.get("corruption_penalty", 0),
+            )
+            metrics["order"] = max(
+                0, metrics.get("order", 0) - judge_penalties.get("order_penalty", 0)
+            )
+            LOGGER.info("Judge penalties applied: %s", judge_penalties)
+            # --- FEEDBACK SUMMARY LAYER ---
+            summary_parts = []
+            # Metric deltas overview
+            try:
+                prev_metrics = state.get("metrics", {})
+                after = new_state.get("metrics", {})
+                def _delta(m):
+                    return int(after.get(m, 0)) - int(prev_metrics.get(m, 0))
+                deltas = {m: _delta(m) for m in ("morale", "order", "resources", "knowledge", "glitch")}
+                if deltas["morale"] >= 2:
+                    summary_parts.append("A spark of hope lifts the garrison.")
+                if deltas["morale"] <= -2:
+                    summary_parts.append("Anxieties spread among the defenders.")
+                if deltas["order"] >= 2:
+                    summary_parts.append("Discipline tightens along the walls.")
+                if deltas["order"] <= -2:
+                    summary_parts.append("Order slips in the confusion.")
+                if deltas["resources"] <= -2:
+                    summary_parts.append("Supplies are strained.")
+                if deltas["knowledge"] >= 2:
+                    summary_parts.append("Clues and insights accumulate.")
+            except Exception:
+                pass
+            # Metrik değişimlerini ve önemli olayları özetle
+            if judge_penalties.get("glitch_penalty", 0) > 0:
+                summary_parts.append("A system glitch ripples through the world.")
+            if judge_penalties.get("morale_penalty", 0) > 0:
+                summary_parts.append("Morale drops among the villagers.")
+            if judge_penalties.get("order_penalty", 0) > 0:
+                summary_parts.append("Order falters in the chaos.")
+            if judge_penalties.get("corruption_penalty", 0) > 0:
+                summary_parts.append("Corruption seeps deeper.")
+            if judge_penalties.get("resources_penalty", 0) > 0:
+                summary_parts.append("Resources dwindle.")
+            # Major event özeti
+            metrics = new_state.get("metrics", {})
+            if metrics.get("major_flag_set"):
+                summary_parts.append("A major event shakes the village.")
+            if metrics.get("glitch", 0) > state.get("metrics", {}).get("glitch", 0):
+                summary_parts.append("Glitch level rises.")
+            if not summary_parts:
+                # Deterministic quiet-day variants to reduce repetition
+                turn_num = 0
+                try:
+                    turn_num = int(state.get("turn", 0))
+                except Exception:
+                    turn_num = 0
+                quiet_variants = [
+                    "A routine day settles over Lornhaven.",
+                    "Little stirs; watch posts rotate without incident.",
+                    "Whispers fade and the walls hold steady.",
+                    "Calm returns as the sun arcs overhead.",
+                    "Another uneventful watch passes by.",
+                ]
+                summary_parts.append(quiet_variants[turn_num % len(quiet_variants)])
+            new_state["summary_text"] = " ".join(summary_parts)
             LOGGER.info("State updated by rules engine.")
             LOGGER.debug("Output state: %s", new_state)
             return new_state
@@ -131,10 +212,22 @@ class RulesEngine:
                 )
 
             trust_delta = effects.get("trust_delta")
-            if trust_delta is not None and trust_delta not in (-1, 0, 1):
+            if trust_delta is not None and not isinstance(trust_delta, (int, float)):
                 raise TierOneValidationError(
                     f"Invalid trust_delta for '{entry['name']}': {trust_delta}"
                 )
+
+            metric_changes = effects.get("metric_changes")
+            if metric_changes is not None:
+                if not isinstance(metric_changes, dict):
+                    raise TierOneValidationError(
+                        f"metric_changes for {entry['name']} must be an object"
+                    )
+                for key, value in metric_changes.items():
+                    if not isinstance(value, (int, float)):
+                        raise TierOneValidationError(
+                            f"metric_changes value for {key} must be number"
+                        )
 
             flag_set = effects.get("flag_set")
             if flag_set is not None:
@@ -185,7 +278,7 @@ class RulesEngine:
         player_choice: Dict[str, Any],
         state: Dict[str, Any] = None,
         seed: Optional[int] = None,
-    ) -> None:
+    ) -> Dict[str, Any]:
         choice_summary: Dict[str, Any] = {}
         if isinstance(player_choice, dict):
             for key in ("id", "text", "action_type"):
@@ -200,6 +293,15 @@ class RulesEngine:
             flags = state.get("flags", [])
             status_effects = state.get("status_effects", [])
 
+        # Accumulate penalties from all judge verdicts
+        total_penalties = {
+            "glitch_penalty": 0,
+            "morale_penalty": 0,
+            "resources_penalty": 0,
+            "corruption_penalty": 0,
+            "order_penalty": 0,
+        }
+
         for entry in events:
             summary = self._build_judge_summary(entry, scene, choice_summary)
             try:
@@ -207,6 +309,42 @@ class RulesEngine:
                     "WORLD_CONTEXT": world_context,
                     "content": summary,
                 }
+                # Motif/intent repetition detection
+                repetition_count = 0
+                motif_repetition = False
+                intent_repetition = False
+                if state:
+                    memory_layers = state.get("memory_layers", []) or []
+                    try:
+                        repetition_count = sum(
+                            1
+                            for m in memory_layers
+                            if isinstance(m, str)
+                            and scene.strip()
+                            and scene.strip() in m
+                        )
+                        # Motif repetition: motif son 3 turda aynıysa
+                        motifs = state.get("recent_motifs", [])
+                        if isinstance(motifs, str):
+                            motifs = [motifs]
+                        if len(motifs) >= 3 and len(set(motifs[-3:])) == 1:
+                            motif_repetition = True
+                        # Intent repetition: intent son 3 turda aynıysa
+                        intents = [e.get("intent") for e in events if e.get("intent")]
+                        if len(intents) >= 3 and len(set(intents[-3:])) == 1:
+                            intent_repetition = True
+                    except Exception:
+                        repetition_count = 0
+                if repetition_count >= 3 or motif_repetition or intent_repetition:
+                    judge_context["repetition_count"] = repetition_count
+                    judge_context["motif_repetition"] = motif_repetition
+                    judge_context["intent_repetition"] = intent_repetition
+                    LOGGER.info(
+                        "Detected repetition (scene: %d, motif: %s, intent: %s) - informing Judge",
+                        repetition_count,
+                        motif_repetition,
+                        intent_repetition,
+                    )
                 if flags:
                     judge_context["flags"] = flags
                 if status_effects:
@@ -224,11 +362,59 @@ class RulesEngine:
                 verdict,
             )
 
+            # Apply penalties based on judge verdict
+            penalty_level = verdict.get("penalty", "none")
+            if penalty_level == "mild":
+                total_penalties["glitch_penalty"] += 5
+                total_penalties["morale_penalty"] += 5
+            elif penalty_level == "medium":
+                total_penalties["glitch_penalty"] += 10
+                total_penalties["morale_penalty"] += 10
+                total_penalties["resources_penalty"] += 5
+            elif penalty_level == "severe":
+                total_penalties["glitch_penalty"] += 15
+                total_penalties["morale_penalty"] += 15
+                total_penalties["corruption_penalty"] += 10
+                # Severe penalties can also cause rejection
+                if (
+                    verdict.get("coherence", 100) < 30
+                    or verdict.get("integrity", 100) < 30
+                ):
+                    reason = verdict.get("reason", "severe narrative violation")
+                    raise TierTwoValidationError(
+                        f"Judge rejected update for '{entry['name']}': {reason}"
+                    )
+
             if not verdict.get("consistent", True):
                 reason = verdict.get("reason", "unknown reason")
                 raise TierTwoValidationError(
                     f"Judge rejected update for '{entry['name']}': {reason}"
                 )
+
+            # Incorporate structured penalty magnitudes directly into totals
+            # Mapping: positive magnitudes increase corresponding *_penalty buckets
+            magnitudes = verdict.get("penalty_magnitude", {}) or {}
+            try:
+                morale_delta = magnitudes.get("morale")
+                if isinstance(morale_delta, (int, float)) and morale_delta < 0:
+                    total_penalties["morale_penalty"] += int(abs(morale_delta))
+                glitch_delta = magnitudes.get("glitch")
+                if isinstance(glitch_delta, (int, float)) and glitch_delta > 0:
+                    total_penalties["glitch_penalty"] += int(glitch_delta)
+                resources_delta = magnitudes.get("resources")
+                if isinstance(resources_delta, (int, float)) and resources_delta < 0:
+                    total_penalties["resources_penalty"] += int(abs(resources_delta))
+                corruption_delta = magnitudes.get("corruption")
+                if isinstance(corruption_delta, (int, float)) and corruption_delta > 0:
+                    total_penalties["corruption_penalty"] += int(corruption_delta)
+                order_delta = magnitudes.get("order")
+                if isinstance(order_delta, (int, float)) and order_delta < 0:
+                    total_penalties["order_penalty"] += int(abs(order_delta))
+            except Exception:
+                # Be defensive; do not break pipeline on malformed magnitudes
+                pass
+
+        return total_penalties
 
     def _build_judge_summary(
         self,
@@ -312,6 +498,15 @@ class RulesEngine:
             if flag not in existing:
                 existing.append(flag)
         return valid_flags
+
+    def _apply_metric_changes(self, state: Dict[str, Any], changes: Any) -> None:
+        if not isinstance(changes, dict):
+            return
+        metrics = state.setdefault("metrics", {})
+        for key, delta in changes.items():
+            if isinstance(delta, (int, float)):
+                current = metrics.get(key, 0)
+                metrics[key] = max(0, current + delta)
 
     def _apply_item_change(self, state: Dict[str, Any], change: Any) -> None:
         if not isinstance(change, dict):
@@ -397,6 +592,50 @@ class RulesEngine:
         metrics.setdefault("major_event_last_turn", None)
         metrics.setdefault("major_flag_set", False)
 
+        # Track player choice history for repetitive behavior detection
+        choice_history = state.setdefault("player_choice_history", [])
+        choice_type = player_choice.get("action_type", "unknown")
+        choice_history.append(choice_type)
+        if len(choice_history) > 10:
+            choice_history.pop(0)
+        state["player_choice_history"] = choice_history
+
+        # If player chose 'observe' 3 times in a row, trigger world variation
+        observe_count = sum(
+            1 for c in choice_history[-3:] if c in ["observation", "observe"]
+        )
+        if observe_count >= 3:
+            LOGGER.info("Player observed 3 times in a row, triggering world variation")
+            flags = state.setdefault("flags", [])
+            if "force_world_variation" not in flags:
+                flags.append("force_world_variation")
+            metrics["morale"] = max(0, metrics.get("morale", 0) - 2)
+
+        # Choice impact mapping: apply small, deterministic effects per action type
+        try:
+            impact_map = {
+                "dialogue": [("knowledge", 1)],
+                "exploration": [("knowledge", 1), ("resources", 1)],
+                "observation": [("knowledge", 1)],
+                "preparation": [("order", 1)],
+                "risk": [("glitch", 2), ("corruption", 1)],
+                "trade": [("resources", 2), ("morale", 1)],
+                "emergency": [("order", 2), ("morale", -1)],
+            }
+            action_type = str(player_choice.get("action_type", "")).lower()
+            for metric_key, delta in impact_map.get(action_type, []):
+                current = metrics.get(metric_key, 0)
+                metrics[metric_key] = max(0, int(current) + int(delta))
+                LOGGER.info(
+                    "Choice impact applied: %s %+d (action_type=%s)",
+                    metric_key,
+                    delta,
+                    action_type,
+                )
+        except Exception:
+            # Defensive; do not break flow if mapping fails
+            pass
+
         if player_choice.get("action_type") == "risk":
             metrics["risk_applied_total"] = (
                 metrics.get(
@@ -414,6 +653,46 @@ class RulesEngine:
                 0,
             ) + len(major_flags)
             metrics["major_event_last_turn"] = state.get("turn", 0)
+            # --- GLITCH METRIC ESCALATION ---
+            import random
+
+            glitch_increase = random.randint(1, 3)
+            metrics["glitch"] = max(0, metrics.get("glitch", 0) + glitch_increase)
+            LOGGER.info(f"Major event: glitch increased by {glitch_increase}")
+
+        # Major event starvation protection: if no major event for >5 turns,
+        # force a major event flag so EventAgent will create one.
+        try:
+            current_turn = int(state.get("turn", 0))
+            last_turn = metrics.get("major_event_last_turn")
+            if last_turn is not None and isinstance(last_turn, int):
+                if current_turn - last_turn > 5:
+                    flags = state.setdefault("flags", [])
+                    if "force_major_event" not in flags:
+                        flags.append("force_major_event")
+                        metrics["morale"] = max(0, metrics.get("morale", 0) - 1)
+                        LOGGER.info(
+                            "Major event starvation detected (last=%s, now=%s); forcing major event",
+                            last_turn,
+                            current_turn,
+                        )
+            # Diversity-based organic major event trigger: if recent motifs are too similar,
+            # nudge the system to create a major event without always forcing it.
+            recent_motifs = state.get("recent_motifs", [])
+            if isinstance(recent_motifs, list) and len(recent_motifs) >= 4:
+                window = [str(m) for m in recent_motifs[-4:]]
+                diversity = len(set(window))
+                if diversity <= 2:
+                    flags = state.setdefault("flags", [])
+                    if "force_major_event" not in flags and current_turn % 3 == 1:
+                        flags.append("force_major_event")
+                        LOGGER.info(
+                            "Low motif diversity detected (%s), hinting major event",
+                            window,
+                        )
+        except Exception:
+            # Be defensive; do not break game flow on bookkeeping errors
+            LOGGER.debug("Failed to evaluate major event starvation check")
 
         # Update relationship summary based on trust changes
         self._update_relationship_summary(state)
@@ -528,6 +807,14 @@ class RulesEngine:
                 "status": "win",
                 "reason": "survived_15_turns_high_morale",
                 "description": "15 tur savunma başarısı!",
+            }
+
+        # Harmony (soft) — earlier achievable than perfect harmony
+        if morale >= 60 and corruption < 5 and order >= 50:
+            return {
+                "status": "win",
+                "reason": "harmony_restored",
+                "description": "Uyum yeniden sağlandı!",
             }
 
         if morale >= 80 and corruption <= 5:

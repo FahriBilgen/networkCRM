@@ -1,3 +1,0 @@
-2025-10-17 01:32:27,900 [DEBUG] root: Logging configured (console level=INFO, file=C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\logs\turn_20251016_223227.log)
-2025-10-17 01:32:27,900 [INFO] __main__: Detailed logs written to C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\logs\turn_20251016_223227.log
-2025-10-17 01:32:27,900 [DEBUG] fortress_director.orchestrator.orchestrator: State snapshot loaded from C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\data\world_state.json (turn=12)

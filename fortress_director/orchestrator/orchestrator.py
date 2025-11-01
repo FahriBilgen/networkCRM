@@ -533,6 +533,14 @@ class Orchestrator:
                 self._stringify(world_request),
             )
             LOGGER.info("Calling world_agent.describe...")
+            # Add objective and available functions for world prompt alignment
+            try:
+                world_request["objective"] = self._derive_objective(state_snapshot)
+                world_request["available_functions"] = json.dumps(
+                    sorted(self.function_registry.list_functions()), ensure_ascii=False
+                )
+            except Exception:
+                pass
             world_output = self.world_agent.describe(world_request)
             LOGGER.info("World agent returned output.")
             LOGGER.debug(
@@ -591,6 +599,12 @@ class Orchestrator:
                 "allow_major": allow_major_allowed,
                 "flags": state_snapshot.get("flags", []),
             }
+            try:
+                event_request["objective"] = self._derive_objective(state_snapshot)
+                funcs = sorted(self.function_registry.list_functions())
+                event_request["available_functions"] = json.dumps(funcs, ensure_ascii=False)
+            except Exception:
+                pass
             # Surface active persistent motif to EventAgent if present.
             persistent = state_snapshot.get("persistent_motif") or {}
             try:
@@ -1177,6 +1191,7 @@ class Orchestrator:
             planner_calls_proposed = 0
             planner_calls_used = 0
             try:
+                import json as _json
                 available = list(self.function_registry.list_functions())
                 objective = (
                     (event_output.get("scene", "") or chosen_option.get("text", ""))[:120]
@@ -1184,8 +1199,24 @@ class Orchestrator:
                 planner_request = {
                     "WORLD_CONTEXT": self._build_world_context(state),
                     "objective": objective,
-                    "available_functions": ", ".join(sorted(available)),
+                    "available_functions": _json.dumps(sorted(available), ensure_ascii=False),
                 }
+                # Provide simple objective→function mapping hints
+                try:
+                    def _hints(obj: str) -> str:
+                        o = (obj or "").lower()
+                        hints = []
+                        if any(k in o for k in ("defense", "wall", "guard")):
+                            hints.append('{"name":"patrol_and_report","kwargs":{"npc_id":"Rhea"}}')
+                            hints.append('{"name":"adjust_metric","kwargs":{"metric":"order","delta":1,"cause":"tighten_watch"}}')
+                        if any(k in o for k in ("hidden", "room", "mystery")):
+                            hints.append('{"name":"move_and_take_item","kwargs":{"npc_id":"Rhea","item_id":"spyglass","location":"battlements"}}')
+                        if any(k in o for k in ("resource", "trade")):
+                            hints.append('{"name":"adjust_metric","kwargs":{"metric":"resources","delta":1,"cause":"optimize_supplies"}}')
+                        return "\n".join(hints) or ""
+                    planner_request["objective_hints"] = _hints(objective)
+                except Exception:
+                    planner_request["objective_hints"] = ""
                 plan = self.planner_agent.plan(planner_request)
                 gas = int(plan.get("gas", 1) or 1)
                 calls = plan.get("calls") or []
@@ -2668,6 +2699,7 @@ class Orchestrator:
                 )
             ),
             f"Location: {state.get('current_room', 'unknown')}",
+            f"Objective: {self._derive_objective(state)}",
             (
                 "Player: {name} — {summary}".format(
                     name=player.get("name", "Unknown"),
@@ -2708,6 +2740,49 @@ class Orchestrator:
         composed = "\n".join(part for part in sections if part)
         # Remove obvious repeated sentences/lines to reduce narrative monotony
         return self._dedupe_sentences(composed)
+
+    def _derive_objective(self, state: Dict[str, Any]) -> str:
+        try:
+            flags = [str(f).lower() for f in state.get("flags", []) if isinstance(f, str)]
+            motifs = state.get("recent_motifs", []) or []
+            motif = str(motifs[-1]).lower() if motifs else ""
+            if any("hidden_room" in f for f in flags) or "hidden" in motif:
+                return "investigate hidden room"
+            if any("wall" in f for f in flags) or "defense" in motif:
+                return "reinforce defenses"
+            if "trade" in motif:
+                return "improve resources via trade"
+            if "mystery" in motif:
+                return "advance the mystery arc"
+            return "advance story without repetition"
+        except Exception:
+            return "advance story without repetition"
+
+    def _function_doc(self, name: str) -> str:
+        table = {
+            "change_weather": "change_weather(atmosphere, sensory_details): Adjust ambient conditions.",
+            "spawn_item": "spawn_item(item_id, target): Create or place an item (player/nearby).",
+            "move_npc": "move_npc(npc_id, location): Move an NPC to a location.",
+            "adjust_metric": "adjust_metric(metric, delta, cause): Modify a world metric (order/resources/knowledge/glitch).",
+            "move_room": "move_room(room): Change current room/area.",
+            "set_flag": "set_flag(flag): Set a scenario/world flag.",
+            "clear_flag": "clear_flag(flag): Clear a scenario/world flag.",
+            "set_trust": "set_trust(npc_id, trust): Set NPC trust directly.",
+            "adjust_trust": "adjust_trust(npc_id, delta): Adjust NPC trust.",
+            "add_item_to_npc": "add_item_to_npc(npc_id, item_id): Give item to NPC.",
+            "remove_item_from_npc": "remove_item_from_npc(npc_id, item_id): Take item from NPC.",
+            "add_status": "add_status(npc_id, status, duration): Apply status effect.",
+            "remove_status": "remove_status(npc_id, status): Remove status effect.",
+            "spawn_npc": "spawn_npc(npc_id, location): Spawn an NPC in world.",
+            "despawn_npc": "despawn_npc(npc_id): Remove an NPC from world.",
+            "move_and_take_item": "move_and_take_item(npc_id, item_id, location?): Move then take item (macro).",
+            "patrol_and_report": "patrol_and_report(npc_id): Patrol next room, increase order, report (macro).",
+            "adjust_logic": "adjust_logic(): Increase logic score.",
+            "adjust_emotion": "adjust_emotion(): Increase emotion score.",
+            "raise_corruption": "raise_corruption(): Increase corruption score.",
+            "advance_turn": "advance_turn(): Increment the turn counter.",
+        }
+        return table.get(name, f"{name}(...): Safe function.")
 
     def _dedupe_sentences(self, text: str, max_repeats: int = 1) -> str:
         """Collapse consecutive repeating sentences to reduce echoing.
@@ -2778,6 +2853,8 @@ class Orchestrator:
                 r"I won't [^.?!]+[.?!]",
                 r"I will not [^.?!]+[.?!]",
                 r"I cannot rewrite [^.?!]+[.?!]",
+                r"is the rewritten prompt[^.?!]*[.?!]",
+                r"Write a story[^.?!]*[.?!]",
             ]
             cleaned = value
             for pat in refusal_patterns:
@@ -2785,6 +2862,9 @@ class Orchestrator:
 
             # Remove non-printable characters
             cleaned = re.sub(r"[^\x09\x0A\x0D\x20-\x7E]", " ", cleaned)
+            # Strip common markdown artifacts (bold, blockquote)
+            cleaned = re.sub(r"\*\*(.*?)\*\*", r"\1", cleaned)
+            cleaned = re.sub(r"^>\s*", "", cleaned, flags=re.MULTILINE)
             # Fix common truncation artifacts like stray single letters
             cleaned = re.sub(r"\b([hs])\s+", " ", cleaned)
             # Collapse repeated spaces

@@ -7,6 +7,8 @@ CONTEXT VARIABLES:
 - Time: {time}
 - Weather: {weather}
 - Ambient Mood: {mood}
+ - Objective: {objective}
+ - Available Functions: {available_functions}
 
 STYLE PROFILE:
 - Language: Poetic but concrete, sensory-rich
@@ -26,7 +28,9 @@ AVAILABLE FUNCTIONS:
 - adjust_metric(metric, delta): Apply small environmental nudges (e.g., knowledge +1)
 
 TASK:
-Generate atmospheric description for current environment.
+Generate atmospheric description for current environment. If appropriate,
+suggest safe functions that support the Objective (e.g., move_room to
+reach relevant area, change_weather to reflect tension).
 
 {WORLD_CONTEXT}
 

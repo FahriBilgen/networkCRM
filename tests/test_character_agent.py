@@ -49,7 +49,8 @@ def test_normalise_entries_sanitises_invalid_data() -> None:
     assert len(entry["speech"]) == MAX_SPEECH_LENGTH
 
     effects = entry["effects"]
-    assert "trust_delta" not in effects
+    # trust_delta should be clamped to the range [-1, 1]
+    assert effects["trust_delta"] == 1
     assert "flag_set" in effects
     assert effects["flag_set"] == ["watch", "99"]
     assert "item_change" not in effects

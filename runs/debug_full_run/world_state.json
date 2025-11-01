@@ -1,0 +1,99 @@
+{
+  "campaign_id": "default_campaign",
+  "turn_limit": 30,
+  "current_turn": 10,
+  "rng_seed": 12345,
+  "scores": {
+    "logic_score": 0,
+    "emotion_score": 0,
+    "corruption": 0
+  },
+  "flags": [
+    "world_change",
+    "Celestial Tapestry",
+    "force_major_event",
+    "major_starvation_hint",
+    "major_wall_alert"
+  ],
+  "memory_layers": [],
+  "active_layer": null,
+  "npc_fragments": {},
+  "inventory": [],
+  "lore": {},
+  "turn": 10,
+  "day": 3,
+  "time": "dawn",
+  "current_room": "courtyard",
+  "recent_events": [
+    "The Shieldbearer, standing resolute in the courtyard, gazes out at the desolate wasteland under a starlit sky. The air carries the scent of damp earth and oil lamp smoke, rough stone walls casting dan...",
+    "is the rewritten prompt:\n\nThe shimmering tendrils of the morning dew cascading from the ancient oak tree suddenly seemed to writhe and dance in a rhythmic pattern, their movements hinting at a hidden ...",
+    "'s the rewritten prompt with a sense of novelty and surprise:\n\n**The iridescent whispers of the wind carry a cryptic message that chills the very marrow of the bones. Unravel the enigma hidden within ..."
+  ],
+  "recent_motifs": [
+    "communication"
+  ],
+  "world_constraint_from_prev_turn": {
+    "atmosphere": "Cool, desolate wasteland under a starlit sky",
+    "sensory_details": "The air carries the scent of damp earth and oil lamp smoke shadows dance on rough stone walls."
+  },
+  "player": {
+    "name": "The Shieldbearer",
+    "inventory": [
+      "oil lamp",
+      "patched shield"
+    ],
+    "stats": {
+      "resolve": 3,
+      "empathy": 2
+    },
+    "summary": "A weary defender holding the western wall."
+  },
+  "character_summary": "Rhea is loyal but impulsive; Boris is cautious and calculating.",
+  "relationship_summary": "Rhea trusts the player deeply",
+  "metrics": {
+    "order": 56,
+    "morale": 70,
+    "resources": 39,
+    "knowledge": 61,
+    "corruption": 10,
+    "glitch": 26,
+    "risk_applied_total": 0,
+    "major_flag_set": false,
+    "major_events_triggered": 0,
+    "major_event_last_turn": null
+  },
+  "npc_trust": {
+    "Rhea": 2
+  },
+  "_glitch_buffer": 0,
+  "previous_judge_verdict": {
+    "consistent": true,
+    "reason": "The content is consistent with the established world, lore, and character logic. The scene described by the prompt fits within the context of the game's setting."
+  },
+  "player_choice_history": [
+    "dialogue",
+    "dialogue",
+    "dialogue",
+    "dialogue",
+    "dialogue",
+    "dialogue"
+  ],
+  "summary_text": "A major event shakes the village. Glitch level rises.",
+  "memory_short": [
+    "Turn 7: You ask the Shieldbearer about the shimmering tendrils of light in the sky, the aurora borealis. -> is the rewritten prompt:\n\nI stand amidst the whispering leaves and the rustling branches, bathed in ...",
+    "Turn 8: You ask the Shieldbearer about the shimmering tendrils of light in the sky, the aurora borealis. -> The Shieldbearer, standing resolute in the courtyard, gazes out at the desolate wasteland under a st...",
+    "Turn 9: Ask the Shieldbearer about the shimmering tendrils of light in the sky, the aurora borealis. -> is the rewritten prompt:\n\nThe shimmering tendrils of the morning dew cascading from the ancient oak ...",
+    "Memory summary: Turn 7: You ask the Shieldbearer about the shimmering tendrils of light in the sky, the aurora borealis. -> is the rewritten prompt:\n\nI stand amidst the whispering leaves and the rustling branches, ba...",
+    "Turn 10: Ask the Shieldbearer about the shimmering tendrils of light in the sky, the aurora borealis. -> 's the rewritten prompt with a sense of novelty and surprise:\n\n**The iridescent whispers of the wind..."
+  ],
+  "memory_long": [
+    "Turn 7: Major event triggered (major_starvation_hint)",
+    "Turn 8: Major event triggered (major_starvation_hint, major_wall_alert)",
+    "Turn 9: Major event triggered (major_starvation_hint, major_wall_alert)",
+    "Turn 10: Major event triggered (major_starvation_hint, major_wall_alert)"
+  ],
+  "status_effects": [],
+  "last_major_event_turn": 9,
+  "major_events_triggered": 4,
+  "major_event_last_turn": 10
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "turns": 0,
+    "finalized": false,
+    "win_loss": null,
+    "major_events": 0,
+    "safe_functions_executed": 0,
+    "player_views": [],
+    "error": "spawn_item requires item_id and target",
+    "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\tools\\smoke_test.py\", line 55, in run_once\n    res = orch.run_turn()\n          ^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\fortress_director\\orchestrator\\orchestrator.py\", line 929, in run_turn\n    safe_function_results = self._execute_safe_function_queue(\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\fortress_director\\orchestrator\\orchestrator.py\", line 1617, in _execute_safe_function_queue\n    calls = self._collect_safe_function_calls(\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\fortress_director\\orchestrator\\orchestrator.py\", line 1663, in _collect_safe_function_calls\n    self._normalize_safe_function_entries(\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\fortress_director\\orchestrator\\orchestrator.py\", line 1709, in _normalize_safe_function_entries\n    normalized_kwargs = self._normalize_safe_function_kwargs(\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\fortress_director\\orchestrator\\orchestrator.py\", line 1792, in _normalize_safe_function_kwargs\n    raise ValueError(\"spawn_item requires item_id and target\")\nValueError: spawn_item requires item_id and target\n"
+  },
+  {
+    "turns": 0,
+    "finalized": false,
+    "win_loss": null,
+    "major_events": 0,
+    "safe_functions_executed": 0,
+    "player_views": [],
+    "error": "spawn_item requires item_id and target",
+    "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\tools\\smoke_test.py\", line 55, in run_once\n    res = orch.run_turn()\n          ^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\fortress_director\\orchestrator\\orchestrator.py\", line 929, in run_turn\n    safe_function_results = self._execute_safe_function_queue(\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\fortress_director\\orchestrator\\orchestrator.py\", line 1617, in _execute_safe_function_queue\n    calls = self._collect_safe_function_calls(\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\fortress_director\\orchestrator\\orchestrator.py\", line 1663, in _collect_safe_function_calls\n    self._normalize_safe_function_entries(\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\fortress_director\\orchestrator\\orchestrator.py\", line 1709, in _normalize_safe_function_entries\n    normalized_kwargs = self._normalize_safe_function_kwargs(\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\fortress_director\\orchestrator\\orchestrator.py\", line 1792, in _normalize_safe_function_kwargs\n    raise ValueError(\"spawn_item requires item_id and target\")\nValueError: spawn_item requires item_id and target\n"
+  },
+  {
+    "turns": 0,
+    "finalized": false,
+    "win_loss": null,
+    "major_events": 0,
+    "safe_functions_executed": 0,
+    "player_views": [],
+    "error": "spawn_item requires item_id and target",
+    "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\tools\\smoke_test.py\", line 55, in run_once\n    res = orch.run_turn()\n          ^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\fortress_director\\orchestrator\\orchestrator.py\", line 929, in run_turn\n    safe_function_results = self._execute_safe_function_queue(\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\fortress_director\\orchestrator\\orchestrator.py\", line 1617, in _execute_safe_function_queue\n    calls = self._collect_safe_function_calls(\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\fortress_director\\orchestrator\\orchestrator.py\", line 1663, in _collect_safe_function_calls\n    self._normalize_safe_function_entries(\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\fortress_director\\orchestrator\\orchestrator.py\", line 1709, in _normalize_safe_function_entries\n    normalized_kwargs = self._normalize_safe_function_kwargs(\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Fahri\\OneDrive\\Masaüstü\\oyun\\fortress_director\\orchestrator\\orchestrator.py\", line 1792, in _normalize_safe_function_kwargs\n    raise ValueError(\"spawn_item requires item_id and target\")\nValueError: spawn_item requires item_id and target\n"
+  }
+]

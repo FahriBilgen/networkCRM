@@ -86,6 +86,27 @@ class MetricManager:
             raise ValueError("metric name is required")
         current = self.value(metric)
         limit = self.LIMITS.get(metric, (0, 9999))
+        # Glitch smoothing: bir turda max +2 artış, fazlası buffer'a alınır
+        if metric == "glitch":
+            max_increase = 2
+            # Buffer'ı state'e kaydet
+            buffer_key = "_glitch_buffer"
+            buffer = self.state.setdefault(buffer_key, 0)
+            total_delta = int(delta) + int(buffer)
+            if total_delta > max_increase:
+                applied = max_increase
+                leftover = total_delta - max_increase
+            elif total_delta < -max_increase:
+                applied = -max_increase
+                leftover = total_delta + max_increase
+            else:
+                applied = total_delta
+                leftover = 0
+            self.state[buffer_key] = leftover
+            LOGGER.debug(
+                f"Glitch smoothing: requested delta={delta}, buffer={buffer}, applied={applied}, leftover={leftover}"
+            )
+            delta = applied
         LOGGER.debug(
             "Adjusting metric '%s': current=%s, delta=%s, limits=%s (cause=%s)",
             metric,

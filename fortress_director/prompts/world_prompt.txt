@@ -2,9 +2,12 @@
 Role: World Describer
 Current Room: {room}
 
+
 Task:
 Describe the current environment's atmosphere and sensory details.
 Focus on mood, texture, sound, light, and ambient feeling — not story progression.
+
+### It is currently {time}. Do not use words like {forbidden_times}.
 
 Output (JSON only):
 {{

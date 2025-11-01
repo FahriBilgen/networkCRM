@@ -10,19 +10,30 @@ CONTEXT VARIABLES:
 - World State: {world_constraint_from_prev_turn}
 - Active Motifs: {recent_motifs}
 - Lore Continuity: {lore_continuity_weight}
+- Judge Verdict: {judge_verdict}
+- Judge Feedback: {judge_feedback}
+- Objective: {objective}
+ - Available Functions: {available_functions}
 
 STYLE PROFILE:
 - Narrative Style: Dramatic, tension-building, choice-driven
-- Option Design: Diegetic, meaningful consequences
+- Option Design: Diegetic, meaningful consequences, concrete actions
 - Scene Length: 40-60 words
 - Choice Balance: Mix of safe/risky/social/exploratory options
+- Judge Adjustments: If coherence < 70, increase narrative clarity and reduce complexity. If integrity < 70, emphasize lore-consistent options. If tone_alignment < 70, adjust emotional register to match established atmosphere. Apply judge_feedback corrections directly.
 
 QUALITY CONSTRAINTS:
 - Reference recent events for continuity
 - Avoid motif repetition (don't repeat {recent_motifs})
 - Maintain world consistency and lore
-- Generate exactly 3 diverse options
-- Use action_type: dialog/interaction/exploration
+- Generate exactly 3 diverse options with concrete mechanical effects
+- Ensure at least 2 distinct action_type values among the 3 options.
+- Prefer action_type diversity across turns (avoid repeating the same
+  primary type from the previous turn if possible).
+- Use action_type: dialog/interaction/exploration/defense/trade
+ - Align with the Objective when choosing focus or function suggestions.
+- Judge Compliance: Adjust content based on judge verdict scores - prioritize coherence if low, reinforce integrity if low, realign tone if misaligned
+- Concrete Actions: Avoid abstract options like "contemplate destiny" - use specific actions like "search for supplies", "fortify position", "negotiate terms"
 
 AVAILABLE FUNCTIONS:
 - change_weather(weather_type)
@@ -33,7 +44,7 @@ AVAILABLE FUNCTIONS:
 - move_room(room)
 
 TASK:
-Write a short scene description and generate exactly 3 diegetic player options that advance the story.
+Write a short scene description and generate exactly 3 diegetic player options that advance the story with concrete mechanical consequences.
 
 {WORLD_CONTEXT}
 
@@ -41,9 +52,9 @@ OUTPUT FORMAT (JSON only):
 {{
   "scene": "string (40-60 words, narrative description)",
   "options": [
-    {{"id": "option1", "text": "string", "action_type": "dialog/interaction/exploration"}},
-    {{"id": "option2", "text": "string", "action_type": "dialog/interaction/exploration"}},
-    {{"id": "option3", "text": "string", "action_type": "dialog/interaction/exploration"}}
+    {{"id": "option1", "text": "string (concrete action with clear consequence)", "action_type": "dialog/interaction/exploration/defense/trade"}},
+    {{"id": "option2", "text": "string (concrete action with clear consequence)", "action_type": "dialog/interaction/exploration/defense/trade"}},
+    {{"id": "option3", "text": "string (concrete action with clear consequence)", "action_type": "dialog/interaction/exploration/defense/trade"}}
   ],
   "major_event": false,
   "safe_functions": ["optional function calls"],
@@ -56,3 +67,5 @@ VALIDATION CHECKS:
 - Scene continues from recent events
 - No motif repetition
 - Functions use keyword arguments only
+- Avoid repetitive phrasing such as starting multiple options with
+  the same leading verb (e.g. "Ask the ..."). Vary verbs and focus.

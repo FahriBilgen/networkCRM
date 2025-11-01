@@ -1,0 +1,63 @@
+{
+  "WORLD_CONTEXT": "Turn 20 | Day 5 | Time dawn\nLocation: keep\nObjective: investigate hidden room\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Nighttime calmness envelops stone battlements.\", \"sensory_details\": \"The cool breeze carries the tangy scent of salt and damp earth, contrasting with memories of sunwarmed surfaces.\"}\nRecent events: The Shieldbearer stands guard, his weary eyes scanning the horizon as the shadows deepen. The cool breeze carries the scent of salt and damp earth, a stark contrast to the warmth of yesterday' sun. Su...; The Shieldbearer, standing watch on the battlements, turns to face you as you approach. His weary eyes scan your presence before returning to their vigil over the horizon. Suddenly, intruders are spot...; The Shieldbearer, standing watch on the battlements, turns to face you as you approach. His weary eyes scan your presence before returning to their vigil over the horizon. You ask him about the rumore... Recent motifs: communication\nRecent major events: none\nRelationship summary: Rhea trusts the player deeply; Shieldbearer is neutral toward the player\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating. Metrics: {\"order\": 57, \"morale\": 91, \"resources\": 45, \"knowledge\": 79, \"corruption\": 10, \"glitch\": 32, \"risk_applied_total\": 0, \"major_flag_set\": false, \"major_events_triggered\": 0, \"major_event_last_turn\": null}",
+  "scene": "The campaign has concluded.",
+  "options": [],
+  "world": {
+    "atmosphere": "The campaign has concluded.",
+    "sensory_details": "All is quiet across Lornhaven."
+  },
+  "event": {
+    "scene": "",
+    "options": [],
+    "major_event": false
+  },
+  "player_choice": {
+    "id": "end",
+    "text": "Campaign ended.",
+    "action_type": "end"
+  },
+  "character_reactions": [],
+  "npcs": [
+    {
+      "name": "Rhea",
+      "trust": 4,
+      "summary": "Rhea is loyal but impulsive"
+    },
+    {
+      "name": "Bor",
+      "trust": 0,
+      "summary": "Boris is cautious and calculating."
+    }
+  ],
+  "safe_function_history": [],
+  "room_history": [
+    {
+      "room": "keep",
+      "turn": 20,
+      "description": "Currently in keep"
+    }
+  ],
+  "summary_text": "Another uneventful watch passes by.",
+  "metrics_after": {
+    "order": 57,
+    "morale": 91,
+    "resources": 45,
+    "knowledge": 79,
+    "corruption": 10,
+    "glitch": 32,
+    "risk_applied_total": 0,
+    "major_flag_set": false,
+    "major_events_triggered": 0,
+    "major_event_last_turn": null
+  },
+  "glitch": {
+    "roll": 0,
+    "effects": []
+  },
+  "logs": [],
+  "win_loss": {
+    "status": "loss",
+    "reason": "game_over"
+  },
+  "narrative": "Campaign ended."
+}

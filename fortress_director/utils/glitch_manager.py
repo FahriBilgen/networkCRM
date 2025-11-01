@@ -41,37 +41,64 @@ class GlitchManager:
         effects: List[str] = []
         triggered_loss = False
 
-        # Trend-based loss trigger: if glitch > 25 and increase > 10, trigger loss
-        glitch_increase = current_glitch - self.previous_glitch
-        if current_glitch > 25 and glitch_increase > 10:
-            effects.append("Glitch momentum overload triggers early cascade.")
-            metrics.adjust_metric("glitch", 10, cause="glitch:momentum_overload")
-            triggered_loss = True
-        elif roll <= 30:
+        # Trend-based loss trigger disabled for MVP testing
+        if roll <= 30:
             effects.append("Minor static ripples along the parapets.")
             metrics.adjust_metric("glitch", 1, cause="glitch:cosmetic_noise")
+            metrics.adjust_metric("morale", -1, cause="glitch:unease")
         elif roll <= 60:
             effects.append("Pathfinding errors unsettle the patrol routes.")
             metrics.apply_bulk(
                 (
-                    ("order", -3, "glitch:medium_anomaly"),
-                    ("morale", -2, "glitch:medium_anomaly"),
-                    ("glitch", 4, "glitch:medium_anomaly"),
+                    ("order", -2, "glitch:medium_anomaly"),
+                    ("morale", -1, "glitch:medium_anomaly"),
+                    ("glitch", 2, "glitch:medium_anomaly"),
                 )
             )
-        elif roll < 85:
+        elif roll < 95:
             effects.append("Major anomaly distorts the western wall segment.")
             metrics.apply_bulk(
                 (
-                    ("resources", -6, "glitch:major_anomaly"),
-                    ("knowledge", -5, "glitch:major_anomaly"),
-                    ("glitch", 6, "glitch:major_anomaly"),
+                    ("resources", -3, "glitch:major_anomaly"),
+                    ("knowledge", -2, "glitch:major_anomaly"),
+                    ("glitch", 3, "glitch:major_anomaly"),
                 )
             )
+        elif roll < 99:
+            effects.append("Glitch cascade partially contained.")
+            metrics.adjust_metric("glitch", 3, cause="glitch:overload")
+            # No loss for 95-98 rolls to reduce early-game false positives
         else:
             effects.append("Glitch cascade overwhelms containment protocols.")
-            metrics.adjust_metric("glitch", 15, cause="glitch:overload")
-            triggered_loss = True
+            metrics.adjust_metric("glitch", 4, cause="glitch:overload")
+            # Minimum 10 turn before loss can be triggered
+            if turn >= 10:
+                triggered_loss = True
+
+        # Tie glitch to major events deterministically: if a major event flag is set
+        # this turn, swing glitch by +/-5 based on roll parity to create drama.
+        snapshot = metrics.snapshot()
+        try:
+            if bool(snapshot.get("major_flag_set")):
+                if roll % 2 == 0:
+                    metrics.adjust_metric("glitch", 5, cause="glitch:major_event_surge")
+                    effects.append("Major event destabilizes the weave (glitch surges).")
+                else:
+                    metrics.adjust_metric("glitch", -5, cause="glitch:major_event_relief")
+                    effects.append("Aftershock settles briefly (glitch subsides).")
+        except Exception:
+            pass
+
+        # Rare catastrophic failure chance scaled by current glitch level
+        # Deterministic via roll bands: when glitch >= 70 and roll in {7,57,77}
+        try:
+            if metrics.value("glitch") >= 70 and roll in (7, 57, 77):
+                effects.append("Containment breach! Systems falter under extreme stress.")
+                metrics.adjust_metric("order", -5, cause="glitch:breach")
+                metrics.adjust_metric("morale", -5, cause="glitch:breach")
+                triggered_loss = True
+        except Exception:
+            pass
 
         # Update previous glitch for next turn
         self.previous_glitch = metrics.value("glitch")

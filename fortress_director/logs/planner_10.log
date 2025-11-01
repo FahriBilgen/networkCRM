@@ -1,0 +1,56 @@
+2025-11-02 00:24:22,168 [DEBUG] root: Logging configured (console=INFO, file=DEBUG, path=C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\logs\planner_10.log)
+2025-11-02 00:24:22,168 [DEBUG] __main__: Logging configured via CLI (console level=INFO, path=C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\logs\planner_10.log)
+2025-11-02 00:24:22,168 [INFO] __main__: Detailed logs written to C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\logs\planner_10.log
+2025-11-02 00:24:22,179 [INFO] fortress_director.codeaware.function_registry: Registering safe function: change_weather
+2025-11-02 00:24:22,190 [INFO] fortress_director.codeaware.function_registry: Safe function 'change_weather' registered successfully.
+2025-11-02 00:24:22,190 [INFO] fortress_director.codeaware.function_registry: Registering safe function: spawn_item
+2025-11-02 00:24:22,190 [INFO] fortress_director.codeaware.function_registry: Safe function 'spawn_item' registered successfully.
+2025-11-02 00:24:22,190 [INFO] fortress_director.codeaware.function_registry: Registering safe function: move_npc
+2025-11-02 00:24:22,190 [INFO] fortress_director.codeaware.function_registry: Safe function 'move_npc' registered successfully.
+2025-11-02 00:24:22,190 [INFO] fortress_director.codeaware.function_registry: Registering safe function: adjust_logic
+2025-11-02 00:24:22,190 [INFO] fortress_director.codeaware.function_registry: Safe function 'adjust_logic' registered successfully.
+2025-11-02 00:24:22,190 [INFO] fortress_director.codeaware.function_registry: Registering safe function: adjust_emotion
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Safe function 'adjust_emotion' registered successfully.
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Registering safe function: raise_corruption
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Safe function 'raise_corruption' registered successfully.
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Registering safe function: advance_turn
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Safe function 'advance_turn' registered successfully.
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Registering safe function: modify_resources
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Safe function 'modify_resources' registered successfully.
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Registering safe function: adjust_metric
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Safe function 'adjust_metric' registered successfully.
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Registering safe function: move_room
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Safe function 'move_room' registered successfully.
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Registering safe function: set_flag
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Safe function 'set_flag' registered successfully.
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Registering safe function: clear_flag
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Safe function 'clear_flag' registered successfully.
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Registering safe function: set_trust
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Safe function 'set_trust' registered successfully.
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Registering safe function: adjust_trust
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Safe function 'adjust_trust' registered successfully.
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Registering safe function: add_item_to_npc
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Safe function 'add_item_to_npc' registered successfully.
+2025-11-02 00:24:22,191 [INFO] fortress_director.codeaware.function_registry: Registering safe function: remove_item_from_npc
+2025-11-02 00:24:22,192 [INFO] fortress_director.codeaware.function_registry: Safe function 'remove_item_from_npc' registered successfully.
+2025-11-02 00:24:22,192 [INFO] fortress_director.codeaware.function_registry: Registering safe function: add_status
+2025-11-02 00:24:22,192 [INFO] fortress_director.codeaware.function_registry: Safe function 'add_status' registered successfully.
+2025-11-02 00:24:22,192 [INFO] fortress_director.codeaware.function_registry: Registering safe function: remove_status
+2025-11-02 00:24:22,192 [INFO] fortress_director.codeaware.function_registry: Safe function 'remove_status' registered successfully.
+2025-11-02 00:24:22,192 [INFO] fortress_director.codeaware.function_registry: Registering safe function: spawn_npc
+2025-11-02 00:24:22,192 [INFO] fortress_director.codeaware.function_registry: Safe function 'spawn_npc' registered successfully.
+2025-11-02 00:24:22,192 [INFO] fortress_director.codeaware.function_registry: Registering safe function: despawn_npc
+2025-11-02 00:24:22,192 [INFO] fortress_director.codeaware.function_registry: Safe function 'despawn_npc' registered successfully.
+2025-11-02 00:24:22,192 [INFO] fortress_director.codeaware.function_registry: Registering safe function: move_and_take_item
+2025-11-02 00:24:22,192 [INFO] fortress_director.codeaware.function_registry: Safe function 'move_and_take_item' registered successfully.
+2025-11-02 00:24:22,192 [INFO] fortress_director.codeaware.function_registry: Registering safe function: patrol_and_report
+2025-11-02 00:24:22,192 [INFO] fortress_director.codeaware.function_registry: Safe function 'patrol_and_report' registered successfully.
+2025-11-02 00:24:22,192 [INFO] fortress_director.orchestrator.orchestrator: run_turn called (player_choice_id=None)
+2025-11-02 00:24:22,193 [DEBUG] fortress_director.orchestrator.orchestrator: Resetting function validator and creating checkpoint: {'phase': 'turn_start'}
+2025-11-02 00:24:22,193 [DEBUG] fortress_director.orchestrator.orchestrator: State snapshot loaded from C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\data\world_state.json (turn=20)
+2025-11-02 00:24:22,193 [INFO] fortress_director.codeaware.rollback_system: Checkpoint created (turn=20, call=None)
+2025-11-02 00:24:22,193 [INFO] fortress_director.orchestrator.orchestrator: Turn execution started.
+2025-11-02 00:24:22,193 [DEBUG] fortress_director.orchestrator.orchestrator: State snapshot loaded from C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\data\world_state.json (turn=20)
+2025-11-02 00:24:22,193 [DEBUG] fortress_director.orchestrator.orchestrator: Pre-turn state snapshot: {"_glitch_buffer": 0, "active_layer": null, "campaign_id": "default_campaign", "character_summary": "Rhea is loyal but impulsive; Boris is cautious and calculating.", "current_room": "keep", "current_turn": 20, "day": 5, "final_summary": "Defeat - turn_limit_exceeded | Morale: 91, Order: 57, Resources: 45 | Glitch level: 32, Major events: 10 | Last major event: turn 19 | Notable characters: Rhea is loyal but impulsive; Boris is cautious and calculating.", "finalized": true, "flags": ["hidden_room_search", "major_wall_alert", "has_visited_castle", "hidden_room_key", "force_major_event", "maj...
+2025-11-02 00:24:22,193 [INFO] fortress_director.orchestrator.orchestrator: Game already finalized, terminating turn early.
+2025-11-02 00:24:22,194 [DEBUG] fortress_director.utils.metrics_manager: MetricManager initialised with metrics: {'order': 57, 'morale': 91, 'resources': 45, 'knowledge': 79, 'corruption': 10, 'glitch': 32, 'risk_applied_total': 0, 'major_flag_set': False, 'major_events_triggered': 0, 'major_event_last_turn': None}
