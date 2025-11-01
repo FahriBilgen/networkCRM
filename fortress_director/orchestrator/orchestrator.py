@@ -4,6 +4,7 @@ import logging
 import random
 import re
 from copy import deepcopy
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -2587,13 +2588,23 @@ class Orchestrator:
             options = [fallback_option]
 
         selected: Optional[Dict[str, Any]] = None
-        if player_choice_id:
+        # Random selection support: env flag or special id
+        random_mode = False
+        try:
+            random_mode = os.environ.get("FORTRESS_RANDOM_CHOICES", "0") == "1" or (
+                isinstance(player_choice_id, str)
+                and player_choice_id.strip().lower() in {"__random__", "random"}
+            )
+        except Exception:
+            random_mode = False
+
+        if player_choice_id and not random_mode:
             for option in options:
                 if str(option.get("id")) == str(player_choice_id):
                     selected = option
                     break
         if selected is None:
-            selected = options[0]
+            selected = random.choice(options) if random_mode else options[0]
 
         resolved = {}
         for key in ("id", "text", "action_type"):

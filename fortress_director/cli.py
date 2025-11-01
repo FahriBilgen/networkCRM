@@ -105,8 +105,7 @@ def _handle_run(args: argparse.Namespace) -> None:
     run_dir.mkdir(parents=True, exist_ok=True)
 
     results: List[Dict[str, Any]] = []
-    for turn_index in range(turns):
-        result = _run_turn(args.choice_id)
+    for turn_index in range(turns):\n        import os\n        if getattr(args, "random_choices", False):\n            os.environ["FORTRESS_RANDOM_CHOICES"] = "1"\n        result = _run_turn(args.choice_id if not getattr(args, "random_choices", False) else "__random__")
         results.append(result)
         reactions = result.get("character_reactions", [])
         for reaction in reactions:
@@ -189,6 +188,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=1,
         help="Number of sequential turns to execute (default: 1)",
     )
+    run_parser.add_argument(
+        "--random-choices",
+        action="store_true",
+        help="Pick a random option each turn (simulates first-time play)",
+    )
     run_parser.set_defaults(handler=_handle_run)
 
     debug_parser = subparsers.add_parser(
@@ -262,3 +266,4 @@ def main(argv: list[str] | None = None) -> None:
 
 if __name__ == "__main__":
     main()
+
