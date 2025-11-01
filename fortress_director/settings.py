@@ -34,6 +34,7 @@ class Settings:
     max_active_models: int
     semantic_cache_ttl: int
     models: Mapping[str, ModelConfig]
+    safe_function_gas_budget: int = 0
 
 
 DEFAULT_WORLD_STATE = {
@@ -133,6 +134,7 @@ SETTINGS = Settings(
             max_tokens=256,
         ),
     },
+    safe_function_gas_budget=6,
 )
 
 # Runtime tuning knobs for creativity and judge behaviour.

@@ -1206,13 +1206,16 @@ class Orchestrator:
                     def _hints(obj: str) -> str:
                         o = (obj or "").lower()
                         hints = []
-                        if any(k in o for k in ("defense", "wall", "guard")):
+                        if any(k in o for k in ("defense", "wall", "guard", "fortify")):
                             hints.append('{"name":"patrol_and_report","kwargs":{"npc_id":"Rhea"}}')
                             hints.append('{"name":"adjust_metric","kwargs":{"metric":"order","delta":1,"cause":"tighten_watch"}}')
-                        if any(k in o for k in ("hidden", "room", "mystery")):
+                        if any(k in o for k in ("hidden", "room", "mystery", "investigate")):
                             hints.append('{"name":"move_and_take_item","kwargs":{"npc_id":"Rhea","item_id":"spyglass","location":"battlements"}}')
-                        if any(k in o for k in ("resource", "trade")):
+                            hints.append('{"name":"adjust_metric","kwargs":{"metric":"knowledge","delta":1,"cause":"investigate_clues"}}')
+                        if any(k in o for k in ("resource", "trade", "supplies", "economy")):
                             hints.append('{"name":"adjust_metric","kwargs":{"metric":"resources","delta":1,"cause":"optimize_supplies"}}')
+                        if any(k in o for k in ("glitch", "anomaly")):
+                            hints.append('{"name":"adjust_metric","kwargs":{"metric":"glitch","delta":-1,"cause":"stabilize_system"}}')
                         return "\n".join(hints) or ""
                     planner_request["objective_hints"] = _hints(objective)
                 except Exception:
@@ -2342,10 +2345,25 @@ class Orchestrator:
         source_label: str,
     ) -> Any:
         """Execute a single safe function with validation and rollback support."""
-        return self.run_safe_function(
+        outcome = self.run_safe_function(
             func_payload,
             metadata={"source": source_label},
         )
+        # Update policy history for cooldown/dedup stability
+        try:
+            state = self.state_store.snapshot()
+            name = str(func_payload.get("name", "")).strip()
+            kwargs = dict(func_payload.get("kwargs", {}) or {})
+            key = self._sf_key_for(name, kwargs)
+            current_turn = int(state.get("turn", state.get("current_turn", 0)) or 0)
+            history = state.setdefault("sf_history", {})
+            entries = history.setdefault(name, [])
+            entries.append({"key": key, "turn": current_turn})
+            history[name] = entries[-20:]
+            self.state_store.persist(state)
+        except Exception:
+            pass
+        return outcome
 
     def _collect_safe_function_calls(
         self,
