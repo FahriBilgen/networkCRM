@@ -22,6 +22,8 @@ QUALITY CONSTRAINTS:
 
 AVAILABLE FUNCTIONS:
 - move_room(room): Change location if story requires
+- change_weather(atmosphere, sensory_details): Adjust ambient conditions
+- adjust_metric(metric, delta): Apply small environmental nudges (e.g., knowledge +1)
 
 TASK:
 Generate atmospheric description for current environment.
