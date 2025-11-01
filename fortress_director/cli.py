@@ -105,7 +105,14 @@ def _handle_run(args: argparse.Namespace) -> None:
     run_dir.mkdir(parents=True, exist_ok=True)
 
     results: List[Dict[str, Any]] = []
-    for turn_index in range(turns):\n        import os\n        if getattr(args, "random_choices", False):\n            os.environ["FORTRESS_RANDOM_CHOICES"] = "1"\n        result = _run_turn(args.choice_id if not getattr(args, "random_choices", False) else "__random__")
+    for turn_index in range(turns):
+        if getattr(args, "random_choices", False):
+            import os as _os
+            _os.environ["FORTRESS_RANDOM_CHOICES"] = "1"
+            choice_id = "__random__"
+        else:
+            choice_id = args.choice_id
+        result = _run_turn(choice_id)
         results.append(result)
         reactions = result.get("character_reactions", [])
         for reaction in reactions:
