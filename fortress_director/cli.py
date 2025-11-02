@@ -42,8 +42,7 @@ def _parse_json_argument(raw: str | None, expected: type, label: str) -> Any:
     return data
 
 
-def _run_turn(choice_id: str | None) -> Dict[str, Any]:
-    orchestrator = Orchestrator.build_default()
+def _run_turn(choice_id: str | None, orchestrator: Orchestrator) -> Dict[str, Any]:
     return orchestrator.run_turn(player_choice_id=choice_id)
 
 
@@ -99,12 +98,18 @@ def _handle_safe_call(args: argparse.Namespace) -> None:
 
 def _handle_run(args: argparse.Namespace) -> None:
     turns = max(1, getattr(args, "turns", 1))
-    run_dir = SETTINGS.project_root / "runs" / "latest_run"
-    if run_dir.exists():
-        shutil.rmtree(run_dir)
+    # Her çalıştırma için benzersiz zaman damgalı klasör oluştur
+    run_id = datetime.utcnow().strftime("%Y%m%d_%H%M%S_%f")
+    run_dir = SETTINGS.project_root / "runs" / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
 
     results: List[Dict[str, Any]] = []
+    # Orchestrator'ı bir kez oluştur, run klasörünü ata
+    orchestrator = Orchestrator.build_default()
+    try:
+        orchestrator.runs_dir = run_dir
+    except Exception:
+        pass
     for turn_index in range(turns):
         if getattr(args, "random_choices", False):
             import os as _os
@@ -112,7 +117,7 @@ def _handle_run(args: argparse.Namespace) -> None:
             choice_id = "__random__"
         else:
             choice_id = args.choice_id
-        result = _run_turn(choice_id)
+        result = _run_turn(choice_id, orchestrator)
         results.append(result)
         reactions = result.get("character_reactions", [])
         for reaction in reactions:
@@ -130,9 +135,11 @@ def _handle_run(args: argparse.Namespace) -> None:
         if result.get("win_loss", {}).get("status") != "ongoing":
             break
 
-    log_path = SETTINGS.log_dir / "fortress_run.log"
-    if log_path.exists():
-        shutil.copy2(log_path, run_dir / "fortress_run.log")
+    # Bu süreçte kullanılan log dosyasını run klasörüne kopyala
+    log_path = getattr(args, "_log_path", None)
+    if isinstance(log_path, Path) and log_path.exists():
+        # run.log ismiyle kopyala
+        shutil.copy2(log_path, run_dir / "run.log")
 
 
 def _handle_debug(_args: argparse.Namespace) -> None:
@@ -161,8 +168,9 @@ def _prepare_log_file(filename: str | None) -> Path:
             path = SETTINGS.log_dir / path
         path.parent.mkdir(parents=True, exist_ok=True)
         return path
-    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-    return SETTINGS.log_dir / f"turn_{timestamp}.log"
+    # Varsayılan: zaman damgalı tekil log dosyası
+    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S_%f")
+    return SETTINGS.log_dir / f"run_{timestamp}.log"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -264,6 +272,8 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     log_path = _configure_logging(args.log_level, args.log_file)
     logging.getLogger(__name__).info("Detailed logs written to %s", log_path)
+    # Handler'a log dosya yolunu geç, böylece run klasörüne kopyalanabilir
+    setattr(args, "_log_path", log_path)
     handler = cast(
         Callable[[argparse.Namespace], None],
         getattr(args, "handler"),

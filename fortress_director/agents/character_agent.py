@@ -113,6 +113,24 @@ class CharacterAgent(BaseAgent):
                 "WORLD_CONTEXT", ""
             )
 
+        # Emotional bellek: son birkaç diyalogu bağlamın başına ekle
+        try:
+            emotional_memory = variables.get("emotional_memory", []) or []
+            if emotional_memory:
+                recent_echoes = emotional_memory[-4:]
+                echoes_text = "; ".join(
+                    f"{item.get('name', 'Unknown')}: {str(item.get('speech', '')).strip()}"
+                    for item in recent_echoes
+                    if isinstance(item, dict)
+                )
+                if echoes_text:
+                    variables["WORLD_CONTEXT"] = (
+                        f"EMOTIONAL ECHOES: {echoes_text}\n\n"
+                        + variables.get("WORLD_CONTEXT", "")
+                    )
+        except Exception:
+            pass
+
         # Add trust-based persona guidance for character development
         variables = self._add_persona_guidance(variables)
         # Enforce variation if the same NPC intent repeats in recent memory
@@ -191,6 +209,39 @@ class CharacterAgent(BaseAgent):
                 )
 
             out = self._normalise_entries(entries)
+            # Value-driven autonomous behaviors: allow Rhea/Boris to break pattern
+            # when conditions call for it (increases dramatic agency).
+            try:
+                metrics = variables.get("metrics") or {}
+                morale = int(metrics.get("morale", 50))
+                glitch = int(metrics.get("glitch", 0))
+                order = int(metrics.get("order", 50))
+                # If morale is low and glitch high, let Rhea propose a risky move
+                if morale <= 30 and glitch >= 60:
+                    out.append(
+                        {
+                            "name": "Rhea",
+                            "intent": "improvise",
+                            "action": "Defies protocol to scout the breach alone.",
+                            "speech": "If hope is thin, I will cut a path for it.",
+                            "effects": {"metric_changes": {"knowledge": 2, "order": -2}},
+                            "safe_functions": [],
+                        }
+                    )
+                # If order is low and morale decent, Boris forces structure
+                if order <= 30 and morale >= 40:
+                    out.append(
+                        {
+                            "name": "Boris",
+                            "intent": "command",
+                            "action": "Imposes ration rotations and guard schedules.",
+                            "speech": "We bend now or break later—choose.",
+                            "effects": {"metric_changes": {"order": 3, "morale": -1}},
+                            "safe_functions": [],
+                        }
+                    )
+            except Exception:
+                pass
             # Enforce intent variety in output: do not allow same intent as previous turn for each NPC
             for entry in out:
                 npc = entry.get("name")

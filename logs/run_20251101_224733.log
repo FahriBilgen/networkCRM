@@ -1,0 +1,197 @@
+2025-11-02 01:47:33,757 [DEBUG] root: Logging configured (console=INFO, file=DEBUG, path=C:\Users\Fahri\OneDrive\Masaüstü\oyun\logs\run_20251101_224733.log)
+2025-11-02 01:47:33,757 [DEBUG] __main__: Logging configured via CLI (console level=INFO, path=C:\Users\Fahri\OneDrive\Masaüstü\oyun\logs\run_20251101_224733.log)
+2025-11-02 01:47:33,757 [INFO] __main__: Detailed logs written to C:\Users\Fahri\OneDrive\Masaüstü\oyun\logs\run_20251101_224733.log
+2025-11-02 01:47:33,982 [DEBUG] root: Logging configured (console=INFO, file=DEBUG, path=C:\Users\Fahri\OneDrive\Masaüstü\oyun\logs\run_20251101_224733.log)
+2025-11-02 01:47:33,983 [DEBUG] __main__: Logging configured via CLI (console level=INFO, path=C:\Users\Fahri\OneDrive\Masaüstü\oyun\logs\run_20251101_224733.log)
+2025-11-02 01:47:33,983 [INFO] __main__: Detailed logs written to C:\Users\Fahri\OneDrive\Masaüstü\oyun\logs\run_20251101_224733.log
+2025-11-02 01:47:33,986 [INFO] fortress_director.codeaware.function_registry: Registering safe function: change_weather
+2025-11-02 01:47:33,986 [INFO] fortress_director.codeaware.function_registry: Safe function 'change_weather' registered successfully.
+2025-11-02 01:47:33,986 [INFO] fortress_director.codeaware.function_registry: Registering safe function: spawn_item
+2025-11-02 01:47:33,986 [INFO] fortress_director.codeaware.function_registry: Safe function 'spawn_item' registered successfully.
+2025-11-02 01:47:33,986 [INFO] fortress_director.codeaware.function_registry: Registering safe function: move_npc
+2025-11-02 01:47:33,986 [INFO] fortress_director.codeaware.function_registry: Safe function 'move_npc' registered successfully.
+2025-11-02 01:47:33,986 [INFO] fortress_director.codeaware.function_registry: Registering safe function: adjust_logic
+2025-11-02 01:47:33,986 [INFO] fortress_director.codeaware.function_registry: Safe function 'adjust_logic' registered successfully.
+2025-11-02 01:47:33,986 [INFO] fortress_director.codeaware.function_registry: Registering safe function: adjust_emotion
+2025-11-02 01:47:33,986 [INFO] fortress_director.codeaware.function_registry: Safe function 'adjust_emotion' registered successfully.
+2025-11-02 01:47:33,987 [INFO] fortress_director.codeaware.function_registry: Registering safe function: raise_corruption
+2025-11-02 01:47:33,987 [INFO] fortress_director.codeaware.function_registry: Safe function 'raise_corruption' registered successfully.
+2025-11-02 01:47:33,987 [INFO] fortress_director.codeaware.function_registry: Registering safe function: advance_turn
+2025-11-02 01:47:33,987 [INFO] fortress_director.codeaware.function_registry: Safe function 'advance_turn' registered successfully.
+2025-11-02 01:47:33,987 [INFO] fortress_director.codeaware.function_registry: Registering safe function: modify_resources
+2025-11-02 01:47:33,987 [INFO] fortress_director.codeaware.function_registry: Safe function 'modify_resources' registered successfully.
+2025-11-02 01:47:33,987 [INFO] fortress_director.codeaware.function_registry: Registering safe function: adjust_metric
+2025-11-02 01:47:33,987 [INFO] fortress_director.codeaware.function_registry: Safe function 'adjust_metric' registered successfully.
+2025-11-02 01:47:33,987 [INFO] fortress_director.codeaware.function_registry: Registering safe function: move_room
+2025-11-02 01:47:33,988 [INFO] fortress_director.codeaware.function_registry: Safe function 'move_room' registered successfully.
+2025-11-02 01:47:33,988 [INFO] fortress_director.codeaware.function_registry: Registering safe function: set_flag
+2025-11-02 01:47:33,988 [INFO] fortress_director.codeaware.function_registry: Safe function 'set_flag' registered successfully.
+2025-11-02 01:47:33,988 [INFO] fortress_director.codeaware.function_registry: Registering safe function: clear_flag
+2025-11-02 01:47:33,988 [INFO] fortress_director.codeaware.function_registry: Safe function 'clear_flag' registered successfully.
+2025-11-02 01:47:33,988 [INFO] fortress_director.codeaware.function_registry: Registering safe function: set_trust
+2025-11-02 01:47:33,988 [INFO] fortress_director.codeaware.function_registry: Safe function 'set_trust' registered successfully.
+2025-11-02 01:47:33,988 [INFO] fortress_director.codeaware.function_registry: Registering safe function: adjust_trust
+2025-11-02 01:47:33,988 [INFO] fortress_director.codeaware.function_registry: Safe function 'adjust_trust' registered successfully.
+2025-11-02 01:47:33,988 [INFO] fortress_director.codeaware.function_registry: Registering safe function: add_item_to_npc
+2025-11-02 01:47:33,988 [INFO] fortress_director.codeaware.function_registry: Safe function 'add_item_to_npc' registered successfully.
+2025-11-02 01:47:33,988 [INFO] fortress_director.codeaware.function_registry: Registering safe function: remove_item_from_npc
+2025-11-02 01:47:33,988 [INFO] fortress_director.codeaware.function_registry: Safe function 'remove_item_from_npc' registered successfully.
+2025-11-02 01:47:33,988 [INFO] fortress_director.codeaware.function_registry: Registering safe function: add_status
+2025-11-02 01:47:33,990 [INFO] fortress_director.codeaware.function_registry: Safe function 'add_status' registered successfully.
+2025-11-02 01:47:33,990 [INFO] fortress_director.codeaware.function_registry: Registering safe function: remove_status
+2025-11-02 01:47:33,990 [INFO] fortress_director.codeaware.function_registry: Safe function 'remove_status' registered successfully.
+2025-11-02 01:47:33,990 [INFO] fortress_director.codeaware.function_registry: Registering safe function: spawn_npc
+2025-11-02 01:47:33,990 [INFO] fortress_director.codeaware.function_registry: Safe function 'spawn_npc' registered successfully.
+2025-11-02 01:47:33,990 [INFO] fortress_director.codeaware.function_registry: Registering safe function: despawn_npc
+2025-11-02 01:47:33,990 [INFO] fortress_director.codeaware.function_registry: Safe function 'despawn_npc' registered successfully.
+2025-11-02 01:47:33,990 [INFO] fortress_director.codeaware.function_registry: Registering safe function: move_and_take_item
+2025-11-02 01:47:33,990 [INFO] fortress_director.codeaware.function_registry: Safe function 'move_and_take_item' registered successfully.
+2025-11-02 01:47:33,990 [INFO] fortress_director.codeaware.function_registry: Registering safe function: patrol_and_report
+2025-11-02 01:47:33,990 [INFO] fortress_director.codeaware.function_registry: Safe function 'patrol_and_report' registered successfully.
+2025-11-02 01:47:33,990 [INFO] fortress_director.orchestrator.orchestrator: run_turn called (player_choice_id=__random__)
+2025-11-02 01:47:33,990 [DEBUG] fortress_director.orchestrator.orchestrator: Resetting function validator and creating checkpoint: {'phase': 'turn_start', 'player_choice_id': '__random__'}
+2025-11-02 01:47:33,990 [DEBUG] fortress_director.orchestrator.orchestrator: State snapshot loaded from C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\data\world_state.json (turn=0)
+2025-11-02 01:47:33,991 [INFO] fortress_director.codeaware.rollback_system: Checkpoint created (turn=0, call=None)
+2025-11-02 01:47:33,991 [INFO] fortress_director.orchestrator.orchestrator: Turn execution started.
+2025-11-02 01:47:33,991 [DEBUG] fortress_director.orchestrator.orchestrator: State snapshot loaded from C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\data\world_state.json (turn=0)
+2025-11-02 01:47:33,991 [DEBUG] fortress_director.orchestrator.orchestrator: Pre-turn state snapshot: {"_anomaly_active_until": null, "_drama_window": [], "_high_volatility_mode": false, "_world_lock_until": null, "active_layer": null, "campaign_id": "default_campaign", "character_summary": "Rhea is loyal but impulsive; Boris is cautious and calculating.", "current_room": "entrance", "current_turn": 0, "day": 1, "flags": [], "inventory": [], "lore": {}, "memory_layers": [], "metrics": {"corruption": 10, "glitch": 12, "knowledge": 45, "major_event_last_turn": null, "major_events_triggered": 0, "major_flag_set": false, "morale": 50, "order": 50, "resources": 40, "risk_applied_total": 0}, "npc...
+2025-11-02 01:47:33,991 [DEBUG] fortress_director.utils.metrics_manager: MetricManager initialised with metrics: {'order': 50, 'morale': 50, 'resources': 40, 'knowledge': 45, 'corruption': 10, 'glitch': 12, 'risk_applied_total': 0, 'major_flag_set': False, 'major_events_triggered': 0, 'major_event_last_turn': None}
+2025-11-02 01:47:33,991 [DEBUG] fortress_director.orchestrator.orchestrator: Metrics at turn start: {'order': 50, 'morale': 50, 'resources': 40, 'knowledge': 45, 'corruption': 10, 'glitch': 12, 'risk_applied_total': 0, 'major_flag_set': False, 'major_events_triggered': 0, 'major_event_last_turn': None}
+2025-11-02 01:47:33,991 [INFO] fortress_director.utils.glitch_manager: Resolving glitch (turn=1, seed=12345, current_glitch=12)
+2025-11-02 01:47:33,991 [DEBUG] fortress_director.utils.glitch_manager: Metrics before glitch resolution: {'order': 50, 'morale': 50, 'resources': 40, 'knowledge': 45, 'corruption': 10, 'glitch': 12, 'risk_applied_total': 0, 'major_flag_set': False, 'major_events_triggered': 0, 'major_event_last_turn': None}
+2025-11-02 01:47:33,992 [DEBUG] fortress_director.utils.metrics_manager: Glitch smoothing: requested delta=1, buffer=0, applied=1, leftover=0
+2025-11-02 01:47:33,992 [DEBUG] fortress_director.utils.metrics_manager: Adjusting metric 'glitch': current=12, delta=1, limits=(0, 100) (cause=glitch:cosmetic_noise)
+2025-11-02 01:47:33,992 [DEBUG] fortress_director.utils.metrics_manager: Metric change logged: {'metric': 'glitch', 'delta': 1, 'value': 13, 'cause': 'glitch:cosmetic_noise'}
+2025-11-02 01:47:33,992 [INFO] fortress_director.utils.metrics_manager: Metric 'glitch' updated from 12 to 13 (cause=glitch:cosmetic_noise)
+2025-11-02 01:47:33,992 [DEBUG] fortress_director.utils.metrics_manager: Adjusting metric 'morale': current=50, delta=-1, limits=(0, 100) (cause=glitch:unease)
+2025-11-02 01:47:33,992 [DEBUG] fortress_director.utils.metrics_manager: Metric change logged: {'metric': 'morale', 'delta': -1, 'value': 49, 'cause': 'glitch:unease'}
+2025-11-02 01:47:33,992 [INFO] fortress_director.utils.metrics_manager: Metric 'morale' updated from 50 to 49 (cause=glitch:unease)
+2025-11-02 01:47:33,992 [INFO] fortress_director.utils.glitch_manager: Glitch roll complete: roll=7, triggered_loss=False
+2025-11-02 01:47:33,992 [DEBUG] fortress_director.utils.glitch_manager: Metrics after glitch resolution: {'order': 50, 'morale': 49, 'resources': 40, 'knowledge': 45, 'corruption': 10, 'glitch': 13, 'risk_applied_total': 0, 'major_flag_set': False, 'major_events_triggered': 0, 'major_event_last_turn': None}
+2025-11-02 01:47:33,992 [DEBUG] fortress_director.utils.glitch_manager: Glitch effects applied: ['Minor static ripples along the parapets.']
+2025-11-02 01:47:33,992 [INFO] fortress_director.orchestrator.orchestrator: Glitch resolution outcome: roll=7, triggered_loss=False
+2025-11-02 01:47:33,992 [DEBUG] fortress_director.orchestrator.orchestrator: Metrics after glitch resolution: {'order': 50, 'morale': 49, 'resources': 40, 'knowledge': 45, 'corruption': 10, 'glitch': 13, 'risk_applied_total': 0, 'major_flag_set': False, 'major_events_triggered': 0, 'major_event_last_turn': None}
+2025-11-02 01:47:33,993 [DEBUG] fortress_director.utils.metrics_manager: Glitch smoothing: requested delta=-1, buffer=0, applied=-1, leftover=0
+2025-11-02 01:47:33,993 [DEBUG] fortress_director.utils.metrics_manager: Adjusting metric 'glitch': current=13, delta=-1, limits=(0, 100) (cause=turn_recovery)
+2025-11-02 01:47:33,993 [DEBUG] fortress_director.utils.metrics_manager: Metric change logged: {'metric': 'glitch', 'delta': -1, 'value': 12, 'cause': 'turn_recovery'}
+2025-11-02 01:47:33,993 [INFO] fortress_director.utils.metrics_manager: Metric 'glitch' updated from 13 to 12 (cause=turn_recovery)
+2025-11-02 01:47:33,993 [DEBUG] fortress_director.orchestrator.orchestrator: Metrics after glitch recovery: {'order': 50, 'morale': 49, 'resources': 40, 'knowledge': 45, 'corruption': 10, 'glitch': 12, 'risk_applied_total': 0, 'major_flag_set': False, 'major_events_triggered': 0, 'major_event_last_turn': None}
+2025-11-02 01:47:33,993 [INFO] fortress_director.orchestrator.orchestrator: Glitch resolution outcome: roll=7, triggered_loss=False
+2025-11-02 01:47:33,993 [DEBUG] fortress_director.orchestrator.orchestrator: Metrics after glitch resolution: {'order': 50, 'morale': 49, 'resources': 40, 'knowledge': 45, 'corruption': 10, 'glitch': 12, 'risk_applied_total': 0, 'major_flag_set': False, 'major_events_triggered': 0, 'major_event_last_turn': None}
+2025-11-02 01:47:33,993 [INFO] fortress_director.orchestrator.orchestrator: World context built.
+2025-11-02 01:47:33,993 [DEBUG] fortress_director.orchestrator.orchestrator: World context payload: Turn 0 | Day 1 | Time dawn
+Location: entrance
+Objective: advance story without repetition
+Player: The Shieldbearer — A weary defender holding the western wall. Inventory: oil lamp, patched shield
+World constraint: {"atmosphere": "low clouds hug the battlements", "sensory_details": "Drums thud beyond the walls while the wind carries grit."}
+Recent events: none
+Recent motifs: none
+Recent major events: none
+Relationship summary: Rhea trusts the player; Boris weighs every trade. Character summary: Rhea is loyal but impulsive; Boris is cautious and calculating. Metrics: {"order": 50, "morale": 49, "resources": 40, "knowledge": 45, "corruption": 10, "glitch": 12, "risk_applied_total": 0, "major_flag_set": false, "major_events_triggered": 0, "major_event_last_turn": null}
+2025-11-02 01:47:33,994 [INFO] fortress_director.orchestrator.orchestrator: Starting turn 0 in room entrance
+2025-11-02 01:47:33,994 [DEBUG] fortress_director.orchestrator.orchestrator: World agent input: {"WORLD_CONTEXT": "Turn 0 | Day 1 | Time dawn\nLocation: entrance\nObjective: advance story without repetition\nPlayer: The Shieldbearer — A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"low clouds hug the battlements\", \"sensory_details\": \"Drums thud beyond the walls while the wind carries grit.\"}\nRecent events: none\nRecent motifs: none\nRecent major events: none\nRelationship summary: Rhea trusts the player; Boris weighs every trade. Character summary: Rhea is loyal but impulsive; Boris is cautious and calculating....
+2025-11-02 01:47:33,994 [INFO] fortress_director.orchestrator.orchestrator: Calling world_agent.describe...
+2025-11-02 01:47:33,994 [INFO] fortress_director.agents.world_agent: WorldAgent.describe called with variables: {'WORLD_CONTEXT': 'Turn 0 | Day 1 | Time dawn\nLocation: entrance\nObjective: advance story without repetition\nPlayer: The Shieldbearer — A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {"atmosphere": "low clouds hug the battlements", "sensory_details": "Drums thud beyond the walls while the wind carries grit."}\nRecent events: none\nRecent motifs: none\nRecent major events: none\nRelationship summary: Rhea trusts the player; Boris weighs every trade. Character summary: Rhea is loyal but impulsive; Boris is cautious and calculating. Metrics: {"order": 50, "morale": 49, "resources": 40, "knowledge": 45, "corruption": 10, "glitch": 12, "risk_applied_total": 0, "major_flag_set": false, "major_events_triggered": 0, "major_event_last_turn": null}', 'room': 'entrance', 'time': 'dawn', 'previous_atmosphere': 'low clouds hug the battlements', 'previous_sensory_details': 'Drums thud beyond the walls while the wind carries grit.', 'world_lock_active': False, 'locked_constraint': {}, 'objective': 'advance story without repetition', 'available_functions': '["add_item_to_npc", "add_status", "adjust_emotion", "adjust_logic", "adjust_metric", "adjust_trust", "advance_turn", "change_weather", "clear_flag", "despawn_npc", "modify_resources", "move_and_take_item", "move_npc", "move_room", "patrol_and_report", "raise_corruption", "remove_item_from_npc", "remove_status", "set_flag", "set_trust", "spawn_item", "spawn_npc"]'}
+2025-11-02 01:47:38,040 [WARNING] fortress_director.agents.world_agent: WorldAgent attempt 1 failed: timed out
+2025-11-02 01:47:42,064 [WARNING] fortress_director.agents.world_agent: WorldAgent attempt 2 failed: timed out
+2025-11-02 01:47:42,064 [WARNING] fortress_director.agents.world_agent: Using fallback world description: {'atmosphere': 'A somber dawn breaks.', 'sensory_details': 'The air is crisp and foreboding.'}
+2025-11-02 01:47:42,065 [INFO] fortress_director.orchestrator.orchestrator: World agent returned output.
+2025-11-02 01:47:42,065 [DEBUG] fortress_director.orchestrator.orchestrator: World agent output: {"atmosphere": "A somber dawn breaks.", "sensory_details": "The air is crisp and foreboding."}
+2025-11-02 01:47:42,065 [DEBUG] fortress_director.orchestrator.orchestrator: Event agent input: {"WORLD_CONTEXT": "Turn 0 | Day 1 | Time dawn\nLocation: entrance\nObjective: advance story without repetition\nPlayer: The Shieldbearer — A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"low clouds hug the battlements\", \"sensory_details\": \"Drums thud beyond the walls while the wind carries grit.\"}\nRecent events: none\nRecent motifs: none\nRecent major events: none\nRelationship summary: Rhea trusts the player; Boris weighs every trade. Character summary: Rhea is loyal but impulsive; Boris is cautious and calculating....
+2025-11-02 01:47:42,065 [INFO] fortress_director.orchestrator.orchestrator: Calling event_agent.generate...
+2025-11-02 01:47:42,065 [INFO] fortress_director.agents.event_agent: EventAgent.generate called with variables: {'WORLD_CONTEXT': 'Turn 0 | Day 1 | Time dawn\nLocation: entrance\nObjective: advance story without repetition\nPlayer: The Shieldbearer — A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {"atmosphere": "low clouds hug the battlements", "sensory_details": "Drums thud beyond the walls while the wind carries grit."}\nRecent events: none\nRecent motifs: none\nRecent major events: none\nRelationship summary: Rhea trusts the player; Boris weighs every trade. Character summary: Rhea is loyal but impulsive; Boris is cautious and calculating. Metrics: {"order": 50, "morale": 49, "resources": 40, "knowledge": 45, "corruption": 10, "glitch": 12, "risk_applied_total": 0, "major_flag_set": false, "major_events_triggered": 0, "major_event_last_turn": null}', 'day': 1, 'time': 'dawn', 'room': 'entrance', 'turn_index': 0, 'recent_events': 'none', 'world_constraint_from_prev_turn': '{"atmosphere": "low clouds hug the battlements", "sensory_details": "Drums thud beyond the walls while the wind carries grit."}', 'recent_motifs': 'none', 'lore_continuity_weight': 0, 'memory_layers': [], 'judge_verdict': '{}', 'judge_feedback': {}, 'continuity_weight': 0.0, 'skip_major': False, 'allow_major': False, 'drama_mode': False, 'risk_budget': 0, 'flags': [], 'objective': 'advance story without repetition', 'available_functions': '["add_item_to_npc", "add_status", "adjust_emotion", "adjust_logic", "adjust_metric", "adjust_trust", "advance_turn", "change_weather", "clear_flag", "despawn_npc", "modify_resources", "move_and_take_item", "move_npc", "move_room", "patrol_and_report", "raise_corruption", "remove_item_from_npc", "remove_status", "set_flag", "set_trust", "spawn_item", "spawn_npc"]'}
+2025-11-02 01:47:46,107 [ERROR] fortress_director.agents.event_agent: Exception in EventAgent.generate: timed out
+Traceback (most recent call last):
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\agents\event_agent.py", line 128, in generate
+    output = self.run(variables=variables)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\agents\base_agent.py", line 112, in run
+    response = self._client.generate(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\llm\ollama_client.py", line 56, in generate
+    return self._post("/api/generate", payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\llm\ollama_client.py", line 88, in _post
+    with request.urlopen(req, timeout=self._config.timeout) as resp:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 515, in open
+    response = self._open(req, data)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 532, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 1373, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 1348, in do_open
+    r = h.getresponse()
+        ^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1430, in getresponse
+    response.begin()
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 292, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 720, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: timed out
+2025-11-02 01:47:46,110 [ERROR] fortress_director.orchestrator.orchestrator: Exception during turn: timed out
+Traceback (most recent call last):
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\orchestrator\orchestrator.py", line 672, in run_turn
+    event_output = self.event_agent.generate(event_request)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\agents\event_agent.py", line 128, in generate
+    output = self.run(variables=variables)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\agents\base_agent.py", line 112, in run
+    response = self._client.generate(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\llm\ollama_client.py", line 56, in generate
+    return self._post("/api/generate", payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\llm\ollama_client.py", line 88, in _post
+    with request.urlopen(req, timeout=self._config.timeout) as resp:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 515, in open
+    response = self._open(req, data)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 532, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 1373, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 1348, in do_open
+    r = h.getresponse()
+        ^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1430, in getresponse
+    response.begin()
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 292, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Fahri\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 720, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: timed out
+2025-11-02 01:47:46,113 [INFO] fortress_director.codeaware.rollback_system: Rollback requested (reason=Turn execution failed: TimeoutError)
+2025-11-02 01:47:46,113 [DEBUG] fortress_director.orchestrator.orchestrator: State persisted to C:\Users\Fahri\OneDrive\Masaüstü\oyun\fortress_director\data\world_state.json (turn=0)
+2025-11-02 01:47:46,113 [INFO] fortress_director.codeaware.rollback_system: Rollback applied (turn=0, reason=Turn execution failed: TimeoutError)
+2025-11-02 01:47:46,113 [INFO] fortress_director.orchestrator.orchestrator: Rollback performed after exception.

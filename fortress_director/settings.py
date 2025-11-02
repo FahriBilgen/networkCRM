@@ -8,6 +8,8 @@ from typing import Mapping
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
+# Repo kökünü (proje kökü) fortress_director klasörünün bir üstü olarak kabul edelim
+REPO_ROOT = PROJECT_ROOT.parent
 
 
 @dataclass(frozen=True)
@@ -84,6 +86,11 @@ DEFAULT_WORLD_STATE = {
         "major_event_last_turn": None,
     },
     "npc_trust": {},
+    # Drama governor memory
+    "_drama_window": [],
+    "_anomaly_active_until": None,
+    "_world_lock_until": None,
+    "_high_volatility_mode": False,
 }
 
 SETTINGS = Settings(
@@ -91,7 +98,8 @@ SETTINGS = Settings(
     db_path=PROJECT_ROOT / "db" / "game_state.sqlite",
     world_state_path=PROJECT_ROOT / "data" / "world_state.json",
     cache_dir=PROJECT_ROOT / "cache",
-    log_dir=PROJECT_ROOT / "logs",
+    # Tüm logları tek klasörde toplamak için depo kökünde logs kullan
+    log_dir=REPO_ROOT / "logs",
     ollama_base_url="http://localhost:11434/",
     ollama_timeout=240.0,
     max_active_models=2,
@@ -163,6 +171,10 @@ JUDGE_BIAS_REWEIGHT = 0.3
 JUDGE_TONE_ALIGNMENT_THRESHOLD = 90
 # Base stochastic veto probability (0.0-1.0); lowered to reduce aggressiveness.
 JUDGE_BASE_VETO_PROB = 0.02
+# Soft editing policy: cap how much normalization can happen per turn and
+# require anomalies to persist for a short window so tension can breathe.
+JUDGE_SOFT_MAX_CORRECTION_PER_TURN = 0.15  # allow more creative deviation before normalization
+JUDGE_PERSIST_WINDOW = 4  # turns anomaly must be allowed to live
 # Minimum turn gap before allowing veto on identical content.
 JUDGE_MIN_TURN_GAP = 3
 # Minimum interval between major events (turns).
@@ -182,6 +194,20 @@ EVENT_DIVERSITY_POOL = [
     "personal_drama",
     "strategic_opportunity",
 ]
+
+# World state persistence and drama tuning
+# Minimum number of turns a world shift (e.g., weather/atmosphere) must persist.
+WORLD_STATE_PERSIST_MIN_TURNS = 3
+
+# Drama governor toggles low-variance runs into higher risk/novelty mode.
+DRAMA_GOVERNOR_ENABLED = True
+DRAMA_TARGET_VARIANCE = 10          # average absolute delta across core metrics
+DRAMA_BOREDOM_WINDOW = 4            # turns to measure low variance before acting
+RISK_BUDGET_DEFAULT = 3             # structural risk ops allowed per act
+
+# High-volatility glitch mode scalar. Allows larger glitches when drama mode on.
+GLITCH_VOLATILITY_SCALAR = 3        # 1=default; 3=higher volatility in drama mode
+GLITCH_MIN_FLOOR = 50              # baseline minimum glitch to avoid flat lines
 
 
 def ensure_runtime_paths(settings: Settings = SETTINGS) -> None:

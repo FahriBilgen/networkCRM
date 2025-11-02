@@ -42,6 +42,9 @@ class WorldAgent(BaseAgent):
         # --- Forced novelty and diversity logic ---
         turn = variables.get("turn") or variables.get("day") or 1
         force_variation = variables.get("force_world_variation", False)
+        # Respect a world lock when an irreversible change must persist
+        world_lock_active = bool(variables.get("world_lock_active", False))
+        locked_constraint = variables.get("locked_constraint", {})
         novelty_cycle = 2  # Every 2 turns, force novelty
         if (turn % novelty_cycle == 0) or force_variation:
             self.LOGGER.info("Injecting forced novelty/diversity for turn %s", turn)
@@ -99,6 +102,18 @@ class WorldAgent(BaseAgent):
         max_retries = 2
         for attempt in range(max_retries):
             try:
+                # If a lock is active, prefer to keep the previous constraint with minor variation
+                if world_lock_active and isinstance(locked_constraint, dict):
+                    base_atmo = locked_constraint.get("atmosphere", "")
+                    base_sens = locked_constraint.get("sensory_details", "")
+                    if base_atmo or base_sens:
+                        self.LOGGER.info(
+                            "World lock active; preserving prior constraint with minor variation"
+                        )
+                        return {
+                            "atmosphere": base_atmo,
+                            "sensory_details": base_sens,
+                        }
                 # Add banned motifs to variables to prevent repetition
                 variables_with_bans = dict(variables)
                 variables_with_bans["banned_motifs"] = list(self.motif_ban_list)

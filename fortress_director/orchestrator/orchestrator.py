@@ -39,7 +39,9 @@ from fortress_director.utils.glitch_manager import GlitchManager
 from fortress_director.utils.logging_config import configure_logging
 from fortress_director.utils.metrics_manager import MetricManager
 
-configure_logging()
+# Not: CLI, oturum başına log dosyasını belirliyor ve configure_logging'i
+# force=True ile çağırıyor. Import anında otomatik yapılandırmayı kaldırıyoruz
+# ki her çalıştırma ayrı dosyaya yazsın.
 
 LOGGER = logging.getLogger(__name__)
 
@@ -522,12 +524,23 @@ class Orchestrator:
             )
 
             prev_world = state_snapshot.get("world_constraint_from_prev_turn", {})
+            # Determine world lock from state for persistence of irreversible changes
+            lock_until = state_snapshot.get("_world_lock_until")
+            world_lock_active = False
+            if isinstance(lock_until, int):
+                try:
+                    world_lock_active = state_snapshot.get("turn", 0) < lock_until
+                except Exception:
+                    world_lock_active = False
+
             world_request = {
                 "WORLD_CONTEXT": world_context,
                 "room": state_snapshot.get("current_room", "unknown"),
                 "time": state_snapshot.get("time", "dawn"),
                 "previous_atmosphere": prev_world.get("atmosphere", ""),
                 "previous_sensory_details": prev_world.get("sensory_details", ""),
+                "world_lock_active": world_lock_active,
+                "locked_constraint": prev_world if world_lock_active else {},
             }
             LOGGER.debug(
                 "World agent input: %s",
@@ -572,6 +585,43 @@ class Orchestrator:
             except Exception:
                 LOGGER.debug("Failed to evaluate early-run major event force condition")
 
+            # --- Drama governor: detect low-variance steady-state and raise stakes ---
+            drama_mode = False
+            risk_budget = 0
+            try:
+                from fortress_director.settings import (
+                    DRAMA_GOVERNOR_ENABLED,
+                    DRAMA_TARGET_VARIANCE,
+                    DRAMA_BOREDOM_WINDOW,
+                    RISK_BUDGET_DEFAULT,
+                )
+                if DRAMA_GOVERNOR_ENABLED:
+                    core = state_snapshot.get("metrics", {})
+                    point = [
+                        int(core.get("order", 0)),
+                        int(core.get("morale", 0)),
+                        int(core.get("resources", 0)),
+                        int(core.get("knowledge", 0)),
+                        int(core.get("glitch", 0)),
+                    ]
+                    window = state_snapshot.get("_drama_window", []) or []
+                    if point:
+                        window.append(point)
+                        window = window[-8:]
+                    if len(window) >= max(2, DRAMA_BOREDOM_WINDOW):
+                        transitions = []
+                        for i in range(1, len(window)):
+                            diffs = [abs(a - b) for a, b in zip(window[i], window[i - 1])]
+                            transitions.append(sum(diffs) / len(diffs))
+                        avg_var = sum(transitions[-(DRAMA_BOREDOM_WINDOW - 1):]) / max(1, (DRAMA_BOREDOM_WINDOW - 1))
+                        if avg_var < DRAMA_TARGET_VARIANCE:
+                            drama_mode = True
+                            risk_budget = int(RISK_BUDGET_DEFAULT)
+                            state_snapshot["_high_volatility_mode"] = True
+                    state_snapshot["_drama_window"] = window
+            except Exception:
+                pass
+
             allow_major_allowed = (
                 self._should_allow_major_event(state_snapshot)
                 or ("force_major_event" in state_snapshot.get("flags", []))
@@ -598,6 +648,9 @@ class Orchestrator:
                 "continuity_weight": continuity_weight,
                 "skip_major": (state_snapshot.get("turn", 0) + 1) % 4 == 0,
                 "allow_major": allow_major_allowed,
+                "metrics_snapshot": metric_manager.snapshot(include_legacy=False),
+                "drama_mode": drama_mode,
+                "risk_budget": risk_budget,
                 "flags": state_snapshot.get("flags", []),
             }
             try:
@@ -776,6 +829,18 @@ class Orchestrator:
                     if verdict.get("consistent", True) and coherence >= 70:
                         creativity_accepted = True
                         break
+                    # Respect soft-edit persistence: allow anomalies to live for a few turns
+                    soft_policy = verdict.get("soft_edit_policy", {}) or {}
+                    persist_window = int(soft_policy.get("persist_window", 0) or 0)
+                    if persist_window > 0:
+                        until = state_snapshot.get("turn", 0) + int(persist_window)
+                        state_snapshot["_anomaly_active_until"] = until
+                        creativity_accepted = True
+                        LOGGER.info(
+                            "Anomaly persist window started (until turn %s); accepting creative variation",
+                            until,
+                        )
+                        break
                     if feedback.get("reframe_scene"):
                         LOGGER.info(
                             "JudgeAgent requested scene reframing, rerunning "
@@ -798,6 +863,20 @@ class Orchestrator:
                     break
             if creativity_accepted:
                 event_output = event_candidate
+                try:
+                    persist_turns = int(event_output.get("creative_persist_for", 0) or 0)
+                except Exception:
+                    persist_turns = 0
+                if persist_turns > 0:
+                    start_turn = state_snapshot.get("turn", 0)
+                    until = start_turn + persist_turns
+                    existing = state_snapshot.get("_anomaly_active_until")
+                    if not isinstance(existing, int) or until > existing:
+                        state_snapshot["_anomaly_active_until"] = until
+                        LOGGER.info(
+                            "Creative persist window extended to turn %s",
+                            until,
+                        )
             # Sanitize scene to remove any meta/refusal artifacts before further use
             try:
                 if isinstance(event_output.get("scene"), str):
@@ -852,6 +931,16 @@ class Orchestrator:
                             "Event generation inconsistent: %s",
                             verdict.get("reason", "Unknown"),
                         )
+                        # Respect soft-edit policy for persistence
+                        soft_policy = verdict.get("soft_edit_policy", {}) or {}
+                        persist_window = int(soft_policy.get("persist_window", 0) or 0)
+                        if persist_window > 0:
+                            until = state_snapshot.get("turn", 0) + int(persist_window)
+                            state_snapshot["_anomaly_active_until"] = until
+                            LOGGER.info(
+                                "Anomaly persist window (event) started: until turn %s",
+                                until,
+                            )
 
                     # Apply judge penalties to metrics
                     penalty_magnitude = verdict.get("penalty_magnitude", {})
@@ -892,6 +981,30 @@ class Orchestrator:
                     state_snapshot["flags"] = flags
                 except Exception:
                     pass
+
+            # Lock world constraint for a short persistence window after anomalies/major events
+            try:
+                from fortress_director.settings import WORLD_STATE_PERSIST_MIN_TURNS
+                lock_until = state_snapshot.get("_world_lock_until")
+                anomaly_until = state_snapshot.get("_anomaly_active_until")
+                if event_output.get("major_event") or (
+                    isinstance(anomaly_until, int) and turn < anomaly_until
+                ):
+                    proposed = turn + int(WORLD_STATE_PERSIST_MIN_TURNS)
+                    if not isinstance(lock_until, int) or proposed > lock_until:
+                        state_snapshot["_world_lock_until"] = proposed
+                    # Ensure we persist the just-produced world constraint as the lock base
+                    if isinstance(world_output, dict):
+                        state_snapshot["world_constraint_from_prev_turn"] = {
+                            "atmosphere": world_output.get("atmosphere", ""),
+                            "sensory_details": world_output.get("sensory_details", ""),
+                        }
+                        LOGGER.info(
+                            "World lock engaged until turn %s with current constraint",
+                            state_snapshot["_world_lock_until"],
+                        )
+            except Exception:
+                pass
 
             # Quest Logic: Extend options based on game state
             self._extend_options_based_on_quest_logic(event_output, state_snapshot)
@@ -1024,9 +1137,11 @@ class Orchestrator:
                     item for item in player_inventory if isinstance(item, str)
                 ),
                 "memory_layers": state_snapshot.get("memory_short", []),
+                "emotional_memory": state_snapshot.get("emotional_memory", []),
                 "recent_events": event_request.get("recent_events", []),
                 "last_major_event": event_output.get("major_event", False)
                 and event_output.get("scene", ""),
+                "metrics": metric_manager.snapshot(include_legacy=False),
             }
             LOGGER.debug(
                 "Character agent input: %s",
@@ -1099,6 +1214,9 @@ class Orchestrator:
                     player_choice=chosen_option,
                     seed=rng_seed,
                 )
+                self._accumulate_emotional_memory(state, character_output)
+                if "_anomaly_active_until" in state_snapshot:
+                    state["_anomaly_active_until"] = state_snapshot["_anomaly_active_until"]
                 LOGGER.info(
                     "Rules engine accepted updates (turn=%s)",
                     state_snapshot.get("turn", 0) + 1,
@@ -1130,6 +1248,9 @@ class Orchestrator:
                     if major_event_effect
                     else None
                 )
+                self._accumulate_emotional_memory(state, character_output)
+                if "_anomaly_active_until" in state_snapshot:
+                    state["_anomaly_active_until"] = state_snapshot["_anomaly_active_until"]
 
             # Generate autonomous NPC actions
             autonomous_actions = self.autonomous_actions_method(state_snapshot)
@@ -3075,8 +3196,8 @@ class Orchestrator:
             summary_entry = f"Memory summary: {summary}"
             if memory_short[-1] != summary_entry:
                 memory_short.append(summary_entry)
-        if len(memory_short) > 5:
-            memory_short = memory_short[-5:]
+        if len(memory_short) > 12:
+            memory_short = memory_short[-12:]
         # Update long-term memory with major flags and pivotal choices
         try:
             flags = state.get("flags", [])
@@ -3345,8 +3466,37 @@ class Orchestrator:
                     recent_motifs.append("epic_quest")
                     LOGGER.info("Evolved motif: epic_quest (multiple motifs combined)")
 
-        # Keep only last 5 motifs
-        state["recent_motifs"] = recent_motifs[-5:]
+        # Keep only last 10 motifs to allow longer emotional arcs
+        state["recent_motifs"] = recent_motifs[-10:]
+
+    def _accumulate_emotional_memory(
+        self, state: Dict[str, Any], character_output: List[Dict[str, Any]]
+    ) -> None:
+        """Persist NPC emotional echoes so duygular katman katman biriksin."""
+
+        try:
+            if not isinstance(state, dict):
+                return
+            emotions = state.setdefault("emotional_memory", [])
+            turn_value = state.get("turn") or state.get("current_turn", 0)
+            for entry in character_output or []:
+                if not isinstance(entry, dict):
+                    continue
+                speech = str(entry.get("speech", "")).strip()
+                if not speech:
+                    continue
+                emotions.append(
+                    {
+                        "turn": turn_value,
+                        "name": entry.get("name", "Unknown"),
+                        "intent": entry.get("intent"),
+                        "speech": speech,
+                    }
+                )
+            if len(emotions) > 40:
+                del emotions[:-40]
+        except Exception:
+            LOGGER.debug("Failed to accumulate emotional memory.", exc_info=True)
 
     def _check_room_progression(self, state):
         current_turn = state.get("current_turn", 0)

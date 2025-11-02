@@ -1,0 +1,408 @@
+{
+  "WORLD_CONTEXT": "Turn 4 | Day 1 | Time night\nLocation: entrance\nObjective: advance story without repetition\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Evening haze envelops battlements, drums echo.\", \"sensory_details\": \"Cool air with salty brush caresses skin damp stone under fingers feels alive.\"}\nRecent events: ' the rewritten prompt: A lone, shimmering crystal, imbued with an uncanny luminescence, awakens within an impenetrable labyrinth, its delicate tendrils beckoning adventurers into a realm where realit...; ' the rewritten prompt: What if the key to unlocking the secrets of the universe wasn't buried beneath the surface of a dusty, forgotten library, but hidden within the pages of a forbidden journal tha...; ' the rewritten prompt as a new question: What hidden message does the flickering neon sign in the abandoned warehouse hold, and how does it lead the curious investigator on a thrilling chase through ... Recent motifs: unknown_action, communication\nRecent major events: none\nRelationship summary: Rhea trusts the player\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating. Metrics: {\"order\": 58, \"morale\": 54, \"resources\": 39, \"knowledge\": 47, \"corruption\": 10, \"glitch\": 21, \"risk_applied_total\": 0, \"major_flag_set\": false, \"major_events_triggered\": 0, \"major_event_last_turn\": null}",
+  "scene": "The Shieldbearer stands guard at the entrance, the low clouds hugging the battlements and drums thudding in the distance. The cool air with salty brush caresses your skin as you feel the damp stone under your fingers. Suddenly, the flickering light of the crystal catches your eye, its luminescence beckoning you closer.",
+  "options": [
+    {
+      "id": "investigate_crystal",
+      "text": "Approach the crystal and examine it more closely.",
+      "action_type": "exploration"
+    },
+    {
+      "id": "ask_shieldbearer",
+      "text": "Ask the Shieldbearer about the crystal and any information they might have on its origins or purpose.",
+      "action_type": "dialogue"
+    },
+    {
+      "id": "patrol_wall",
+      "text": "Take up your post and patrol the wall, keeping a watchful eye on the crystal from a distance. (focus: defense)",
+      "action_type": "defense"
+    }
+  ],
+  "world": {
+    "atmosphere": "Nightfall cloaks battlements in mystery, drums resonate.",
+    "sensory_details": "Cool breeze with salty brush against damp skin and stone."
+  },
+  "event": {
+    "scene": "The Shieldbearer stands guard at the entrance, the low clouds hugging the battlements and drums thudding in the distance. The cool air with salty brush caresses your skin as you feel the damp stone under your fingers. Suddenly, the flickering light of the crystal catches your eye, its luminescence beckoning you closer.",
+    "options": [
+      {
+        "id": "investigate_crystal",
+        "text": "Approach the crystal and examine it more closely.",
+        "action_type": "exploration"
+      },
+      {
+        "id": "ask_shieldbearer",
+        "text": "Ask the Shieldbearer about the crystal and any information they might have on its origins or purpose.",
+        "action_type": "dialogue"
+      },
+      {
+        "id": "patrol_wall",
+        "text": "Take up your post and patrol the wall, keeping a watchful eye on the crystal from a distance. (focus: defense)",
+        "action_type": "defense"
+      }
+    ],
+    "major_event": false,
+    "safe_functions": []
+  },
+  "player_choice": {
+    "id": "ask_shieldbearer",
+    "text": "Ask the Shieldbearer about the crystal and any information they might have on its origins or purpose.",
+    "action_type": "dialogue"
+  },
+  "character_reactions": [
+    {
+      "name": "Rhea",
+      "intent": "observe",
+      "action": "wait_for_night",
+      "speech": "The shadows lengthen, the air grows colder. A faint glow emanates from the crystal, its tendrils beckoning like a siren song.",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Rhea",
+      "intent": "assist",
+      "action": "Autonomously performs assist action.",
+      "speech": "(assist autonomous)",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Boris",
+      "intent": "command",
+      "action": "Autonomously performs command action.",
+      "speech": "(command autonomous)",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Rhea",
+      "intent": "plan",
+      "action": "Autonomously performs plan action.",
+      "speech": "(plan autonomous)",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Boris",
+      "intent": "inquire",
+      "action": "Autonomously performs inquire action.",
+      "speech": "(inquire autonomous)",
+      "effects": {},
+      "safe_functions": []
+    }
+  ],
+  "npcs": [
+    {
+      "name": "Rhea",
+      "trust": 1,
+      "summary": "Rhea is loyal but impulsive"
+    },
+    {
+      "name": "Bor",
+      "trust": 0,
+      "summary": "Boris is cautious and calculating."
+    }
+  ],
+  "safe_function_history": [],
+  "room_history": [
+    {
+      "room": "entrance",
+      "turn": 5,
+      "description": "Currently in entrance"
+    }
+  ],
+  "summary_text": "Another uneventful watch passes by.",
+  "telemetry": {
+    "planner_calls_proposed": 0,
+    "planner_calls_executed": 0,
+    "safe_functions_executed": 0
+  },
+  "player_view": {
+    "short_scene": "The Shieldbearer stands guard at the entrance, the low clouds hugging the battlements and drums thudding in the distance. The cool air with salty brush caresses your skin as you feel the damp stone under your fingers. Suddenly, the flickering light of the crystal catches your eye, its luminescence beckoning you closer.",
+    "short_world": "Turn 5 | Day 2 | Time dawn\nLocation: entrance\nObjective: advance story without repetition\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Nightfall cloaks battlements in mystery, drums resonate.\", \"sensory_details\": \"Cool breeze with salty brush against damp skin and stone.\"}\nRecent events: ' the rewritten",
+    "options": [
+      {
+        "id": "investigate_crystal",
+        "text": "Approach the crystal and examine it more closely."
+      },
+      {
+        "id": "ask_shieldbearer",
+        "text": "Ask the Shieldbearer about the crystal and any information they might have on its origins or purpose."
+      },
+      {
+        "id": "patrol_wall",
+        "text": "Take up your post and patrol the wall, keeping a watchful eye on the crystal from a distance. (focus: defense)"
+      }
+    ],
+    "primary_reaction": "The shadows lengthen, the air grows colder. A faint glow emanates from the crystal, its tendrils beckoning like a siren song.",
+    "safe_functions": []
+  },
+  "effects": [],
+  "safe_function_results": [],
+  "metrics_after": {
+    "order": 59,
+    "morale": 56,
+    "resources": 39,
+    "knowledge": 49,
+    "corruption": 10,
+    "glitch": 21,
+    "risk_applied_total": 0,
+    "major_flag_set": false,
+    "major_events_triggered": 0,
+    "major_event_last_turn": null
+  },
+  "glitch": {
+    "roll": 32,
+    "effects": [
+      "Pathfinding errors unsettle the patrol routes."
+    ]
+  },
+  "logs": [
+    {
+      "metric": "glitch",
+      "delta": 1,
+      "value": 13,
+      "cause": "glitch:cosmetic_noise"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 49,
+      "cause": "glitch:unease"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 12,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "order",
+      "delta": 3,
+      "value": 53,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "resources",
+      "delta": -1,
+      "value": 39,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 50,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 40,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 14,
+      "cause": "glitch:overload"
+    },
+    {
+      "metric": "glitch",
+      "delta": 1,
+      "value": 15,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 47,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 41,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 49,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 55,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 2,
+      "value": 51,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 17,
+      "cause": "glitch:overload"
+    },
+    {
+      "metric": "glitch",
+      "delta": 1,
+      "value": 18,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "order",
+      "delta": 3,
+      "value": 58,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "resources",
+      "delta": -1,
+      "value": 40,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 52,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 59,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 41,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "resources",
+      "delta": -3,
+      "value": 38,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "knowledge",
+      "delta": -2,
+      "value": 45,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 20,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 0,
+      "value": 20,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 53,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 47,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 60,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 39,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 55,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "order",
+      "delta": -2,
+      "value": 58,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 54,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 22,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 21,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 55,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 49,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 59,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 56,
+      "cause": "autonomous_Rhea"
+    }
+  ],
+  "win_loss": {
+    "status": "ongoing",
+    "reason": "conditions_not_met",
+    "description": "Oyun devam ediyor..."
+  },
+  "narrative": "Turn 5 | Ask the Shieldbearer about the crystal and any information they might have on its origins or purpose. | The shadows lengthen, the air grows colder. A faint glow emanates from the crystal, its tendrils beckoning like a siren song. |"
+}

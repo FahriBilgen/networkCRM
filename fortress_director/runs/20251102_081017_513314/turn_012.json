@@ -1,0 +1,783 @@
+{
+  "WORLD_CONTEXT": "Turn 11 | Day 3 | Time morning\nLocation: courtyard\nObjective: reinforce defenses\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Evening haze, cool and tranquil.\", \"sensory_details\": \"The air carries a fresh scent of dew on the damp earth beneath your boots.\"}\nRecent events: ' the rewritten prompt with a sense of novelty and surprise: The shimmering veil that shrouded the chamber recedes, revealing a cryptic message etched in the bedrock of a forgotten chamber.; ' the rewritten prompt, as requested: I'm trapped in a labyrinthine world of mirrors, each reflecting a different narrative. I hear whispers that echo through the corridors of the maze, but I can't de...; ' the rewritten prompt with a sense of novelty and surprise: The shimmering crystal, nestled amidst the whispering vines, pulsed with an eerie luminescence, casting strange shadows upon the forest flo... Recent motifs: unknown_action, communication\nRecent major events: none\nRelationship summary: Rhea trusts the player deeply\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating. Metrics: {\"order\": 59, \"morale\": 62, \"resources\": 39, \"knowledge\": 57, \"corruption\": 10, \"glitch\": 67, \"risk_applied_total\": 0, \"major_flag_set\": false, \"major_events_triggered\": 0, \"major_event_last_turn\": null}",
+  "scene": "The Shieldbearer stands guard at the entrance, his gaze fixed on the horizon. The low clouds hug the western wall, casting a cool and tranquil atmosphere. The western wall groans under unseen pressure.",
+  "options": [],
+  "world": {
+    "atmosphere": "Evening haze, cool and tranquil.",
+    "sensory_details": "The air carries a fresh scent of dew on the damp earth beneath your boots."
+  },
+  "event": {
+    "scene": "The Shieldbearer stands guard at the entrance, his gaze fixed on the horizon. The low clouds hug the western wall, casting a cool and tranquil atmosphere. The western wall groans under unseen pressure.",
+    "options": [
+      {
+        "id": "ask_about_message",
+        "text": "Ask the Shieldbearer about the chamber where the mysterious message was found.",
+        "action_type": "dialogue"
+      },
+      {
+        "id": "inspect_shield",
+        "text": "Inspect the Shieldbearer's patched shield for any new clues or hidden compartments.",
+        "action_type": "exploration"
+      },
+      {
+        "id": "check_weather",
+        "text": "Check the weather forecast for any changes that might affect the defenses. (focus: defense)",
+        "action_type": "defense"
+      }
+    ],
+    "major_event": false,
+    "safe_functions": [],
+    "story_rupture": {
+      "cause": "drama_valve",
+      "glitch": 67,
+      "risk_budget_used": 3
+    }
+  },
+  "player_choice": {
+    "id": "ask_about_message",
+    "text": "Ask the Shieldbearer about the chamber where the mysterious message was found.",
+    "action_type": "dialogue"
+  },
+  "character_reactions": [
+    {
+      "name": "Rhea",
+      "intent": "observe",
+      "action": "stand_vigilance",
+      "speech": "I stand vigilant.",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Rhea",
+      "intent": "assist",
+      "action": "Autonomously performs assist action.",
+      "speech": "(assist autonomous)",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Boris",
+      "intent": "command",
+      "action": "Autonomously performs command action.",
+      "speech": "(command autonomous)",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Rhea",
+      "intent": "plan",
+      "action": "Autonomously performs plan action.",
+      "speech": "(plan autonomous)",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Boris",
+      "intent": "inquire",
+      "action": "Autonomously performs inquire action.",
+      "speech": "(inquire autonomous)",
+      "effects": {},
+      "safe_functions": []
+    }
+  ],
+  "npcs": [
+    {
+      "name": "Rhea",
+      "trust": 4,
+      "summary": "Rhea is loyal but impulsive"
+    },
+    {
+      "name": "Bor",
+      "trust": 0,
+      "summary": "Boris is cautious and calculating."
+    }
+  ],
+  "safe_function_history": [],
+  "room_history": [
+    {
+      "room": "courtyard",
+      "turn": 12,
+      "description": "Currently in courtyard"
+    }
+  ],
+  "summary_text": "Little stirs; watch posts rotate without incident.",
+  "telemetry": {
+    "planner_calls_proposed": 0,
+    "planner_calls_executed": 0,
+    "safe_functions_executed": 0
+  },
+  "player_view": {
+    "short_scene": "The Shieldbearer stands guard at the entrance, his gaze fixed on the horizon. The low clouds hug the western wall, casting a cool and tranquil atmosphere. The western wall groans under unseen pressure.",
+    "short_world": "Turn 12 | Day 3 | Time afternoon\nLocation: courtyard\nObjective: reinforce defenses\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Evening haze, cool and tranquil.\", \"sensory_details\": \"The air carries a fresh scent of dew on the damp earth beneath your boots.\"}\nRecent events: ' the rewritten prompt, as req",
+    "options": [
+      {
+        "id": "ask_about_message",
+        "text": "Ask the Shieldbearer about the chamber where the mysterious message was found."
+      },
+      {
+        "id": "inspect_shield",
+        "text": "Inspect the Shieldbearer's patched shield for any new clues or hidden compartments."
+      },
+      {
+        "id": "check_weather",
+        "text": "Check the weather forecast for any changes that might affect the defenses. (focus: defense)"
+      }
+    ],
+    "primary_reaction": "I stand vigilant.",
+    "safe_functions": [],
+    "final_summary": "Defeat - system_glitch | Morale: 64, Order: 60, Resources: 39 | Glitch level: 67, Major events: 5 | Last major event: turn 11 | Notable characters: Rhea is loyal but impulsive; Boris is cautious and calculating."
+  },
+  "final_summary": "Defeat - system_glitch | Morale: 64, Order: 60, Resources: 39 | Glitch level: 67, Major events: 5 | Last major event: turn 11 | Notable characters: Rhea is loyal but impulsive; Boris is cautious and calculating.",
+  "effects": [],
+  "safe_function_results": [],
+  "metrics_after": {
+    "order": 60,
+    "morale": 64,
+    "resources": 39,
+    "knowledge": 59,
+    "corruption": 10,
+    "glitch": 67,
+    "risk_applied_total": 0,
+    "major_flag_set": false,
+    "major_events_triggered": 0,
+    "major_event_last_turn": null
+  },
+  "glitch": {
+    "roll": 99,
+    "effects": [
+      "Glitch cascade overwhelms containment protocols."
+    ]
+  },
+  "logs": [
+    {
+      "metric": "glitch",
+      "delta": 38,
+      "value": 50,
+      "cause": "glitch:cosmetic_noise"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 49,
+      "cause": "glitch:unease"
+    },
+    {
+      "metric": "glitch",
+      "delta": 0,
+      "value": 50,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "order",
+      "delta": 3,
+      "value": 53,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "resources",
+      "delta": -1,
+      "value": 39,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 50,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 40,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "order",
+      "delta": -2,
+      "value": 52,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 49,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 52,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 51,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 50,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 47,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 53,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 51,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 41,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 52,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 53,
+      "cause": "glitch:overload"
+    },
+    {
+      "metric": "glitch",
+      "delta": 0,
+      "value": 53,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 53,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 49,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 42,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 55,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 55,
+      "cause": "glitch:overload"
+    },
+    {
+      "metric": "glitch",
+      "delta": 0,
+      "value": 55,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 51,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 43,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 54,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 55,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 55,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 44,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 56,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "order",
+      "delta": -2,
+      "value": 53,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 55,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 57,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 56,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 56,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 53,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 57,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": -3,
+      "value": 41,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "knowledge",
+      "delta": -2,
+      "value": 51,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 3,
+      "value": 59,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 58,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 53,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 42,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 56,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 55,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 57,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 43,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 58,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "order",
+      "delta": -2,
+      "value": 53,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 57,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 60,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 59,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 55,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 44,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 56,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 57,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": -3,
+      "value": 41,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "knowledge",
+      "delta": -2,
+      "value": 53,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 3,
+      "value": 62,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 61,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 55,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 42,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 56,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 55,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 57,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "order",
+      "delta": -2,
+      "value": 53,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 56,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 63,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 62,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 57,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 57,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 58,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": -3,
+      "value": 39,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "knowledge",
+      "delta": -2,
+      "value": 55,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 3,
+      "value": 65,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 64,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 59,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 57,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 55,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 60,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "glitch",
+      "delta": 1,
+      "value": 65,
+      "cause": "glitch:cosmetic_noise"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 59,
+      "cause": "glitch:unease"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 64,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "order",
+      "delta": 3,
+      "value": 58,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "resources",
+      "delta": -1,
+      "value": 38,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 60,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 59,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 61,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 39,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 62,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "glitch",
+      "delta": 4,
+      "value": 68,
+      "cause": "glitch:overload"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 67,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 63,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 59,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 60,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 64,
+      "cause": "autonomous_Rhea"
+    }
+  ],
+  "win_loss": {
+    "status": "loss",
+    "reason": "system_glitch",
+    "description": "Sistem hatas\u0131!"
+  },
+  "narrative": "Turn 12 | Ask the Shieldbearer about the chamber where the mysterious message was found. | I stand vigilant. | Glitch cascade overwhelms containment protocols."
+}

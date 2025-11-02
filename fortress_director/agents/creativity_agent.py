@@ -116,6 +116,7 @@ class CreativityAgent(BaseAgent):
                     if clean and not any(m.lower() in clean.lower() for m in meta_markers):
                         event["scene"] = clean
                         event["motif_injected"] = None
+                        event.setdefault("creative_persist_for", 4)
                         LOGGER.info("CreativityAgent LLM event rewrite applied.")
                         return event
                 LOGGER.warning(
@@ -166,7 +167,8 @@ class CreativityAgent(BaseAgent):
                     event["motif_injected"] = motif
                     # Persist motif for a few turns so downstream systems
                     # and the EventAgent can honor a continuing motif thread.
-                    event["motif_persist_for"] = 3
+                    event["motif_persist_for"] = 5
+                    event.setdefault("creative_persist_for", 4)
                     if "scene" in event:
                         event["scene"] = (
                             event.get("scene", "") + f" (Motif: {motif})"

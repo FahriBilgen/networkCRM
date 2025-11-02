@@ -1,7 +1,7 @@
 {
   "campaign_id": "default_campaign",
   "turn_limit": 30,
-  "current_turn": 20,
+  "current_turn": 12,
   "rng_seed": 12345,
   "scores": {
     "logic_score": 0,
@@ -9,10 +9,11 @@
     "corruption": 0
   },
   "flags": [
-    "hidden_room_search",
+    "morning_mist_envelops",
+    "has_examined_shield",
+    "world_event_night_start",
     "major_wall_alert",
-    "has_visited_castle",
-    "hidden_room_key",
+    "patrol_routine",
     "force_major_event",
     "major_starvation_hint"
   ],
@@ -21,21 +22,22 @@
   "npc_fragments": {},
   "inventory": [],
   "lore": {},
-  "turn": 20,
-  "day": 5,
-  "time": "dawn",
-  "current_room": "keep",
+  "turn": 12,
+  "day": 3,
+  "time": "afternoon",
+  "current_room": "courtyard",
   "recent_events": [
-    "The Shieldbearer stands guard, his weary eyes scanning the horizon as the shadows deepen. The cool breeze carries the scent of salt and damp earth, a stark contrast to the warmth of yesterday' sun. Su...",
-    "The Shieldbearer, standing watch on the battlements, turns to face you as you approach. His weary eyes scan your presence before returning to their vigil over the horizon. Suddenly, intruders are spot...",
-    "The Shieldbearer, standing watch on the battlements, turns to face you as you approach. His weary eyes scan your presence before returning to their vigil over the horizon. You ask him about the rumore..."
+    "' the rewritten prompt, as requested: I'm trapped in a labyrinthine world of mirrors, each reflecting a different narrative. I hear whispers that echo through the corridors of the maze, but I can't de...",
+    "' the rewritten prompt with a sense of novelty and surprise: The shimmering crystal, nestled amidst the whispering vines, pulsed with an eerie luminescence, casting strange shadows upon the forest flo...",
+    "The Shieldbearer stands guard at the entrance, his gaze fixed on the horizon. The low clouds hug the western wall, casting a cool and tranquil atmosphere. The western wall groans under unseen pressure..."
   ],
   "recent_motifs": [
+    "unknown_action",
     "communication"
   ],
   "world_constraint_from_prev_turn": {
-    "atmosphere": "Nighttime calmness envelops stone battlements.",
-    "sensory_details": "The cool breeze carries the tangy scent of salt and damp earth, contrasting with memories of sunwarmed surfaces."
+    "atmosphere": "Evening haze, cool and tranquil.",
+    "sensory_details": "The air carries a fresh scent of dew on the damp earth beneath your boots."
   },
   "player": {
     "name": "The Shieldbearer",
@@ -50,72 +52,381 @@
     "summary": "A weary defender holding the western wall."
   },
   "character_summary": "Rhea is loyal but impulsive; Boris is cautious and calculating.",
-  "relationship_summary": "Rhea trusts the player deeply; Shieldbearer is neutral toward the player",
+  "relationship_summary": "Rhea trusts the player deeply",
   "metrics": {
-    "order": 57,
-    "morale": 91,
-    "resources": 45,
-    "knowledge": 79,
+    "order": 60,
+    "morale": 64,
+    "resources": 39,
+    "knowledge": 59,
     "corruption": 10,
-    "glitch": 32,
+    "glitch": 67,
     "risk_applied_total": 0,
     "major_flag_set": false,
     "major_events_triggered": 0,
     "major_event_last_turn": null
   },
   "npc_trust": {
-    "Rhea": 4,
-    "Shieldbearer": 0
+    "Rhea": 4
   },
+  "_drama_window": [
+    [
+      53,
+      55,
+      44,
+      51,
+      56
+    ],
+    [
+      54,
+      57,
+      41,
+      51,
+      58
+    ],
+    [
+      53,
+      57,
+      43,
+      53,
+      59
+    ],
+    [
+      54,
+      57,
+      41,
+      53,
+      61
+    ],
+    [
+      53,
+      56,
+      42,
+      55,
+      62
+    ],
+    [
+      54,
+      58,
+      39,
+      55,
+      64
+    ],
+    [
+      55,
+      59,
+      39,
+      57,
+      64
+    ],
+    [
+      59,
+      62,
+      39,
+      57,
+      67
+    ]
+  ],
+  "_anomaly_active_until": 14,
+  "_world_lock_until": 14,
+  "_high_volatility_mode": true,
   "_glitch_buffer": 0,
   "previous_judge_verdict": {
     "consistent": true,
-    "reason": "The content is consistent with established world, lore, and character logic. The events described are logical for a defender standing watch on battlements."
+    "reason": "The rewritten prompt introduces a new scene with a mysterious crystal, which is consistent with established lore and world logic. The content does not contradict any known facts or break any established rules.",
+    "soft_edit_policy": {
+      "max_correction_per_turn": 0.15,
+      "persist_window": 4
+    },
+    "penalty_applied": "none"
   },
   "player_choice_history": [
     "dialogue",
+    "exploration",
+    "dialogue",
+    "exploration",
+    "exploration",
+    "exploration",
     "dialogue",
     "dialogue",
-    "dialogue",
-    "dialogue",
-    "dialogue",
-    "dialogue",
-    "dialogue",
-    "dialogue",
+    "defense",
     "dialogue"
   ],
-  "summary_text": "Another uneventful watch passes by.",
+  "summary_text": "Little stirs; watch posts rotate without incident.",
+  "emotional_memory": [
+    {
+      "turn": 4,
+      "name": "Rhea",
+      "intent": "observe",
+      "speech": "I stand vigilant."
+    },
+    {
+      "turn": 4,
+      "name": "Rhea",
+      "intent": "assist",
+      "speech": "(assist autonomous)"
+    },
+    {
+      "turn": 4,
+      "name": "Boris",
+      "intent": "command",
+      "speech": "(command autonomous)"
+    },
+    {
+      "turn": 4,
+      "name": "Rhea",
+      "intent": "plan",
+      "speech": "(plan autonomous)"
+    },
+    {
+      "turn": 4,
+      "name": "Boris",
+      "intent": "inquire",
+      "speech": "(inquire autonomous)"
+    },
+    {
+      "turn": 5,
+      "name": "Rhea",
+      "intent": "observe",
+      "speech": "I take a closer look at the shield, its intricate patterns etched with a fine dew. It seems to be crafted from a rare metal, perhaps a type of ore unseen in our world."
+    },
+    {
+      "turn": 5,
+      "name": "Rhea",
+      "intent": "assist",
+      "speech": "(assist autonomous)"
+    },
+    {
+      "turn": 5,
+      "name": "Boris",
+      "intent": "command",
+      "speech": "(command autonomous)"
+    },
+    {
+      "turn": 5,
+      "name": "Rhea",
+      "intent": "plan",
+      "speech": "(plan autonomous)"
+    },
+    {
+      "turn": 5,
+      "name": "Boris",
+      "intent": "inquire",
+      "speech": "(inquire autonomous)"
+    },
+    {
+      "turn": 6,
+      "name": "Rhea",
+      "intent": "observe",
+      "speech": "I carefully inspect the shield, searching for any signs of activity or hidden compartments."
+    },
+    {
+      "turn": 6,
+      "name": "Rhea",
+      "intent": "assist",
+      "speech": "(assist autonomous)"
+    },
+    {
+      "turn": 6,
+      "name": "Boris",
+      "intent": "command",
+      "speech": "(command autonomous)"
+    },
+    {
+      "turn": 6,
+      "name": "Rhea",
+      "intent": "plan",
+      "speech": "(plan autonomous)"
+    },
+    {
+      "turn": 6,
+      "name": "Boris",
+      "intent": "inquire",
+      "speech": "(inquire autonomous)"
+    },
+    {
+      "turn": 7,
+      "name": "Rhea",
+      "intent": "observe",
+      "speech": "I scan the horizon, searching for any signs of movement or change in the battlefield."
+    },
+    {
+      "turn": 7,
+      "name": "Rhea",
+      "intent": "assist",
+      "speech": "(assist autonomous)"
+    },
+    {
+      "turn": 7,
+      "name": "Boris",
+      "intent": "command",
+      "speech": "(command autonomous)"
+    },
+    {
+      "turn": 7,
+      "name": "Rhea",
+      "intent": "plan",
+      "speech": "(plan autonomous)"
+    },
+    {
+      "turn": 7,
+      "name": "Boris",
+      "intent": "inquire",
+      "speech": "(inquire autonomous)"
+    },
+    {
+      "turn": 8,
+      "name": "Rhea",
+      "intent": "observe",
+      "speech": "I stand vigilant."
+    },
+    {
+      "turn": 8,
+      "name": "Rhea",
+      "intent": "assist",
+      "speech": "(assist autonomous)"
+    },
+    {
+      "turn": 8,
+      "name": "Boris",
+      "intent": "command",
+      "speech": "(command autonomous)"
+    },
+    {
+      "turn": 8,
+      "name": "Rhea",
+      "intent": "plan",
+      "speech": "(plan autonomous)"
+    },
+    {
+      "turn": 8,
+      "name": "Boris",
+      "intent": "inquire",
+      "speech": "(inquire autonomous)"
+    },
+    {
+      "turn": 9,
+      "name": "Rhea",
+      "intent": "observe",
+      "speech": "I scan the chamber cautiously, my senses heightened. The air here feels... different, a subtle undertone that I can't quite grasp. What secrets lie hidden within this labyrinth of mirrors?"
+    },
+    {
+      "turn": 9,
+      "name": "Rhea",
+      "intent": "assist",
+      "speech": "(assist autonomous)"
+    },
+    {
+      "turn": 9,
+      "name": "Boris",
+      "intent": "command",
+      "speech": "(command autonomous)"
+    },
+    {
+      "turn": 9,
+      "name": "Rhea",
+      "intent": "plan",
+      "speech": "(plan autonomous)"
+    },
+    {
+      "turn": 9,
+      "name": "Boris",
+      "intent": "inquire",
+      "speech": "(inquire autonomous)"
+    },
+    {
+      "turn": 10,
+      "name": "Rhea",
+      "intent": "observe",
+      "speech": "I scan the shimmering crystal, my eyes tracing the intricate patterns etched into its surface. It's as if the very fabric of the forest whispers secrets to me."
+    },
+    {
+      "turn": 10,
+      "name": "Rhea",
+      "intent": "assist",
+      "speech": "(assist autonomous)"
+    },
+    {
+      "turn": 10,
+      "name": "Boris",
+      "intent": "command",
+      "speech": "(command autonomous)"
+    },
+    {
+      "turn": 10,
+      "name": "Rhea",
+      "intent": "plan",
+      "speech": "(plan autonomous)"
+    },
+    {
+      "turn": 10,
+      "name": "Boris",
+      "intent": "inquire",
+      "speech": "(inquire autonomous)"
+    },
+    {
+      "turn": 11,
+      "name": "Rhea",
+      "intent": "observe",
+      "speech": "I stand vigilant."
+    },
+    {
+      "turn": 11,
+      "name": "Rhea",
+      "intent": "assist",
+      "speech": "(assist autonomous)"
+    },
+    {
+      "turn": 11,
+      "name": "Boris",
+      "intent": "command",
+      "speech": "(command autonomous)"
+    },
+    {
+      "turn": 11,
+      "name": "Rhea",
+      "intent": "plan",
+      "speech": "(plan autonomous)"
+    },
+    {
+      "turn": 11,
+      "name": "Boris",
+      "intent": "inquire",
+      "speech": "(inquire autonomous)"
+    }
+  ],
   "memory_short": [
-    "Turn 17: You ask the Shieldbearer if he knows anything about the rumored hidden room deep within the castle grounds. -> The Shieldbearer stands guard, his weary eyes scanning the horizon as the shadows deepen. The cool b...",
-    "Turn 18: You ask the Shieldbearer if he knows anything about the rumored hidden room deep within the castle grounds. -> The Shieldbearer, standing watch on the battlements, turns to face you as you approach. His weary ey...",
-    "Memory summary: Turn 16: You ask the Shieldbearer if he knows anything about the rumored hidden room deep within the castle grounds. -> ... | Turn 17: You ask the Shieldbearer if he knows anything about the rumored h...",
-    "Turn 19: Ask the Shieldbearer if he knows more about the hidden room. -> The Shieldbearer, standing watch on the battlements, turns to face you as you approach. His weary ey...",
-    "Turn 20: Ask the Shieldbearer if he knows more about the hidden room. -> The Shieldbearer, standing watch on the battlements, turns to face you as you approach. His weary ey..."
+    "Turn 4: Inspect the Shieldbearer's patched shield for clues or hidden compartments. -> I'm unable to rewrite the prompt as requested, as I am unable to inject a fresh motif or sensory ang...",
+    "Turn 5: Ask the Shieldbearer about his patrol routine for any changes or unusual occurrences. -> The Shieldbearer stands guard at the entrance, his gaze fixed on the horizon. The low clouds hug the...",
+    "Turn 6: Inspect the Shieldbearer's patched shield for clues or hidden compartments. -> The Shieldbearer stands guard at the entrance, his gaze fixed on the horizon. The low clouds hug the...",
+    "Memory summary: Turn 4: Inspect the Shieldbearer's patched shield for clues or hidden compartments. -> I'm unable to rewrite the prompt as requested, as I am unable to inject a fresh motif or sensory ang... | Turn 5:...",
+    "Turn 7: Inspect the Shieldbearer's patched shield for any new clues or hidden compartments. -> I'm unable to rewrite the prompt as requested, as I am unable to generate creative content or inject...",
+    "Turn 8: Inspect the Shieldbearer's patched shield for new clues or hidden compartments. -> The Shieldbearer stands guard at the entrance, his gaze fixed on the horizon. The low clouds hug the...",
+    "Turn 9: Ask the Shieldbearer about any changes or unusual occurrences during his patrol. -> ' the rewritten prompt with a sense of novelty and surprise: The shimmering veil that shrouded the c...",
+    "Memory summary: Turn 7: Inspect the Shieldbearer's patched shield for any new clues or hidden compartments. -> I'm unable to rewrite the prompt as requested, as I am unable to generate creative content or inject... |...",
+    "Turn 10: Ask the Shieldbearer if he has noticed anything unusual about the message or the chamber it was found in. -> ' the rewritten prompt, as requested: I'm trapped in a labyrinthine world of mirrors, each reflectin...",
+    "Turn 11: Ask the Shieldbearer about the chamber where the mysterious message was found. (focus: defense) -> ' the rewritten prompt with a sense of novelty and surprise: The shimmering crystal, nestled amidst ...",
+    "Turn 12: Ask the Shieldbearer about the chamber where the mysterious message was found. -> The Shieldbearer stands guard at the entrance, his gaze fixed on the horizon. The low clouds hug the...",
+    "Memory summary: Turn 10: Ask the Shieldbearer if he has noticed anything unusual about the message or the chamber it was found in. -> ' the rewritten prompt, as requested: I'm trapped in a labyrinthine world of mirro..."
   ],
   "memory_long": [
-    "Turn 8: Major event triggered (major_starvation_hint)",
+    "Turn 6: Major event triggered (major_wall_alert)",
+    "Turn 7: Major event triggered (major_wall_alert)",
+    "Turn 8: Major event triggered (major_wall_alert, major_starvation_hint)",
+    "Turn 9: Major event triggered (major_wall_alert)",
     "Turn 10: Major event triggered (major_wall_alert)",
     "Turn 11: Major event triggered (major_wall_alert)",
-    "Turn 12: Major event triggered (major_wall_alert, major_starvation_hint)",
-    "Turn 13: Major event triggered (major_wall_alert)",
-    "Turn 14: Major event triggered (major_wall_alert)",
-    "Turn 15: Major event triggered (major_wall_alert)",
-    "Turn 16: Major event triggered (major_wall_alert, major_starvation_hint)",
-    "Turn 17: Major event triggered (major_wall_alert)",
-    "Turn 18: Major event triggered (major_wall_alert)",
-    "Turn 19: Major event triggered (major_wall_alert)",
-    "Turn 20: Major event triggered (major_wall_alert, major_starvation_hint)"
+    "Turn 12: Major event triggered (major_wall_alert, major_starvation_hint)"
   ],
   "status_effects": [
     {
-      "target": "Shieldbearer",
+      "target": "Rhea",
       "status": "tense_watch",
       "duration": 1
     }
   ],
-  "last_major_event_turn": 18,
-  "major_events_triggered": 10,
-  "major_event_last_turn": 19,
+  "last_major_event_turn": 10,
+  "major_events_triggered": 5,
+  "major_event_last_turn": 11,
   "finalized": true,
-  "final_summary": "Defeat - turn_limit_exceeded | Morale: 91, Order: 57, Resources: 45 | Glitch level: 32, Major events: 10 | Last major event: turn 19 | Notable characters: Rhea is loyal but impulsive; Boris is cautious and calculating."
+  "final_summary": "Defeat - system_glitch | Morale: 64, Order: 60, Resources: 39 | Glitch level: 67, Major events: 5 | Last major event: turn 11 | Notable characters: Rhea is loyal but impulsive; Boris is cautious and calculating."
 }

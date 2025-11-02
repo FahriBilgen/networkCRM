@@ -1,0 +1,783 @@
+{
+  "WORLD_CONTEXT": "Turn 9 | Day 2 | Time night\nLocation: courtyard\nObjective: reinforce defenses\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Dawn h echos through stone, a cool breeze whispers secrets.\", \"sensory_details\": \"The air carries the briny scent of sea mist mingling with damp earth fingers trace roughened cobblestones as they warm in sunlight piercing clouds.\"}\nRecent events: The Shieldbearer stands guard at the entrance, the low clouds hugging the battlements and drums thudding in the distance. The cool air with salty brush caresses your skin as you feel the damp stone un...; ' the rewritten prompt: The shimmering scales on the iridescent butterfly' wings pulsed with an unsettling rhythm, like a countdown to an unspoken reveal.; The Shieldbearer, standing guard at the entrance, notices your approach. The low clouds hugging the battlements and drums thudding in the distance create an ominous atmosphere. Suddenly, a sudden fire... Recent motifs: unknown_action, communication\nRecent major events: none\nRelationship summary: Rhea trusts the player deeply\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating. Metrics: {\"order\": 60, \"morale\": 62, \"resources\": 38, \"knowledge\": 53, \"corruption\": 10, \"glitch\": 26, \"risk_applied_total\": 0, \"major_flag_set\": false, \"major_events_triggered\": 0, \"major_event_last_turn\": null}",
+  "scene": "The Shieldbearer, standing guard at the entrance, notices your approach. The low clouds hugging the battlements and drums thudding in the distance create an ominous atmosphere. Suddenly, a sudden fire breaks out near the western wall. Suddenly, a betrayal unfolds!",
+  "options": [
+    {
+      "id": "investigate_fire",
+      "text": "Investigate the source of the fire near the western wall.",
+      "action_type": "exploration"
+    },
+    {
+      "id": "ask_shieldbearer",
+      "text": "Ask the Shieldbearer if they have any information about the fire or any unusual activity in the courtyard.",
+      "action_type": "dialogue"
+    },
+    {
+      "id": "search_surroundings",
+      "text": "Search the immediate surroundings for clues or items that might provide insight into the cause of the fire. (focus: defense)",
+      "action_type": "defense"
+    }
+  ],
+  "world": {
+    "atmosphere": "Dawn' first light filters through stone, a cool breeze whispers secrets.",
+    "sensory_details": "The air carries the briny scent of sea mist mingling with damp earth fingers trace roughened cobblest0. The distant drums beat like heartbeats in my chest as I stand guard, feeling the weight of Rhea' trust pressing down on me."
+  },
+  "event": {
+    "scene": "The Shieldbearer, standing guard at the entrance, notices your approach. The low clouds hugging the battlements and drums thudding in the distance create an ominous atmosphere. Suddenly, a sudden fire breaks out near the western wall. Suddenly, a betrayal unfolds!",
+    "options": [
+      {
+        "id": "investigate_fire",
+        "text": "Investigate the source of the fire near the western wall.",
+        "action_type": "exploration"
+      },
+      {
+        "id": "ask_shieldbearer",
+        "text": "Ask the Shieldbearer if they have any information about the fire or any unusual activity in the courtyard.",
+        "action_type": "dialogue"
+      },
+      {
+        "id": "search_surroundings",
+        "text": "Search the immediate surroundings for clues or items that might provide insight into the cause of the fire. (focus: defense)",
+        "action_type": "defense"
+      }
+    ],
+    "major_event": true,
+    "safe_functions": [
+      {
+        "name": "change_weather",
+        "args": [],
+        "kwargs": {
+          "atmosphere": "smoky",
+          "sensory_details": "The air carries the acrid scent of burning wood and damp stone."
+        }
+      },
+      {
+        "name": "spawn_item",
+        "args": [],
+        "kwargs": {
+          "item_id": "fire_extinguisher",
+          "target": "nearby"
+        },
+        "metadata": {
+          "source": "event_autoinject"
+        }
+      },
+      {
+        "name": "move_npc",
+        "args": [],
+        "kwargs": {
+          "npc_id": "Boris",
+          "location": "courtyard"
+        },
+        "metadata": {
+          "source": "orchestrator:fallback"
+        }
+      }
+    ]
+  },
+  "player_choice": {
+    "id": "search_surroundings",
+    "text": "Search the immediate surroundings for clues or items that might provide insight into the cause of the fire. (focus: defense)",
+    "action_type": "defense"
+  },
+  "character_reactions": [
+    {
+      "name": "Rhea",
+      "intent": "observe",
+      "action": "look around the courtyard",
+      "speech": "The low clouds hugging the battlements and drums thudding in the distance create an ominous atmosphere. I sense a threat lurking in the shadows.",
+      "effects": {
+        "flag_set": [
+          "major_wall_alert"
+        ],
+        "status_change": {
+          "target": "Rhea",
+          "status": "tense_watch",
+          "duration": 3
+        },
+        "trust_delta": 0
+      },
+      "safe_functions": []
+    },
+    {
+      "name": "Rhea",
+      "intent": "assist",
+      "action": "Autonomously performs assist action.",
+      "speech": "(assist autonomous)",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Boris",
+      "intent": "command",
+      "action": "Autonomously performs command action.",
+      "speech": "(command autonomous)",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Rhea",
+      "intent": "plan",
+      "action": "Autonomously performs plan action.",
+      "speech": "(plan autonomous)",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Boris",
+      "intent": "inquire",
+      "action": "Autonomously performs inquire action.",
+      "speech": "(inquire autonomous)",
+      "effects": {},
+      "safe_functions": []
+    }
+  ],
+  "npcs": [
+    {
+      "name": "Rhea",
+      "trust": 2,
+      "summary": "Rhea is loyal but impulsive"
+    },
+    {
+      "name": "Bor",
+      "trust": 0,
+      "summary": "Boris is cautious and calculating."
+    }
+  ],
+  "safe_function_history": [
+    {
+      "name": "change_weather",
+      "success": false,
+      "timestamp": null,
+      "metadata": {
+        "source": "event_agent"
+      }
+    },
+    {
+      "name": "spawn_item",
+      "success": false,
+      "timestamp": null,
+      "metadata": {
+        "source": "event_autoinject"
+      }
+    },
+    {
+      "name": "move_npc",
+      "success": false,
+      "timestamp": null,
+      "metadata": {
+        "source": "orchestrator:fallback"
+      }
+    }
+  ],
+  "room_history": [
+    {
+      "room": "courtyard",
+      "turn": 10,
+      "description": "Currently in courtyard"
+    }
+  ],
+  "summary_text": "A major event shakes the village. Glitch level rises.",
+  "telemetry": {
+    "planner_calls_proposed": 0,
+    "planner_calls_executed": 0,
+    "safe_functions_executed": 3
+  },
+  "player_view": {
+    "short_scene": "The Shieldbearer, standing guard at the entrance, notices your approach. The low clouds hugging the battlements and drums thudding in the distance create an ominous atmosphere. Suddenly, a sudden fire breaks out near the western wall. Suddenly, a betrayal unfolds!",
+    "short_world": "Turn 10 | Day 3 | Time dawn\nLocation: courtyard\nObjective: reinforce defenses\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Dawn h echos through stone, a cool breeze whispers secrets.\", \"sensory_details\": \"The air carries the briny scent of sea mist mingling with damp earth fingers trace roughened cobbles",
+    "options": [
+      {
+        "id": "investigate_fire",
+        "text": "Investigate the source of the fire near the western wall."
+      },
+      {
+        "id": "ask_shieldbearer",
+        "text": "Ask the Shieldbearer if they have any information about the fire or any unusual activity in the courtyard."
+      },
+      {
+        "id": "search_surroundings",
+        "text": "Search the immediate surroundings for clues or items that might provide insight into the cause of the fire. (focus: defense)"
+      }
+    ],
+    "primary_reaction": "The low clouds hugging the battlements and drums thudding in the distance create an ominous atmosphere. I sense a threat lurking in the shadows.",
+    "safe_functions": []
+  },
+  "effects": [
+    {
+      "flag_set": [
+        "major_wall_alert"
+      ],
+      "status_change": {
+        "target": "Rhea",
+        "status": "tense_watch",
+        "duration": 3
+      },
+      "trust_delta": 0
+    },
+    {
+      "name": "change_weather",
+      "result": {
+        "atmosphere": "smoky",
+        "sensory_details": "The air carries the acrid scent of burning wood and damp stone."
+      },
+      "metadata": {
+        "source": "event_agent"
+      }
+    },
+    {
+      "name": "spawn_item",
+      "result": {
+        "target": "nearby",
+        "items": [
+          "fire_extinguisher"
+        ]
+      },
+      "metadata": {
+        "source": "event_autoinject"
+      }
+    },
+    {
+      "name": "move_npc",
+      "result": {
+        "npc_id": "Boris",
+        "location": "courtyard"
+      },
+      "metadata": {
+        "source": "orchestrator:fallback"
+      }
+    }
+  ],
+  "major_event_effect": {
+    "applied_flag": "major_wall_alert",
+    "status_change": {
+      "target": "Rhea",
+      "status": "tense_watch",
+      "duration": 3
+    },
+    "applied_to": "Rhea"
+  },
+  "major_event_effect_summary": "major_wall_alert -> Rhea (tense_watch, 3 turns)",
+  "safe_function_results": [
+    {
+      "name": "change_weather",
+      "result": {
+        "atmosphere": "smoky",
+        "sensory_details": "The air carries the acrid scent of burning wood and damp stone."
+      },
+      "metadata": {
+        "source": "event_agent"
+      }
+    },
+    {
+      "name": "spawn_item",
+      "result": {
+        "target": "nearby",
+        "items": [
+          "fire_extinguisher"
+        ]
+      },
+      "metadata": {
+        "source": "event_autoinject"
+      }
+    },
+    {
+      "name": "move_npc",
+      "result": {
+        "npc_id": "Boris",
+        "location": "courtyard"
+      },
+      "metadata": {
+        "source": "orchestrator:fallback"
+      }
+    }
+  ],
+  "metrics_after": {
+    "order": 63,
+    "morale": 65,
+    "resources": 37,
+    "knowledge": 53,
+    "corruption": 10,
+    "glitch": 26,
+    "risk_applied_total": 0,
+    "major_flag_set": false,
+    "major_events_triggered": 0,
+    "major_event_last_turn": null
+  },
+  "glitch": {
+    "roll": 97,
+    "effects": [
+      "Glitch cascade partially contained."
+    ]
+  },
+  "logs": [
+    {
+      "metric": "glitch",
+      "delta": 1,
+      "value": 13,
+      "cause": "glitch:cosmetic_noise"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 49,
+      "cause": "glitch:unease"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 12,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "order",
+      "delta": 3,
+      "value": 53,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "resources",
+      "delta": -1,
+      "value": 39,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 50,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 40,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 14,
+      "cause": "glitch:overload"
+    },
+    {
+      "metric": "glitch",
+      "delta": 1,
+      "value": 15,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 47,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 41,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 49,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 55,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 2,
+      "value": 51,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 17,
+      "cause": "glitch:overload"
+    },
+    {
+      "metric": "glitch",
+      "delta": 1,
+      "value": 18,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "order",
+      "delta": 3,
+      "value": 58,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "resources",
+      "delta": -1,
+      "value": 40,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 52,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 59,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 41,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "resources",
+      "delta": -3,
+      "value": 38,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "knowledge",
+      "delta": -2,
+      "value": 45,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 20,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 0,
+      "value": 20,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 53,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 47,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 60,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 39,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 55,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "order",
+      "delta": -2,
+      "value": 58,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 54,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 22,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 21,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 55,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 49,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 59,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 56,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": -3,
+      "value": 36,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "knowledge",
+      "delta": -2,
+      "value": 47,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 3,
+      "value": 24,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 23,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "order",
+      "delta": 3,
+      "value": 62,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "resources",
+      "delta": -1,
+      "value": 35,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 57,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "morale",
+      "delta": 2,
+      "value": 59,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 36,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 60,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "glitch",
+      "delta": 1,
+      "value": 24,
+      "cause": "glitch:cosmetic_noise"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 59,
+      "cause": "glitch:unease"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 23,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 49,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 37,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 58,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": 2,
+      "value": 60,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "order",
+      "delta": -2,
+      "value": 60,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 59,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 25,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 24,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 60,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 51,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "morale",
+      "delta": 2,
+      "value": 62,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "glitch",
+      "delta": 1,
+      "value": 25,
+      "cause": "glitch:cosmetic_noise"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 61,
+      "cause": "glitch:unease"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 24,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 53,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 38,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 60,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": 2,
+      "value": 62,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "glitch",
+      "delta": 3,
+      "value": 27,
+      "cause": "glitch:overload"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 26,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "order",
+      "delta": 3,
+      "value": 63,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "resources",
+      "delta": -1,
+      "value": 37,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 63,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "morale",
+      "delta": 2,
+      "value": 65,
+      "cause": "autonomous_Rhea"
+    }
+  ],
+  "win_loss": {
+    "status": "ongoing",
+    "reason": "conditions_not_met",
+    "description": "Oyun devam ediyor..."
+  },
+  "narrative": "Turn 10 | Search the immediate surroundings for clues or items that might provide insight into the cause of the fire. (focus: defense) | The low clouds hugging the battlements and drums thudding in the distance create an ominous atmosphere."
+}

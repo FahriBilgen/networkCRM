@@ -824,6 +824,21 @@ class RulesEngine:
                 "description": "Mükemmel uyum!",
             }
 
+        # Additional victories to diversify endings
+        if metrics.get("knowledge", 0) >= 75 and glitch <= 20:
+            return {
+                "status": "win",
+                "reason": "insight_win",
+                "description": "Bilgi, kaosu yendi.",
+            }
+
+        if resources <= 5 and order >= 60 and glitch <= 40:
+            return {
+                "status": "win",
+                "reason": "sacrifice_win",
+                "description": "Bedel ödendi; köy ayakta kaldı.",
+            }
+
         # Defeat conditions
         if morale <= 10:
             return {
@@ -851,6 +866,21 @@ class RulesEngine:
                 "status": "loss",
                 "reason": "system_glitch",
                 "description": "Sistem hatası!",
+            }
+
+        # Additional losses before timer checks
+        if order <= 15 and glitch >= 50:
+            return {
+                "status": "loss",
+                "reason": "breach_loss",
+                "description": "Surlar çöktü; düzen dağıldı.",
+            }
+
+        if morale <= 20 and corruption >= 40 and order <= 30:
+            return {
+                "status": "loss",
+                "reason": "mutiny_loss",
+                "description": "İçeride isyan patladı.",
             }
 
         if turn_number >= 20:

@@ -68,9 +68,18 @@ class EventAgent(BaseAgent):
             # --- Forced novelty and rare incident logic ---
             turn = turn_idx
             novelty_flag = variables.get("novelty_flag", False)
+            drama_mode = bool(variables.get("drama_mode", False))
+            risk_budget = int(variables.get("risk_budget", 0) or 0)
+            metrics_snapshot = variables.get("metrics_snapshot", {}) or {}
+            glitch_level = int(metrics_snapshot.get("glitch", 0) or 0)
             # Force novelty on even turns OR occasionally via small probability
             # Increased small-probability to 20% to inject more rare incidents.
-            force_novelty = novelty_flag or (turn % 2 == 0) or (random.random() < 0.2)
+            force_novelty = (
+                drama_mode
+                or novelty_flag
+                or (turn % 2 == 0)
+                or (random.random() < (0.2 if not drama_mode else 0.35))
+            )
             if force_novelty:
                 self.LOGGER.info(
                     "Injecting forced novelty/rare incident for turn %d", turn
@@ -90,6 +99,16 @@ class EventAgent(BaseAgent):
                     "a secret tunnel is found beneath the keep",
                     "a wild animal stampede threatens the food stores",
                 ]
+                # Upgrade incidents when drama_mode or risk_budget available
+                if drama_mode or risk_budget > 0:
+                    rare_incidents.extend(
+                        [
+                            "saboteurs infiltrate the granary under cover of fog",
+                            "a trusted scout is exposed as a mole",
+                            "a breach opens on the eastern palisade",
+                            "a quake fractures the southern wall foundation",
+                        ]
+                    )
                 try:
                     h2 = hashlib.sha1(f"{turn}-rare".encode("utf-8")).digest()
                     ridx = h2[0] % len(rare_incidents)
@@ -190,7 +209,38 @@ class EventAgent(BaseAgent):
             )  # Throttle from orchestrator
             if (
                 allow_major
-                and ((turn % 3 == 0) or ("force_major_event" in flags) or raise_major)
+                and (drama_mode or risk_budget > 0)
+                and not output.get("major_event", False)
+            ):
+                extra_chance = 0.15 if drama_mode else 0.1
+                if random.random() < extra_chance:
+                    self.LOGGER.info(
+                        "Story rupture triggered via drama valve (turn=%d)", turn
+                    )
+                    output["major_event"] = True
+                    output["story_rupture"] = {
+                        "cause": "drama_valve",
+                        "glitch": glitch_level,
+                        "risk_budget_used": min(max(risk_budget, 1), 3),
+                    }
+                    scene = output.get("scene", "")
+                    rupture_descriptions = [
+                        "Reality shears; a hidden gate yawns open.",
+                        "A trusted voice splits the watch with betrayal.",
+                        "The western wall groans under unseen pressure.",
+                    ]
+                    output["scene"] = (
+                        f"{scene} "
+                        f"{rupture_descriptions[turn % len(rupture_descriptions)]}"
+                    ).strip()
+            if (
+                allow_major
+                and (
+                    (turn % 3 == 0)
+                    or ("force_major_event" in flags)
+                    or raise_major
+                    or drama_mode
+                )
                 and not output.get("major_event", False)
             ):
                 self.LOGGER.info("Forcing incident flag for turn %d", turn)
@@ -202,6 +252,14 @@ class EventAgent(BaseAgent):
                     "a betrayal unfolds",
                     "a discovery is made",
                 ]
+                if drama_mode or risk_budget > 0:
+                    incidents.extend(
+                        [
+                            "an inner gate buckles under pressure",
+                            "a trusted officer goes missing",
+                            "a supply cache is found ransacked",
+                        ]
+                    )
                 incident = incidents[turn % len(incidents)]
                 output["scene"] = f"{scene} Suddenly, {incident}!"
 

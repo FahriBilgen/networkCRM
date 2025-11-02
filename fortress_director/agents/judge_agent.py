@@ -20,6 +20,8 @@ from fortress_director.settings import (
     JUDGE_BIAS_REWEIGHT,
     JUDGE_TONE_ALIGNMENT_THRESHOLD,
     JUDGE_BASE_VETO_PROB,
+    JUDGE_SOFT_MAX_CORRECTION_PER_TURN,
+    JUDGE_PERSIST_WINDOW,
 )
 
 
@@ -140,6 +142,7 @@ class JudgeAgent(BaseAgent):
                     tone_val = None
             except Exception:
                 tone_val = None
+            penalty_applied = "none"
             if tone_val is not None and tone_val < JUDGE_TONE_ALIGNMENT_THRESHOLD:
                 LOGGER.info(
                     "Judge rejecting content: tone_alignment %s < %s",
@@ -152,6 +155,23 @@ class JudgeAgent(BaseAgent):
                 result["reason"] = "tone_alignment_below_threshold"
                 result["penalty_magnitude"] = {"morale": -1, "glitch": 1}
                 result["coherence"] = min(result.get("coherence", 100), 30)
+                penalty_applied = "minor_penalty"
+            # Always surface a soft-edit policy so the orchestrator can respect
+            # anomaly persistence and cap normalization speed.
+            try:
+                soft_policy = result.setdefault("soft_edit_policy", {})
+                if not isinstance(soft_policy, dict):
+                    soft_policy = {}
+                    result["soft_edit_policy"] = soft_policy
+            except Exception:
+                soft_policy = {"max_correction_per_turn": JUDGE_SOFT_MAX_CORRECTION_PER_TURN,
+                               "persist_window": JUDGE_PERSIST_WINDOW}
+                result["soft_edit_policy"] = soft_policy
+            soft_policy.setdefault("max_correction_per_turn", JUDGE_SOFT_MAX_CORRECTION_PER_TURN)
+            soft_policy.setdefault("persist_window", JUDGE_PERSIST_WINDOW)
+            # Back-compat for tests expecting 'penalty_applied'
+            if "penalty_applied" not in result:
+                result["penalty_applied"] = penalty_applied
             return result
         except Exception as exc:
             self.LOGGER.error(

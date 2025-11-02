@@ -1,0 +1,573 @@
+{
+  "WORLD_CONTEXT": "Turn 5 | Day 2 | Time dawn\nLocation: entrance\nObjective: advance story without repetition\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Evening haze, cool and tranquil.\", \"sensory_details\": \"The air carries a fresh scent of dew on the damp earth beneath your boots.\"}\nRecent events: The Shieldbearer stands guard at the entrance, his gaze fixed on the horizon. The low clouds hug the battlements and drums thud beyond the walls while the wind carries grit.; I'm unable to rewrite the prompt as requested, as I am unable to inject a fresh motif or sensory angle without altering the core context of the prompt.; The Shieldbearer stands guard at the entrance, his gaze fixed on the horizon. The low clouds hug the battlements and drums thud beyond the walls while the wind carries grit. As night falls, the air gr... Recent motifs: unknown_action, communication\nRecent major events: none\nRelationship summary: Rhea trusts the player deeply\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating. Metrics: {\"order\": 54, \"morale\": 57, \"resources\": 41, \"knowledge\": 51, \"corruption\": 10, \"glitch\": 58, \"risk_applied_total\": 0, \"major_flag_set\": false, \"major_events_triggered\": 0, \"major_event_last_turn\": null}",
+  "scene": "The Shieldbearer stands guard at the entrance, his gaze fixed on the horizon. The low clouds hug the battlements and drums thud beyond the walls while the wind carries grit. As dawn breaks, the air grows warmer and the first light of day begins to illuminate the landscape. The western wall groans under unseen pressure.",
+  "options": [
+    {
+      "id": "ask_about_patrol",
+      "text": "Ask the Shieldbearer about any changes or unusual occurrences during his patrol routine.",
+      "action_type": "dialogue"
+    },
+    {
+      "id": "inspect_shield",
+      "text": "Inspect the Shieldbearer's patched shield for clues or hidden compartments.",
+      "action_type": "exploration"
+    },
+    {
+      "id": "check_for_mystery_figure",
+      "text": "Discreetly inquire about any sightings of the mysterious figure rumored to be among the defenders. (focus: defense)",
+      "action_type": "defense"
+    }
+  ],
+  "world": {
+    "atmosphere": "Evening haze, cool and tranquil.",
+    "sensory_details": "The air carries a fresh scent of dew on the damp earth beneath your boots."
+  },
+  "event": {
+    "scene": "The Shieldbearer stands guard at the entrance, his gaze fixed on the horizon. The low clouds hug the battlements and drums thud beyond the walls while the wind carries grit. As dawn breaks, the air grows warmer and the first light of day begins to illuminate the landscape. The western wall groans under unseen pressure.",
+    "options": [
+      {
+        "id": "ask_about_patrol",
+        "text": "Ask the Shieldbearer about any changes or unusual occurrences during his patrol routine.",
+        "action_type": "dialogue"
+      },
+      {
+        "id": "inspect_shield",
+        "text": "Inspect the Shieldbearer's patched shield for clues or hidden compartments.",
+        "action_type": "exploration"
+      },
+      {
+        "id": "check_for_mystery_figure",
+        "text": "Discreetly inquire about any sightings of the mysterious figure rumored to be among the defenders. (focus: defense)",
+        "action_type": "defense"
+      }
+    ],
+    "major_event": true,
+    "safe_functions": [
+      {
+        "name": "move_npc",
+        "args": [],
+        "kwargs": {
+          "npc_id": "Boris",
+          "location": "entrance"
+        },
+        "metadata": {
+          "source": "orchestrator:fallback"
+        }
+      }
+    ],
+    "story_rupture": {
+      "cause": "drama_valve",
+      "glitch": 58,
+      "risk_budget_used": 3
+    }
+  },
+  "player_choice": {
+    "id": "inspect_shield",
+    "text": "Inspect the Shieldbearer's patched shield for clues or hidden compartments.",
+    "action_type": "exploration"
+  },
+  "character_reactions": [
+    {
+      "name": "Rhea",
+      "intent": "observe",
+      "action": "examine_shield",
+      "speech": "I take a closer look at the shield, its intricate patterns etched with a fine dew. It seems to be crafted from a rare metal, perhaps a type of ore unseen in our world.",
+      "effects": {
+        "trust_delta": 1,
+        "flag_set": [
+          "world_event_night_start",
+          "major_wall_alert"
+        ],
+        "status_change": {
+          "target": "Rhea",
+          "status": "tense_watch",
+          "duration": 3
+        }
+      },
+      "safe_functions": []
+    },
+    {
+      "name": "Rhea",
+      "intent": "assist",
+      "action": "Autonomously performs assist action.",
+      "speech": "(assist autonomous)",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Boris",
+      "intent": "command",
+      "action": "Autonomously performs command action.",
+      "speech": "(command autonomous)",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Rhea",
+      "intent": "plan",
+      "action": "Autonomously performs plan action.",
+      "speech": "(plan autonomous)",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Boris",
+      "intent": "inquire",
+      "action": "Autonomously performs inquire action.",
+      "speech": "(inquire autonomous)",
+      "effects": {},
+      "safe_functions": []
+    }
+  ],
+  "npcs": [
+    {
+      "name": "Rhea",
+      "trust": 3,
+      "summary": "Rhea is loyal but impulsive"
+    },
+    {
+      "name": "Bor",
+      "trust": 0,
+      "summary": "Boris is cautious and calculating."
+    }
+  ],
+  "safe_function_history": [
+    {
+      "name": "move_npc",
+      "success": false,
+      "timestamp": null,
+      "metadata": {
+        "source": "orchestrator:fallback"
+      }
+    }
+  ],
+  "room_history": [
+    {
+      "room": "entrance",
+      "turn": 6,
+      "description": "Currently in entrance"
+    }
+  ],
+  "summary_text": "A major event shakes the village. Glitch level rises.",
+  "telemetry": {
+    "planner_calls_proposed": 0,
+    "planner_calls_executed": 0,
+    "safe_functions_executed": 1
+  },
+  "player_view": {
+    "short_scene": "The Shieldbearer stands guard at the entrance, his gaze fixed on the horizon. The low clouds hug the battlements and drums thud beyond the walls while the wind carries grit. As dawn breaks, the air grows warmer and the first light of day begins to illuminate the landscape. The western wall groans under unseen pressure.",
+    "short_world": "Turn 6 | Day 2 | Time morning\nLocation: entrance\nObjective: reinforce defenses\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Evening haze, cool and tranquil.\", \"sensory_details\": \"The air carries a fresh scent of dew on the damp earth beneath your boots.\"}\nRecent events: I'm unable to rewrite the prompt a",
+    "options": [
+      {
+        "id": "ask_about_patrol",
+        "text": "Ask the Shieldbearer about any changes or unusual occurrences during his patrol routine."
+      },
+      {
+        "id": "inspect_shield",
+        "text": "Inspect the Shieldbearer's patched shield for clues or hidden compartments."
+      },
+      {
+        "id": "check_for_mystery_figure",
+        "text": "Discreetly inquire about any sightings of the mysterious figure rumored to be among the defenders. (focus: defense)"
+      }
+    ],
+    "primary_reaction": "I take a closer look at the shield, its intricate patterns etched with a fine dew. It seems to be crafted from a rare metal, perhaps a type of ore unseen in our world.",
+    "safe_functions": []
+  },
+  "effects": [
+    {
+      "trust_delta": 1,
+      "flag_set": [
+        "world_event_night_start",
+        "major_wall_alert"
+      ],
+      "status_change": {
+        "target": "Rhea",
+        "status": "tense_watch",
+        "duration": 3
+      }
+    },
+    {
+      "name": "move_npc",
+      "result": {
+        "npc_id": "Boris",
+        "location": "entrance"
+      },
+      "metadata": {
+        "source": "orchestrator:fallback"
+      }
+    }
+  ],
+  "major_event_effect": {
+    "applied_flag": "major_wall_alert",
+    "status_change": {
+      "target": "Rhea",
+      "status": "tense_watch",
+      "duration": 3
+    },
+    "applied_to": "Rhea"
+  },
+  "major_event_effect_summary": "major_wall_alert -> Rhea (tense_watch, 3 turns)",
+  "safe_function_results": [
+    {
+      "name": "move_npc",
+      "result": {
+        "npc_id": "Boris",
+        "location": "entrance"
+      },
+      "metadata": {
+        "source": "orchestrator:fallback"
+      }
+    }
+  ],
+  "metrics_after": {
+    "order": 55,
+    "morale": 58,
+    "resources": 43,
+    "knowledge": 53,
+    "corruption": 10,
+    "glitch": 58,
+    "risk_applied_total": 0,
+    "major_flag_set": false,
+    "major_events_triggered": 0,
+    "major_event_last_turn": null
+  },
+  "glitch": {
+    "roll": 62,
+    "effects": [
+      "Major anomaly distorts the western wall segment."
+    ]
+  },
+  "logs": [
+    {
+      "metric": "glitch",
+      "delta": 38,
+      "value": 50,
+      "cause": "glitch:cosmetic_noise"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 49,
+      "cause": "glitch:unease"
+    },
+    {
+      "metric": "glitch",
+      "delta": 0,
+      "value": 50,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "order",
+      "delta": 3,
+      "value": 53,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "resources",
+      "delta": -1,
+      "value": 39,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 50,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 40,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "order",
+      "delta": -2,
+      "value": 52,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 49,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 52,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 51,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 50,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 47,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 53,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 51,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 41,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 52,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 53,
+      "cause": "glitch:overload"
+    },
+    {
+      "metric": "glitch",
+      "delta": 0,
+      "value": 53,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 53,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 49,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 42,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 55,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 55,
+      "cause": "glitch:overload"
+    },
+    {
+      "metric": "glitch",
+      "delta": 0,
+      "value": 55,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 51,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 43,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 54,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 55,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 55,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 44,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 56,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "order",
+      "delta": -2,
+      "value": 53,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 55,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 57,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 56,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 56,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 53,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 57,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": -3,
+      "value": 41,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "knowledge",
+      "delta": -2,
+      "value": 51,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 3,
+      "value": 59,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 58,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 53,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 42,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 56,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 55,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 57,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 43,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 58,
+      "cause": "autonomous_Boris"
+    }
+  ],
+  "win_loss": {
+    "status": "ongoing",
+    "reason": "conditions_not_met",
+    "description": "Oyun devam ediyor..."
+  },
+  "narrative": "Turn 6 | Inspect the Shieldbearer' patched shield for clues or hidden compartments. | I take a closer look at the shield, its intricate patterns etched with a fine dew. It seems to be crafted from a rare metal, perhaps a type of ore unseen"
+}

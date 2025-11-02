@@ -6,6 +6,8 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, MutableMapping, Optional
 
+from fortress_director.settings import GLITCH_MIN_FLOOR
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -89,6 +91,13 @@ class MetricManager:
         # Glitch smoothing: bir turda max +2 artış, fazlası buffer'a alınır
         if metric == "glitch":
             max_increase = 2
+            try:
+                # Enable higher volatility when orchestrator toggles drama mode
+                if bool(self.state.get("_high_volatility_mode", False)):
+                    from fortress_director.settings import GLITCH_VOLATILITY_SCALAR
+                    max_increase = max(2, int(2 * int(GLITCH_VOLATILITY_SCALAR)))
+            except Exception:
+                pass
             # Buffer'ı state'e kaydet
             buffer_key = "_glitch_buffer"
             buffer = self.state.setdefault(buffer_key, 0)
@@ -116,6 +125,17 @@ class MetricManager:
             cause,
         )
         updated = self._clamp(current + int(delta), limit)
+        if metric == "glitch":
+            min_floor = int(GLITCH_MIN_FLOOR)
+            if bool(self.state.get("_high_volatility_mode", False)):
+                min_floor = max(min_floor, int(GLITCH_MIN_FLOOR) + 5)
+            if updated < min_floor:
+                LOGGER.debug(
+                    "Raising glitch to floor (requested=%s, floor=%s)",
+                    updated,
+                    min_floor,
+                )
+                updated = min_floor
         self._metrics[metric] = updated
         self._log_change(metric, updated - current, updated, cause)
         LOGGER.info(

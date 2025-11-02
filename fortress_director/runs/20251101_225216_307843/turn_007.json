@@ -1,0 +1,585 @@
+{
+  "WORLD_CONTEXT": "Turn 6 | Day 2 | Time morning\nLocation: entrance\nObjective: reinforce defenses\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Dawn h echos through stone, a cool breeze whispers secrets.\", \"sensory_details\": \"The air carries the briny scent of sea mist mingling with damp earth fingers trace roughened cobblestones as they warm in sunlight piercing clouds.\"}\nRecent events: ' the rewritten prompt: What if the key to unlocking the secrets of the universe wasn't buried beneath the surface of a dusty, forgotten library, but hidden within the pages of a forbidden journal tha...; ' the rewritten prompt as a new question: What hidden message does the flickering neon sign in the abandoned warehouse hold, and how does it lead the curious investigator on a thrilling chase through ...; The Shieldbearer stands guard at the entrance, the low clouds hugging the battlements and drums thudding in the distance. The cool air with salty brush caresses your skin as you feel the damp stone un... Recent motifs: unknown_action, communication\nRecent major events: none\nRelationship summary: Rhea trusts the player deeply\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating. Metrics: {\"order\": 62, \"morale\": 59, \"resources\": 36, \"knowledge\": 47, \"corruption\": 10, \"glitch\": 23, \"risk_applied_total\": 0, \"major_flag_set\": false, \"major_events_triggered\": 0, \"major_event_last_turn\": null}",
+  "scene": "' the rewritten prompt: The shimmering scales on the iridescent butterfly' wings pulsed with an unsettling rhythm, like a countdown to an unspoken reveal.",
+  "options": [
+    {
+      "id": "ask_about_crystal",
+      "text": "Ask the Shieldbearer if they have any new information about the crystal's origins or purpose.",
+      "action_type": "dialogue"
+    },
+    {
+      "id": "search_surroundings",
+      "text": "Search the immediate surroundings for clues or items that might provide insight into the crystal's origins.",
+      "action_type": "exploration"
+    },
+    {
+      "id": "examine_crystal",
+      "text": "Take a closer look at the crystal, examining its facets and trying to discern any hidden patterns or markings. (focus: defense)",
+      "action_type": "defense"
+    }
+  ],
+  "world": {
+    "atmosphere": "Dawn echos through stone, a cool breeze whispers secrets.",
+    "sensory_details": "The air carries the briny scent of sea mist mingling with damp earth fingers trace roughened cobblestones as they warm in sunlight piercing clouds."
+  },
+  "event": {
+    "scene": "' the rewritten prompt: The shimmering scales on the iridescent butterfly' wings pulsed with an unsettling rhythm, like a countdown to an unspoken reveal.",
+    "options": [
+      {
+        "id": "ask_about_crystal",
+        "text": "Ask the Shieldbearer if they have any new information about the crystal's origins or purpose.",
+        "action_type": "dialogue"
+      },
+      {
+        "id": "search_surroundings",
+        "text": "Search the immediate surroundings for clues or items that might provide insight into the crystal's origins.",
+        "action_type": "exploration"
+      },
+      {
+        "id": "examine_crystal",
+        "text": "Take a closer look at the crystal, examining its facets and trying to discern any hidden patterns or markings. (focus: defense)",
+        "action_type": "defense"
+      }
+    ],
+    "major_event": true,
+    "safe_functions": [
+      {
+        "name": "move_npc",
+        "args": [],
+        "kwargs": {
+          "npc_id": "Boris",
+          "location": "entrance"
+        },
+        "metadata": {
+          "source": "orchestrator:fallback"
+        }
+      }
+    ],
+    "motif_injected": null
+  },
+  "player_choice": {
+    "id": "search_surroundings",
+    "text": "Search the immediate surroundings for clues or items that might provide insight into the crystal's origins.",
+    "action_type": "exploration"
+  },
+  "character_reactions": [
+    {
+      "name": "Rhea",
+      "intent": "observe",
+      "action": "examine_nearby_objects",
+      "speech": "I scan the stone walls around me, searching for any signs of activity or clues about the crystal's origins. I listen closely to the wind whispers secrets, searching for any clues that might reveal the",
+      "effects": {
+        "flag_set": [
+          "major_wall_alert"
+        ],
+        "status_change": {
+          "target": "Rhea",
+          "status": "tense_watch",
+          "duration": 3
+        },
+        "trust_delta": 0
+      },
+      "safe_functions": []
+    },
+    {
+      "name": "Rhea",
+      "intent": "assist",
+      "action": "Autonomously performs assist action.",
+      "speech": "(assist autonomous)",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Boris",
+      "intent": "command",
+      "action": "Autonomously performs command action.",
+      "speech": "(command autonomous)",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Rhea",
+      "intent": "plan",
+      "action": "Autonomously performs plan action.",
+      "speech": "(plan autonomous)",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Boris",
+      "intent": "inquire",
+      "action": "Autonomously performs inquire action.",
+      "speech": "(inquire autonomous)",
+      "effects": {},
+      "safe_functions": []
+    }
+  ],
+  "npcs": [
+    {
+      "name": "Rhea",
+      "trust": 2,
+      "summary": "Rhea is loyal but impulsive"
+    },
+    {
+      "name": "Bor",
+      "trust": 0,
+      "summary": "Boris is cautious and calculating."
+    }
+  ],
+  "safe_function_history": [
+    {
+      "name": "move_npc",
+      "success": false,
+      "timestamp": null,
+      "metadata": {
+        "source": "orchestrator:fallback"
+      }
+    }
+  ],
+  "room_history": [
+    {
+      "room": "courtyard",
+      "turn": 7,
+      "description": "Currently in courtyard"
+    }
+  ],
+  "summary_text": "A major event shakes the village. Glitch level rises.",
+  "telemetry": {
+    "planner_calls_proposed": 0,
+    "planner_calls_executed": 0,
+    "safe_functions_executed": 1
+  },
+  "player_view": {
+    "short_scene": "' the rewritten prompt: The shimmering scales on the iridescent butterfly' wings pulsed with an unsettling rhythm, like a countdown to an unspoken reveal.",
+    "short_world": "Turn 7 | Day 2 | Time afternoon\nLocation: courtyard\nObjective: reinforce defenses\nPlayer: The Shieldbearer \u2014 A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Dawn h echos through stone, a cool breeze whispers secrets.\", \"sensory_details\": \"The air carries the briny scent of sea mist mingling with damp earth fingers trace roughened cob",
+    "options": [
+      {
+        "id": "ask_about_crystal",
+        "text": "Ask the Shieldbearer if they have any new information about the crystal's origins or purpose."
+      },
+      {
+        "id": "search_surroundings",
+        "text": "Search the immediate surroundings for clues or items that might provide insight into the crystal's origins."
+      },
+      {
+        "id": "examine_crystal",
+        "text": "Take a closer look at the crystal, examining its facets and trying to discern any hidden patterns or markings. (focus: defense)"
+      }
+    ],
+    "primary_reaction": "I scan the stone walls around me, searching for any signs of activity or clues about the crystal's origins. I listen closely to the wind whispers secrets, searching for any clues that might reveal the",
+    "safe_functions": []
+  },
+  "effects": [
+    {
+      "flag_set": [
+        "major_wall_alert"
+      ],
+      "status_change": {
+        "target": "Rhea",
+        "status": "tense_watch",
+        "duration": 3
+      },
+      "trust_delta": 0
+    },
+    {
+      "name": "move_npc",
+      "result": {
+        "npc_id": "Boris",
+        "location": "entrance"
+      },
+      "metadata": {
+        "source": "orchestrator:fallback"
+      }
+    }
+  ],
+  "major_event_effect": {
+    "applied_flag": "major_wall_alert",
+    "status_change": {
+      "target": "Rhea",
+      "status": "tense_watch",
+      "duration": 3
+    },
+    "applied_to": "Rhea"
+  },
+  "major_event_effect_summary": "major_wall_alert -> Rhea (tense_watch, 3 turns)",
+  "safe_function_results": [
+    {
+      "name": "move_npc",
+      "result": {
+        "npc_id": "Boris",
+        "location": "entrance"
+      },
+      "metadata": {
+        "source": "orchestrator:fallback"
+      }
+    }
+  ],
+  "metrics_after": {
+    "order": 62,
+    "morale": 60,
+    "resources": 37,
+    "knowledge": 49,
+    "corruption": 10,
+    "glitch": 23,
+    "risk_applied_total": 0,
+    "major_flag_set": false,
+    "major_events_triggered": 0,
+    "major_event_last_turn": null
+  },
+  "glitch": {
+    "roll": 10,
+    "effects": [
+      "Minor static ripples along the parapets."
+    ]
+  },
+  "logs": [
+    {
+      "metric": "glitch",
+      "delta": 1,
+      "value": 13,
+      "cause": "glitch:cosmetic_noise"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 49,
+      "cause": "glitch:unease"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 12,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "order",
+      "delta": 3,
+      "value": 53,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "resources",
+      "delta": -1,
+      "value": 39,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 50,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 40,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 14,
+      "cause": "glitch:overload"
+    },
+    {
+      "metric": "glitch",
+      "delta": 1,
+      "value": 15,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 47,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 41,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 49,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 55,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 2,
+      "value": 51,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 17,
+      "cause": "glitch:overload"
+    },
+    {
+      "metric": "glitch",
+      "delta": 1,
+      "value": 18,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "order",
+      "delta": 3,
+      "value": 58,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "resources",
+      "delta": -1,
+      "value": 40,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 52,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 59,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 41,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "resources",
+      "delta": -3,
+      "value": 38,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "knowledge",
+      "delta": -2,
+      "value": 45,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 20,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 0,
+      "value": 20,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 53,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 47,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 60,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 39,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 55,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "order",
+      "delta": -2,
+      "value": 58,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 54,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 22,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 21,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 55,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 49,
+      "cause": "action_dialogue"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 59,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 56,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": -3,
+      "value": 36,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "knowledge",
+      "delta": -2,
+      "value": 47,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 3,
+      "value": 24,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 23,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "order",
+      "delta": 3,
+      "value": 62,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "resources",
+      "delta": -1,
+      "value": 35,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 57,
+      "cause": "action_defense"
+    },
+    {
+      "metric": "morale",
+      "delta": 2,
+      "value": 59,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 36,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "morale",
+      "delta": 1,
+      "value": 60,
+      "cause": "autonomous_Boris"
+    },
+    {
+      "metric": "glitch",
+      "delta": 1,
+      "value": 24,
+      "cause": "glitch:cosmetic_noise"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 59,
+      "cause": "glitch:unease"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 23,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 49,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 37,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 58,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": 2,
+      "value": 60,
+      "cause": "autonomous_Rhea"
+    }
+  ],
+  "win_loss": {
+    "status": "ongoing",
+    "reason": "conditions_not_met",
+    "description": "Oyun devam ediyor..."
+  },
+  "narrative": "Turn 7 | Search the immediate surroundings for clues or items that might provide insight into the crystal' origins. | I scan the stone walls around me, searching for any signs of activity or clues about the crystal' origins. I listen clos"
+}
