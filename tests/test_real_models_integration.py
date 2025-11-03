@@ -7,15 +7,19 @@ from fortress_director.agents.event_agent import EventAgent
 from fortress_director.agents.world_agent import WorldAgent
 from fortress_director.agents.character_agent import CharacterAgent
 from fortress_director.agents.creativity_agent import CreativityAgent
+from fortress_director.agents.director_agent import DirectorAgent
 from fortress_director.agents.judge_agent import JudgeAgent
+from fortress_director.agents.planner_agent import PlannerAgent
 from fortress_director.codeaware.function_registry import SafeFunctionRegistry
-from fortress_director.codeaware.function_validator import FunctionCallValidator
+from fortress_director.codeaware.function_validator import (
+    FunctionCallValidator,
+)
 from fortress_director.codeaware.rollback_system import RollbackSystem
 from fortress_director.rules.rules_engine import RulesEngine
 
 
 def test_orchestrator_with_real_models(tmp_path):
-    """Integration test: run a single turn with real Ollama models.
+    """Integration test: run a turn with real Ollama models.
 
     This test ensures that:
     1. Ollama models are accessible and responding
@@ -43,6 +47,8 @@ def test_orchestrator_with_real_models(tmp_path):
     c_character = default_ollama_client("character")
     c_judge = default_ollama_client("judge")
     c_creativity = default_ollama_client("creativity")
+    c_planner = default_ollama_client("planner")
+    c_director = default_ollama_client("director")
 
     orch = Orchestrator(
         state_store=state_store,
@@ -50,10 +56,10 @@ def test_orchestrator_with_real_models(tmp_path):
         world_agent=WorldAgent(client=c_world),
         character_agent=CharacterAgent(client=c_character),
         creativity_agent=CreativityAgent(client=c_creativity),
+        planner_agent=PlannerAgent(client=c_planner),
+        director_agent=DirectorAgent(client=c_director),
         judge_agent=JudgeAgent(client=c_judge),
-        rules_engine=RulesEngine(
-            judge_agent=JudgeAgent(client=c_judge), tolerance=1
-        ),
+        rules_engine=RulesEngine(judge_agent=JudgeAgent(client=c_judge), tolerance=1),
         function_registry=registry,
         function_validator=validator,
         rollback_system=rollback,

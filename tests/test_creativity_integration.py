@@ -4,6 +4,8 @@ from fortress_director.orchestrator.orchestrator import Orchestrator
 
 def test_creativity_agent_integration_and_logging(tmp_path, caplog):
     caplog.set_level(logging.INFO)
+    from fortress_director.settings import CREATIVITY_MOTIF_INTERVAL
+
     orch = Orchestrator.build_default()
     # Zorunlu state reset (her şey default olsun)
     orch.state_store.persist(orch.state_store._fresh_default())
@@ -27,11 +29,13 @@ def test_creativity_agent_integration_and_logging(tmp_path, caplog):
         ]
         assert creativity_logs, f"CreativityAgent logu bulunamadı (turn={turn})"
         # 3. turda motif injection state'e yansır
-        if turn == 3:
-            motifs = result.get("WORLD_CONTEXT", {}).get("recent_motifs", [])
-            assert any(
-                m in motifs for m in orch.creativity_agent.MOTIF_TABLE
-            ), f"3. turda motif injection bekleniyordu, motifs: {motifs}, result: {result}"
+        if turn == CREATIVITY_MOTIF_INTERVAL:
+            state = orch.state_store.snapshot()
+            motifs = state.get("recent_motifs", [])
+            assert any(m in motifs[-3:] for m in orch.creativity_agent.MOTIF_TABLE), (
+                f"Motif injection bekleniyordu (turn={turn}),"
+                f" motifs: {motifs}, result keys: {list(result.keys())}"
+            )
     # Print all debug outputs at the end
     import sys
 

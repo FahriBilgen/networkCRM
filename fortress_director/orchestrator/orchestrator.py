@@ -1,4 +1,5 @@
-﻿import ast
+﻿# ruff: noqa: E501
+import ast
 import json
 import logging
 import random
@@ -7,13 +8,15 @@ from copy import deepcopy
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from fortress_director.codeaware.function_validator import FunctionCallValidator
 from fortress_director.codeaware.rollback_system import RollbackSystem
 from fortress_director.utils.output_validator import validate_turn_output
-from fortress_director.settings import DEFAULT_WORLD_STATE
+from fortress_director.settings import ACTIVE_SCHEMA_VERSION, DEFAULT_WORLD_STATE
+from fortress_director.agents.base_agent import AgentError
 from fortress_director.agents.character_agent import CharacterAgent
+from fortress_director.agents.director_agent import DirectorAgent
 from fortress_director.agents.event_agent import EventAgent
 from fortress_director.agents.judge_agent import JudgeAgent
 from fortress_director.agents.world_agent import WorldAgent
@@ -38,6 +41,7 @@ from fortress_director.codeaware.function_registry import (
 from fortress_director.utils.glitch_manager import GlitchManager
 from fortress_director.utils.logging_config import configure_logging
 from fortress_director.utils.metrics_manager import MetricManager
+from fortress_director.utils.sqlite_sync import sync_state_to_sqlite
 
 # Not: CLI, oturum başına log dosyasını belirliyor ve configure_logging'i
 # force=True ile çağırıyor. Import anında otomatik yapılandırmayı kaldırıyoruz
@@ -106,12 +110,34 @@ ACTION_CONSEQUENCE_MESSAGES = {
     "fight": "Combat hardens resolve but consumes precious resources.",
 }
 
+VALID_TIME_SLOTS = ("dawn", "morning", "noon", "dusk", "night")
+VALID_HAZARD_SEVERITY_RANGE = (1, 5)
+MAX_WEATHER_PATTERN_DURATION = 6
+VALID_NPC_ACTIVITIES = (
+    "patrol",
+    "rest",
+    "repair",
+    "trade",
+    "scout",
+    "fortify",
+)
+VALID_COMBAT_OUTCOMES = ("attacker_win", "defender_win", "stalemate")
+MAX_TRADE_RISK = 5
+MAX_DIRECTOR_RISK_BUDGET = 5
+MAX_DIRECTOR_NOTE_LENGTH = 140
+
 
 class StateStore:
     """Lightweight JSON-backed state store."""
 
-    def __init__(self, path: Path) -> None:
+    def __init__(self, path: Path, db_path: Path | None = None) -> None:
         self._path = path
+        if db_path is not None:
+            self._db_path = Path(db_path)
+        elif path == SETTINGS.world_state_path:
+            self._db_path = SETTINGS.db_path
+        else:
+            self._db_path = path.with_suffix(".sqlite")
         self._state = self._load()
         self.glitch_manager = None
 
@@ -134,6 +160,7 @@ class StateStore:
         """Replace current state with provided snapshot and flush to disk."""
 
         self._state = deepcopy(state)
+        sync_state_to_sqlite(self._state, db_path=self._db_path)
         payload = json.dumps(self._state, indent=2)
         self._path.write_text(payload, encoding="utf-8")
         LOGGER.debug(
@@ -162,8 +189,9 @@ class StateStore:
             return self._fresh_default()
         if not isinstance(payload, dict):  # pragma: no cover - defensive guard
             return self._fresh_default()
+
         merged = self._merge_with_defaults(payload)
-        return merged
+        return self._apply_schema_migrations(merged)
 
     @staticmethod
     def _fresh_default() -> Dict[str, Any]:
@@ -173,6 +201,40 @@ class StateStore:
     def _merge_with_defaults(cls, overrides: Dict[str, Any]) -> Dict[str, Any]:
         base = deepcopy(DEFAULT_WORLD_STATE)
         return cls._deep_merge(base, overrides)
+
+    @staticmethod
+    def _apply_schema_migrations(state: Dict[str, Any]) -> Dict[str, Any]:
+        version = int(state.get("schema_version", 1) or 1)
+        if version < 2:
+            state.setdefault("environment_hazards", [])
+            state.setdefault(
+                "weather_pattern",
+                {"pattern": "overcast", "remaining": 0, "lock_until": 0},
+            )
+            state.setdefault("structures", {})
+            state.setdefault("npc_schedule", {})
+            state.setdefault("patrols", {})
+            state.setdefault("combat_log", [])
+            state.setdefault("item_transfers", [])
+            state.setdefault("stockpiles", {"food": 0, "wood": 0, "ore": 0})
+            state.setdefault("stockpile_log", [])
+            state.setdefault("trade_routes", {})
+            state.setdefault("trade_route_history", [])
+            state.setdefault("scheduled_events", [])
+            state.setdefault(
+                "story_progress",
+                {"act": "build_up", "progress": 0.0, "act_history": []},
+            )
+            state.setdefault("timeline", [])
+            state.setdefault("hazard_cooldowns", {})
+            state.setdefault("schema_notes", {})
+            state.setdefault("locked_options", {})
+            state.setdefault("recent_world_atmospheres", [])
+            state.setdefault("last_weather_change_turn", None)
+            state["schema_version"] = ACTIVE_SCHEMA_VERSION
+        else:
+            state["schema_version"] = max(version, ACTIVE_SCHEMA_VERSION)
+        return state
 
     @staticmethod
     def _deep_merge(base: Dict[str, Any], overrides: Dict[str, Any]) -> Dict[str, Any]:
@@ -300,6 +362,7 @@ class Orchestrator:
     world_agent: WorldAgent
     creativity_agent: CreativityAgent
     planner_agent: PlannerAgent
+    director_agent: DirectorAgent
     character_agent: CharacterAgent
     judge_agent: JudgeAgent
     rules_engine: RulesEngine
@@ -334,6 +397,7 @@ class Orchestrator:
             world_agent=WorldAgent(),
             creativity_agent=CreativityAgent(),
             planner_agent=PlannerAgent(),
+            director_agent=DirectorAgent(),
             character_agent=CharacterAgent(),
             judge_agent=judge_agent,
             rules_engine=RulesEngine(judge_agent=judge_agent, tolerance=tolerance),
@@ -574,14 +638,21 @@ class Orchestrator:
                 majors = int(metrics_snapshot.get("major_events_triggered", 0) or 0)
                 current_turn_idx = int(state_snapshot.get("turn", 0) or 0)
                 flags_list = state_snapshot.setdefault("flags", [])
-                if current_turn_idx >= 6 and majors == 0 and "force_major_event" not in flags_list:
+                if (
+                    current_turn_idx >= 6
+                    and majors == 0
+                    and "force_major_event" not in flags_list
+                ):
                     flags_list.append("force_major_event")
                     # Also add a 'major_' prefixed hint so external checks
                     # that look for 'major_' flags detect the escalation.
                     if "major_starvation_hint" not in flags_list:
                         flags_list.append("major_starvation_hint")
                     state_snapshot["flags"] = flags_list
-                    LOGGER.info("Forcing major event due to early-run starvation (turn=%s)", current_turn_idx)
+                    LOGGER.info(
+                        "Forcing major event due to early-run starvation (turn=%s)",
+                        current_turn_idx,
+                    )
             except Exception:
                 LOGGER.debug("Failed to evaluate early-run major event force condition")
 
@@ -595,6 +666,7 @@ class Orchestrator:
                     DRAMA_BOREDOM_WINDOW,
                     RISK_BUDGET_DEFAULT,
                 )
+
                 if DRAMA_GOVERNOR_ENABLED:
                     core = state_snapshot.get("metrics", {})
                     point = [
@@ -611,9 +683,13 @@ class Orchestrator:
                     if len(window) >= max(2, DRAMA_BOREDOM_WINDOW):
                         transitions = []
                         for i in range(1, len(window)):
-                            diffs = [abs(a - b) for a, b in zip(window[i], window[i - 1])]
+                            diffs = [
+                                abs(a - b) for a, b in zip(window[i], window[i - 1])
+                            ]
                             transitions.append(sum(diffs) / len(diffs))
-                        avg_var = sum(transitions[-(DRAMA_BOREDOM_WINDOW - 1):]) / max(1, (DRAMA_BOREDOM_WINDOW - 1))
+                        avg_var = sum(transitions[-(DRAMA_BOREDOM_WINDOW - 1) :]) / max(
+                            1, (DRAMA_BOREDOM_WINDOW - 1)
+                        )
                         if avg_var < DRAMA_TARGET_VARIANCE:
                             drama_mode = True
                             risk_budget = int(RISK_BUDGET_DEFAULT)
@@ -622,10 +698,59 @@ class Orchestrator:
             except Exception:
                 pass
 
-            allow_major_allowed = (
-                self._should_allow_major_event(state_snapshot)
-                or ("force_major_event" in state_snapshot.get("flags", []))
+            allow_major_allowed = self._should_allow_major_event(state_snapshot) or (
+                "force_major_event" in state_snapshot.get("flags", [])
             )
+
+            director_payload: Dict[str, Any] = {}
+            try:
+                director_request = {
+                    "WORLD_CONTEXT": world_context,
+                    "metrics": metric_manager.snapshot(),
+                    "day": state_snapshot.get("day", 1),
+                    "turn": current_turn,
+                    "turn_limit": turn_limit,
+                    "is_final_turn": is_final_turn,
+                    "flags": list(state_snapshot.get("flags", [])),
+                    "timeline": state_snapshot.get("timeline", []),
+                    "major_events_triggered": int(
+                        (state_snapshot.get("metrics", {}) or {}).get(
+                            "major_events_triggered",
+                            0,
+                        )
+                        or 0
+                    ),
+                    "drama_mode": drama_mode,
+                    "risk_budget_current": risk_budget,
+                    "allow_major_now": allow_major_allowed,
+                }
+                LOGGER.debug(
+                    "Director agent input: %s",
+                    self._stringify(director_request),
+                )
+                director_payload = self.director_agent.evaluate(director_request)
+                LOGGER.info("Director agent returned output.")
+                LOGGER.debug(
+                    "Director agent output: %s",
+                    self._stringify(director_payload),
+                )
+            except AgentError as exc:
+                LOGGER.warning(
+                    "Director agent failed; continuing with governor defaults: %s",
+                    exc,
+                )
+                director_payload = {}
+            except Exception:
+                LOGGER.exception("Unexpected Director agent failure; continuing")
+                director_payload = {}
+
+            risk_budget, allow_major_allowed = self._apply_director_guidance(
+                state_snapshot,
+                director_payload,
+                base_risk_budget=risk_budget,
+                allow_major=allow_major_allowed,
+            )
+
             event_request = {
                 "WORLD_CONTEXT": world_context,
                 "day": state_snapshot.get("day", 1),
@@ -653,10 +778,16 @@ class Orchestrator:
                 "risk_budget": risk_budget,
                 "flags": state_snapshot.get("flags", []),
             }
+            if state_snapshot.get("_director_guidance"):
+                event_request["director_guidance"] = state_snapshot[
+                    "_director_guidance"
+                ]
             try:
                 event_request["objective"] = self._derive_objective(state_snapshot)
                 funcs = sorted(self.function_registry.list_functions())
-                event_request["available_functions"] = json.dumps(funcs, ensure_ascii=False)
+                event_request["available_functions"] = json.dumps(
+                    funcs, ensure_ascii=False
+                )
             except Exception:
                 pass
             # Surface active persistent motif to EventAgent if present.
@@ -815,9 +946,9 @@ class Orchestrator:
                     verdict = self.judge_agent.evaluate(judge_creativity_context)
                     # Merge judge-suggested safe functions, if any
                     try:
-                        suggestions = verdict.get("suggested_safe_functions") or verdict.get(
-                            "safe_functions", []
-                        )
+                        suggestions = verdict.get(
+                            "suggested_safe_functions"
+                        ) or verdict.get("safe_functions", [])
                         if suggestions:
                             lst = event_candidate.setdefault("safe_functions", [])
                             if isinstance(suggestions, list):
@@ -864,7 +995,9 @@ class Orchestrator:
             if creativity_accepted:
                 event_output = event_candidate
                 try:
-                    persist_turns = int(event_output.get("creative_persist_for", 0) or 0)
+                    persist_turns = int(
+                        event_output.get("creative_persist_for", 0) or 0
+                    )
                 except Exception:
                     persist_turns = 0
                 if persist_turns > 0:
@@ -917,9 +1050,9 @@ class Orchestrator:
                     verdict = self.judge_agent.evaluate(judge_context)
                     # Merge judge-suggested safe functions into event output, if any
                     try:
-                        suggestions = verdict.get("suggested_safe_functions") or verdict.get(
-                            "safe_functions", []
-                        )
+                        suggestions = verdict.get(
+                            "suggested_safe_functions"
+                        ) or verdict.get("safe_functions", [])
                         if suggestions:
                             lst = event_output.setdefault("safe_functions", [])
                             if isinstance(suggestions, list):
@@ -985,6 +1118,7 @@ class Orchestrator:
             # Lock world constraint for a short persistence window after anomalies/major events
             try:
                 from fortress_director.settings import WORLD_STATE_PERSIST_MIN_TURNS
+
                 lock_until = state_snapshot.get("_world_lock_until")
                 anomaly_until = state_snapshot.get("_anomaly_active_until")
                 if event_output.get("major_event") or (
@@ -1216,7 +1350,9 @@ class Orchestrator:
                 )
                 self._accumulate_emotional_memory(state, character_output)
                 if "_anomaly_active_until" in state_snapshot:
-                    state["_anomaly_active_until"] = state_snapshot["_anomaly_active_until"]
+                    state["_anomaly_active_until"] = state_snapshot[
+                        "_anomaly_active_until"
+                    ]
                 LOGGER.info(
                     "Rules engine accepted updates (turn=%s)",
                     state_snapshot.get("turn", 0) + 1,
@@ -1250,7 +1386,9 @@ class Orchestrator:
                 )
                 self._accumulate_emotional_memory(state, character_output)
                 if "_anomaly_active_until" in state_snapshot:
-                    state["_anomaly_active_until"] = state_snapshot["_anomaly_active_until"]
+                    state["_anomaly_active_until"] = state_snapshot[
+                        "_anomaly_active_until"
+                    ]
 
             # Generate autonomous NPC actions
             autonomous_actions = self.autonomous_actions_method(state_snapshot)
@@ -1310,35 +1448,57 @@ class Orchestrator:
             # ...existing code...
 
             # Give Planner a chance to propose a tiny plan (best-effort)
+            planner_calls_trimmed: List[Any] = []
             planner_calls_proposed = 0
             planner_calls_used = 0
             try:
                 import json as _json
+
                 available = list(self.function_registry.list_functions())
                 objective = (
-                    (event_output.get("scene", "") or chosen_option.get("text", ""))[:120]
-                )
+                    event_output.get("scene", "") or chosen_option.get("text", "")
+                )[:120]
                 planner_request = {
                     "WORLD_CONTEXT": self._build_world_context(state),
                     "objective": objective,
-                    "available_functions": _json.dumps(sorted(available), ensure_ascii=False),
+                    "available_functions": _json.dumps(
+                        sorted(available), ensure_ascii=False
+                    ),
                 }
                 # Provide simple objective→function mapping hints
                 try:
+
                     def _hints(obj: str) -> str:
                         o = (obj or "").lower()
                         hints = []
                         if any(k in o for k in ("defense", "wall", "guard", "fortify")):
-                            hints.append('{"name":"patrol_and_report","kwargs":{"npc_id":"Rhea"}}')
-                            hints.append('{"name":"adjust_metric","kwargs":{"metric":"order","delta":1,"cause":"tighten_watch"}}')
-                        if any(k in o for k in ("hidden", "room", "mystery", "investigate")):
-                            hints.append('{"name":"move_and_take_item","kwargs":{"npc_id":"Rhea","item_id":"spyglass","location":"battlements"}}')
-                            hints.append('{"name":"adjust_metric","kwargs":{"metric":"knowledge","delta":1,"cause":"investigate_clues"}}')
-                        if any(k in o for k in ("resource", "trade", "supplies", "economy")):
-                            hints.append('{"name":"adjust_metric","kwargs":{"metric":"resources","delta":1,"cause":"optimize_supplies"}}')
+                            hints.append(
+                                '{"name":"patrol_and_report","kwargs":{"npc_id":"Rhea"}}'
+                            )
+                            hints.append(
+                                '{"name":"adjust_metric","kwargs":{"metric":"order","delta":1,"cause":"tighten_watch"}}'
+                            )
+                        if any(
+                            k in o for k in ("hidden", "room", "mystery", "investigate")
+                        ):
+                            hints.append(
+                                '{"name":"move_and_take_item","kwargs":{"npc_id":"Rhea","item_id":"spyglass","location":"battlements"}}'
+                            )
+                            hints.append(
+                                '{"name":"adjust_metric","kwargs":{"metric":"knowledge","delta":1,"cause":"investigate_clues"}}'
+                            )
+                        if any(
+                            k in o for k in ("resource", "trade", "supplies", "economy")
+                        ):
+                            hints.append(
+                                '{"name":"adjust_metric","kwargs":{"metric":"resources","delta":1,"cause":"optimize_supplies"}}'
+                            )
                         if any(k in o for k in ("glitch", "anomaly")):
-                            hints.append('{"name":"adjust_metric","kwargs":{"metric":"glitch","delta":-1,"cause":"stabilize_system"}}')
+                            hints.append(
+                                '{"name":"adjust_metric","kwargs":{"metric":"glitch","delta":-1,"cause":"stabilize_system"}}'
+                            )
                         return "\n".join(hints) or ""
+
                     planner_request["objective_hints"] = _hints(objective)
                 except Exception:
                     planner_request["objective_hints"] = ""
@@ -1351,6 +1511,7 @@ class Orchestrator:
                     lst = event_output.setdefault("safe_functions", [])
                     if isinstance(lst, list):
                         lst.extend(trimmed)
+                        planner_calls_trimmed = list(trimmed)
                         planner_calls_used = len(trimmed)
             except Exception:
                 pass
@@ -1360,6 +1521,7 @@ class Orchestrator:
                 event_output=event_output,
                 character_output=character_output,
                 world_output=world_output,
+                planner_calls=planner_calls_trimmed,
             )
             LOGGER.info("Safe function queue executed.")
 
@@ -1380,18 +1542,38 @@ class Orchestrator:
             ):
                 try:
                     # Diversify fallback weather and avoid repeating last atmosphere
-                    prev_world = final_state_snapshot.get("world_constraint_from_prev_turn", {}) or {}
+                    prev_world = (
+                        final_state_snapshot.get("world_constraint_from_prev_turn", {})
+                        or {}
+                    )
                     prev_atmo = (prev_world.get("atmosphere") or "").strip().lower()
                     pool = [
-                        ("A faint drizzle begins to fall.", "Tiny raindrops patter on the stone, cooling the air."),
-                        ("High clouds drift with a steady breeze.", "Canvas flaps and pennants rustle along the wall."),
-                        ("A pale sun warms the battlements.", "Mortar smells faintly as it dries in the light."),
-                        ("A thin fog clings to the lower yard.", "Bootsteps echo damply along the parapet."),
+                        (
+                            "A faint drizzle begins to fall.",
+                            "Tiny raindrops patter on the stone, cooling the air.",
+                        ),
+                        (
+                            "High clouds drift with a steady breeze.",
+                            "Canvas flaps and pennants rustle along the wall.",
+                        ),
+                        (
+                            "A pale sun warms the battlements.",
+                            "Mortar smells faintly as it dries in the light.",
+                        ),
+                        (
+                            "A thin fog clings to the lower yard.",
+                            "Bootsteps echo damply along the parapet.",
+                        ),
                     ]
-                    choice = next(((a, d) for a, d in pool if a.lower() != prev_atmo), pool[0])
+                    choice = next(
+                        ((a, d) for a, d in pool if a.lower() != prev_atmo), pool[0]
+                    )
                     injected_payload = {
                         "name": "change_weather",
-                        "kwargs": {"atmosphere": choice[0], "sensory_details": choice[1]},
+                        "kwargs": {
+                            "atmosphere": choice[0],
+                            "sensory_details": choice[1],
+                        },
                     }
                     injected_outcome = self.run_safe_function(
                         injected_payload,
@@ -1402,6 +1584,7 @@ class Orchestrator:
                             "name": injected_payload["name"],
                             "result": injected_outcome,
                             "metadata": {"source": "orchestrator:injected"},
+                            "success": True,
                         }
                     )
                     # Reflect the injected world constraint in state so tests
@@ -1531,6 +1714,9 @@ class Orchestrator:
                     "planner_calls_proposed": planner_calls_proposed,
                     "planner_calls_executed": planner_calls_used,
                     "safe_functions_executed": len(safe_function_results),
+                    "safe_function_guardrails": deepcopy(
+                        getattr(self, "_last_guardrail_stats", {}) or {}
+                    ),
                 },
             }
             if result["summary_text"]:
@@ -1635,6 +1821,7 @@ class Orchestrator:
         """Remove common model meta/refusal phrases from context to preserve tone."""
         try:
             import re as _re
+
             # Remove lines that contain typical refusal/meta patterns
             patterns = [
                 r"^\s*I cannot\b.*$",
@@ -1799,6 +1986,96 @@ class Orchestrator:
             validator=self._validate_despawn_npc_call,
         )
 
+        # World & environment management
+        self.register_safe_function(
+            "set_time_of_day",
+            self._safe_set_time_of_day,
+            validator=self._validate_set_time_of_day_call,
+        )
+        self.register_safe_function(
+            "set_weather_pattern",
+            self._safe_set_weather_pattern,
+            validator=self._validate_set_weather_pattern_call,
+        )
+        self.register_safe_function(
+            "trigger_environment_hazard",
+            self._safe_trigger_environment_hazard,
+            validator=self._validate_trigger_environment_hazard_call,
+        )
+
+        # Structure and defence management
+        self.register_safe_function(
+            "reinforce_structure",
+            self._safe_reinforce_structure,
+            validator=self._validate_reinforce_structure_call,
+        )
+        self.register_safe_function(
+            "repair_breach",
+            self._safe_repair_breach,
+            validator=self._validate_repair_breach_call,
+        )
+        self.register_safe_function(
+            "set_watcher_route",
+            self._safe_set_watcher_route,
+            validator=self._validate_set_watcher_route_call,
+        )
+
+        # NPC & faction operations
+        self.register_safe_function(
+            "schedule_npc_activity",
+            self._safe_schedule_npc_activity,
+            validator=self._validate_schedule_npc_activity_call,
+        )
+        self.register_safe_function(
+            "spawn_patrol",
+            self._safe_spawn_patrol,
+            validator=self._validate_spawn_patrol_call,
+        )
+        self.register_safe_function(
+            "resolve_combat",
+            self._safe_resolve_combat,
+            validator=self._validate_resolve_combat_call,
+        )
+        self.register_safe_function(
+            "transfer_item",
+            self._safe_transfer_item,
+            validator=self._validate_transfer_item_call,
+        )
+
+        # Resources & economy
+        self.register_safe_function(
+            "adjust_stockpile",
+            self._safe_adjust_stockpile,
+            validator=self._validate_adjust_stockpile_call,
+        )
+        self.register_safe_function(
+            "open_trade_route",
+            self._safe_open_trade_route,
+            validator=self._validate_open_trade_route_call,
+        )
+        self.register_safe_function(
+            "close_trade_route",
+            self._safe_close_trade_route,
+            validator=self._validate_close_trade_route_call,
+        )
+
+        # Narrative & progression
+        self.register_safe_function(
+            "queue_major_event",
+            self._safe_queue_major_event,
+            validator=self._validate_queue_major_event_call,
+        )
+        self.register_safe_function(
+            "advance_story_act",
+            self._safe_advance_story_act,
+            validator=self._validate_advance_story_act_call,
+        )
+        self.register_safe_function(
+            "lock_player_option",
+            self._safe_lock_player_option,
+            validator=self._validate_lock_player_option_call,
+        )
+
         # Macro helpers
         self.register_safe_function(
             "move_and_take_item",
@@ -1865,58 +2142,84 @@ class Orchestrator:
 
     def _validate_set_flag_call(self, call: FunctionCall) -> FunctionCall:
         if call.args:
-            raise FunctionValidationError("set_flag does not accept positional arguments")
+            raise FunctionValidationError(
+                "set_flag does not accept positional arguments"
+            )
         kwargs = dict(call.kwargs)
         flag = kwargs.get("flag")
         if not isinstance(flag, str) or not flag.strip():
             raise FunctionValidationError("set_flag requires a non-empty 'flag' string")
         sanitized = {"flag": flag.strip()}
-        return FunctionCall(name=call.name, args=(), kwargs=sanitized, metadata=call.metadata)
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
 
     def _validate_clear_flag_call(self, call: FunctionCall) -> FunctionCall:
         if call.args:
-            raise FunctionValidationError("clear_flag does not accept positional arguments")
+            raise FunctionValidationError(
+                "clear_flag does not accept positional arguments"
+            )
         kwargs = dict(call.kwargs)
         flag = kwargs.get("flag")
         if not isinstance(flag, str) or not flag.strip():
-            raise FunctionValidationError("clear_flag requires a non-empty 'flag' string")
+            raise FunctionValidationError(
+                "clear_flag requires a non-empty 'flag' string"
+            )
         sanitized = {"flag": flag.strip()}
-        return FunctionCall(name=call.name, args=(), kwargs=sanitized, metadata=call.metadata)
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
 
     def _validate_set_trust_call(self, call: FunctionCall) -> FunctionCall:
         if call.args:
-            raise FunctionValidationError("set_trust does not accept positional arguments")
+            raise FunctionValidationError(
+                "set_trust does not accept positional arguments"
+            )
         kwargs = dict(call.kwargs)
         npc_id = kwargs.get("npc_id")
         trust = kwargs.get("trust")
         if not isinstance(npc_id, str) or not npc_id.strip():
-            raise FunctionValidationError("set_trust requires a non-empty 'npc_id' string")
+            raise FunctionValidationError(
+                "set_trust requires a non-empty 'npc_id' string"
+            )
         try:
             trust_val = int(trust)
         except (TypeError, ValueError) as exc:
             raise FunctionValidationError("set_trust requires integer 'trust'") from exc
         trust_val = max(0, min(5, trust_val))
         sanitized = {"npc_id": npc_id.strip(), "trust": trust_val}
-        return FunctionCall(name=call.name, args=(), kwargs=sanitized, metadata=call.metadata)
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
 
     def _validate_adjust_trust_call(self, call: FunctionCall) -> FunctionCall:
         if call.args:
-            raise FunctionValidationError("adjust_trust does not accept positional arguments")
+            raise FunctionValidationError(
+                "adjust_trust does not accept positional arguments"
+            )
         kwargs = dict(call.kwargs)
         npc_id = kwargs.get("npc_id")
         delta = kwargs.get("delta")
         if not isinstance(npc_id, str) or not npc_id.strip():
-            raise FunctionValidationError("adjust_trust requires a non-empty 'npc_id' string")
+            raise FunctionValidationError(
+                "adjust_trust requires a non-empty 'npc_id' string"
+            )
         try:
             delta_val = int(delta)
         except (TypeError, ValueError) as exc:
-            raise FunctionValidationError("adjust_trust requires integer 'delta'") from exc
+            raise FunctionValidationError(
+                "adjust_trust requires integer 'delta'"
+            ) from exc
         sanitized = {"npc_id": npc_id.strip(), "delta": delta_val}
-        return FunctionCall(name=call.name, args=(), kwargs=sanitized, metadata=call.metadata)
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
 
     def _validate_add_item_to_npc_call(self, call: FunctionCall) -> FunctionCall:
         if call.args:
-            raise FunctionValidationError("add_item_to_npc does not accept positional arguments")
+            raise FunctionValidationError(
+                "add_item_to_npc does not accept positional arguments"
+            )
         kwargs = dict(call.kwargs)
         npc_id = kwargs.get("npc_id")
         item_id = kwargs.get("item_id")
@@ -1925,11 +2228,15 @@ class Orchestrator:
         if not isinstance(item_id, str) or not item_id.strip():
             raise FunctionValidationError("add_item_to_npc requires 'item_id'")
         sanitized = {"npc_id": npc_id.strip(), "item_id": item_id.strip()}
-        return FunctionCall(name=call.name, args=(), kwargs=sanitized, metadata=call.metadata)
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
 
     def _validate_remove_item_from_npc_call(self, call: FunctionCall) -> FunctionCall:
         if call.args:
-            raise FunctionValidationError("remove_item_from_npc does not accept positional arguments")
+            raise FunctionValidationError(
+                "remove_item_from_npc does not accept positional arguments"
+            )
         kwargs = dict(call.kwargs)
         npc_id = kwargs.get("npc_id")
         item_id = kwargs.get("item_id")
@@ -1938,11 +2245,15 @@ class Orchestrator:
         if not isinstance(item_id, str) or not item_id.strip():
             raise FunctionValidationError("remove_item_from_npc requires 'item_id'")
         sanitized = {"npc_id": npc_id.strip(), "item_id": item_id.strip()}
-        return FunctionCall(name=call.name, args=(), kwargs=sanitized, metadata=call.metadata)
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
 
     def _validate_add_status_call(self, call: FunctionCall) -> FunctionCall:
         if call.args:
-            raise FunctionValidationError("add_status does not accept positional arguments")
+            raise FunctionValidationError(
+                "add_status does not accept positional arguments"
+            )
         kwargs = dict(call.kwargs)
         npc_id = kwargs.get("npc_id")
         status = kwargs.get("status")
@@ -1954,13 +2265,23 @@ class Orchestrator:
         try:
             dur_val = max(0, int(duration))
         except (TypeError, ValueError) as exc:
-            raise FunctionValidationError("add_status requires integer 'duration'") from exc
-        sanitized = {"npc_id": npc_id.strip(), "status": status.strip(), "duration": dur_val}
-        return FunctionCall(name=call.name, args=(), kwargs=sanitized, metadata=call.metadata)
+            raise FunctionValidationError(
+                "add_status requires integer 'duration'"
+            ) from exc
+        sanitized = {
+            "npc_id": npc_id.strip(),
+            "status": status.strip(),
+            "duration": dur_val,
+        }
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
 
     def _validate_remove_status_call(self, call: FunctionCall) -> FunctionCall:
         if call.args:
-            raise FunctionValidationError("remove_status does not accept positional arguments")
+            raise FunctionValidationError(
+                "remove_status does not accept positional arguments"
+            )
         kwargs = dict(call.kwargs)
         npc_id = kwargs.get("npc_id")
         status = kwargs.get("status")
@@ -1969,11 +2290,15 @@ class Orchestrator:
         if not isinstance(status, str) or not status.strip():
             raise FunctionValidationError("remove_status requires 'status'")
         sanitized = {"npc_id": npc_id.strip(), "status": status.strip()}
-        return FunctionCall(name=call.name, args=(), kwargs=sanitized, metadata=call.metadata)
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
 
     def _validate_spawn_npc_call(self, call: FunctionCall) -> FunctionCall:
         if call.args:
-            raise FunctionValidationError("spawn_npc does not accept positional arguments")
+            raise FunctionValidationError(
+                "spawn_npc does not accept positional arguments"
+            )
         kwargs = dict(call.kwargs)
         npc_id = kwargs.get("npc_id")
         location = kwargs.get("location")
@@ -1982,17 +2307,423 @@ class Orchestrator:
         if not isinstance(location, str) or not location.strip():
             raise FunctionValidationError("spawn_npc requires 'location'")
         sanitized = {"npc_id": npc_id.strip(), "location": location.strip()}
-        return FunctionCall(name=call.name, args=(), kwargs=sanitized, metadata=call.metadata)
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
 
     def _validate_despawn_npc_call(self, call: FunctionCall) -> FunctionCall:
         if call.args:
-            raise FunctionValidationError("despawn_npc does not accept positional arguments")
+            raise FunctionValidationError(
+                "despawn_npc does not accept positional arguments"
+            )
         kwargs = dict(call.kwargs)
         npc_id = kwargs.get("npc_id")
         if not isinstance(npc_id, str) or not npc_id.strip():
             raise FunctionValidationError("despawn_npc requires 'npc_id'")
         sanitized = {"npc_id": npc_id.strip()}
-        return FunctionCall(name=call.name, args=(), kwargs=sanitized, metadata=call.metadata)
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
+
+    def _validate_set_time_of_day_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "set_time_of_day does not accept positional arguments"
+            )
+        kwargs = dict(call.kwargs)
+        time_slot = kwargs.get("time_slot")
+        if not isinstance(time_slot, str) or time_slot.strip() not in VALID_TIME_SLOTS:
+            allowed = ", ".join(VALID_TIME_SLOTS)
+            raise FunctionValidationError(
+                f"set_time_of_day requires time_slot in {{{allowed}}}"
+            )
+        sanitized = {"time_slot": time_slot.strip()}
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
+
+    def _validate_set_weather_pattern_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "set_weather_pattern does not accept positional arguments"
+            )
+        kwargs = dict(call.kwargs)
+        pattern = kwargs.get("pattern")
+        duration_raw = kwargs.get("duration", 1)
+        if not isinstance(pattern, str) or not pattern.strip():
+            raise FunctionValidationError("set_weather_pattern requires 'pattern'")
+        try:
+            duration = int(duration_raw)
+        except (TypeError, ValueError) as exc:
+            raise FunctionValidationError("duration must be an integer") from exc
+        if duration < 1 or duration > MAX_WEATHER_PATTERN_DURATION:
+            raise FunctionValidationError(
+                f"duration must be between 1 and {MAX_WEATHER_PATTERN_DURATION} turns"
+            )
+        sanitized = {"pattern": pattern.strip(), "duration": duration}
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
+
+    def _validate_trigger_environment_hazard_call(
+        self, call: FunctionCall
+    ) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "trigger_environment_hazard does not accept positional arguments"
+            )
+        kwargs = dict(call.kwargs)
+        hazard_id = kwargs.get("hazard_id")
+        severity_raw = kwargs.get("severity")
+        duration_raw = kwargs.get("duration", 1)
+        if not isinstance(hazard_id, str) or not hazard_id.strip():
+            raise FunctionValidationError("hazard_id must be a non-empty string")
+        try:
+            severity = int(severity_raw)
+        except (TypeError, ValueError) as exc:
+            raise FunctionValidationError("severity must be an integer") from exc
+        min_sev, max_sev = VALID_HAZARD_SEVERITY_RANGE
+        if severity < min_sev or severity > max_sev:
+            raise FunctionValidationError(
+                f"severity must be between {min_sev} and {max_sev}"
+            )
+        try:
+            duration = int(duration_raw)
+        except (TypeError, ValueError) as exc:
+            raise FunctionValidationError("duration must be an integer") from exc
+        if duration < 1:
+            raise FunctionValidationError("duration must be at least 1 turn")
+        sanitized = {
+            "hazard_id": hazard_id.strip(),
+            "severity": severity,
+            "duration": duration,
+        }
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
+
+    def _validate_reinforce_structure_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "reinforce_structure does not accept positional arguments"
+            )
+        kwargs = dict(call.kwargs)
+        structure_id = kwargs.get("structure_id")
+        amount_raw = kwargs.get("amount")
+        if not isinstance(structure_id, str) or not structure_id.strip():
+            raise FunctionValidationError("structure_id must be provided")
+        try:
+            amount = int(amount_raw)
+        except (TypeError, ValueError) as exc:
+            raise FunctionValidationError("amount must be an integer") from exc
+        if amount <= 0:
+            raise FunctionValidationError("amount must be positive")
+        sanitized = {"structure_id": structure_id.strip(), "amount": amount}
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
+
+    def _validate_repair_breach_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "repair_breach does not accept positional arguments"
+            )
+        kwargs = dict(call.kwargs)
+        section_id = kwargs.get("section_id")
+        resources_spent_raw = kwargs.get("resources_spent", 0)
+        if not isinstance(section_id, str) or not section_id.strip():
+            raise FunctionValidationError("section_id must be provided")
+        try:
+            resources_spent = int(resources_spent_raw)
+        except (TypeError, ValueError) as exc:
+            raise FunctionValidationError("resources_spent must be an integer") from exc
+        if resources_spent < 0:
+            raise FunctionValidationError("resources_spent cannot be negative")
+        sanitized = {
+            "section_id": section_id.strip(),
+            "resources_spent": resources_spent,
+        }
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
+
+    def _validate_set_watcher_route_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "set_watcher_route does not accept positional arguments"
+            )
+        kwargs = dict(call.kwargs)
+        route_id = kwargs.get("route_id")
+        npc_ids = kwargs.get("npc_ids")
+        if not isinstance(route_id, str) or not route_id.strip():
+            raise FunctionValidationError("route_id must be provided")
+        if not isinstance(npc_ids, list) or not npc_ids:
+            raise FunctionValidationError("npc_ids must be a non-empty list")
+        cleaned = []
+        for npc_id in npc_ids:
+            if not isinstance(npc_id, str) or not npc_id.strip():
+                raise FunctionValidationError("npc_ids must contain non-empty strings")
+            cleaned.append(npc_id.strip())
+        sanitized = {"route_id": route_id.strip(), "npc_ids": cleaned}
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
+
+    def _validate_schedule_npc_activity_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "schedule_npc_activity does not accept positional arguments"
+            )
+        kwargs = dict(call.kwargs)
+        npc_id = kwargs.get("npc_id")
+        activity = kwargs.get("activity")
+        duration_raw = kwargs.get("duration", 1)
+        if not isinstance(npc_id, str) or not npc_id.strip():
+            raise FunctionValidationError("npc_id must be provided")
+        if not isinstance(activity, str) or not activity.strip():
+            raise FunctionValidationError("activity must be provided")
+        activity_clean = activity.strip()
+        if activity_clean not in VALID_NPC_ACTIVITIES:
+            allowed = ", ".join(VALID_NPC_ACTIVITIES)
+            raise FunctionValidationError(f"activity must be one of {{{allowed}}}")
+        try:
+            duration = int(duration_raw)
+        except (TypeError, ValueError) as exc:
+            raise FunctionValidationError("duration must be an integer") from exc
+        if duration < 1:
+            raise FunctionValidationError("duration must be at least 1 turn")
+        sanitized = {
+            "npc_id": npc_id.strip(),
+            "activity": activity_clean,
+            "duration": duration,
+        }
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
+
+    def _validate_spawn_patrol_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "spawn_patrol does not accept positional arguments"
+            )
+        kwargs = dict(call.kwargs)
+        patrol_id = kwargs.get("patrol_id")
+        members = kwargs.get("members")
+        path = kwargs.get("path")
+        if not isinstance(patrol_id, str) or not patrol_id.strip():
+            raise FunctionValidationError("patrol_id must be provided")
+        if not isinstance(members, list) or not members:
+            raise FunctionValidationError("members must be a non-empty list of npc ids")
+        clean_members = []
+        for member in members:
+            if not isinstance(member, str) or not member.strip():
+                raise FunctionValidationError("members must contain non-empty strings")
+            clean_members.append(member.strip())
+        if not isinstance(path, list) or not path:
+            raise FunctionValidationError("path must be a non-empty list")
+        clean_path = []
+        for waypoint in path:
+            if not isinstance(waypoint, str) or not waypoint.strip():
+                raise FunctionValidationError(
+                    "path must contain non-empty room identifiers"
+                )
+            clean_path.append(waypoint.strip())
+        sanitized = {
+            "patrol_id": patrol_id.strip(),
+            "members": clean_members,
+            "path": clean_path,
+        }
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
+
+    def _validate_resolve_combat_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "resolve_combat does not accept positional arguments"
+            )
+        kwargs = dict(call.kwargs)
+        attacker = kwargs.get("attacker")
+        defender = kwargs.get("defender")
+        outcome = kwargs.get("outcome")
+        if not isinstance(attacker, str) or not attacker.strip():
+            raise FunctionValidationError("attacker must be provided")
+        if not isinstance(defender, str) or not defender.strip():
+            raise FunctionValidationError("defender must be provided")
+        if outcome not in VALID_COMBAT_OUTCOMES:
+            allowed = ", ".join(VALID_COMBAT_OUTCOMES)
+            raise FunctionValidationError(f"outcome must be one of {{{allowed}}}")
+        sanitized = {
+            "attacker": attacker.strip(),
+            "defender": defender.strip(),
+            "outcome": outcome,
+        }
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
+
+    def _validate_transfer_item_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "transfer_item does not accept positional arguments"
+            )
+        kwargs = dict(call.kwargs)
+        from_id = kwargs.get("from_id")
+        to_id = kwargs.get("to_id")
+        item_id = kwargs.get("item_id")
+        if not all(
+            isinstance(value, str) and value.strip()
+            for value in (from_id, to_id, item_id)
+        ):
+            raise FunctionValidationError(
+                "from_id, to_id, and item_id must be non-empty strings"
+            )
+        sanitized = {
+            "from_id": from_id.strip(),
+            "to_id": to_id.strip(),
+            "item_id": item_id.strip(),
+        }
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
+
+    def _validate_adjust_stockpile_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "adjust_stockpile does not accept positional arguments"
+            )
+        kwargs = dict(call.kwargs)
+        resource_id = kwargs.get("resource_id")
+        delta_raw = kwargs.get("delta")
+        cause = kwargs.get("cause", "safe_adjust_stockpile")
+        if not isinstance(resource_id, str) or not resource_id.strip():
+            raise FunctionValidationError("resource_id must be provided")
+        try:
+            delta = int(delta_raw)
+        except (TypeError, ValueError) as exc:
+            raise FunctionValidationError("delta must be an integer") from exc
+        sanitized = {
+            "resource_id": resource_id.strip(),
+            "delta": delta,
+            "cause": str(cause).strip() or "safe_adjust_stockpile",
+        }
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
+
+    def _validate_open_trade_route_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "open_trade_route does not accept positional arguments"
+            )
+        kwargs = dict(call.kwargs)
+        route_id = kwargs.get("route_id")
+        risk_raw = kwargs.get("risk", 0)
+        reward_raw = kwargs.get("reward", 0)
+        if not isinstance(route_id, str) or not route_id.strip():
+            raise FunctionValidationError("route_id must be provided")
+        try:
+            risk = int(risk_raw)
+        except (TypeError, ValueError) as exc:
+            raise FunctionValidationError("risk must be an integer") from exc
+        if risk < 0 or risk > MAX_TRADE_RISK:
+            raise FunctionValidationError(
+                f"risk must be between 0 and {MAX_TRADE_RISK}"
+            )
+        try:
+            reward = int(reward_raw)
+        except (TypeError, ValueError) as exc:
+            raise FunctionValidationError("reward must be an integer") from exc
+        sanitized = {
+            "route_id": route_id.strip(),
+            "risk": risk,
+            "reward": reward,
+        }
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
+
+    def _validate_close_trade_route_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "close_trade_route does not accept positional arguments"
+            )
+        kwargs = dict(call.kwargs)
+        route_id = kwargs.get("route_id")
+        reason = kwargs.get("reason", "")
+        if not isinstance(route_id, str) or not route_id.strip():
+            raise FunctionValidationError("route_id must be provided")
+        sanitized = {
+            "route_id": route_id.strip(),
+            "reason": str(reason).strip(),
+        }
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
+
+    def _validate_queue_major_event_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "queue_major_event does not accept positional arguments"
+            )
+        kwargs = dict(call.kwargs)
+        event_id = kwargs.get("event_id")
+        trigger_turn_raw = kwargs.get("trigger_turn")
+        if not isinstance(event_id, str) or not event_id.strip():
+            raise FunctionValidationError("event_id must be provided")
+        try:
+            trigger_turn = int(trigger_turn_raw)
+        except (TypeError, ValueError) as exc:
+            raise FunctionValidationError("trigger_turn must be an integer") from exc
+        sanitized = {
+            "event_id": event_id.strip(),
+            "trigger_turn": trigger_turn,
+        }
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
+
+    def _validate_advance_story_act_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "advance_story_act does not accept positional arguments"
+            )
+        kwargs = dict(call.kwargs)
+        act_id = kwargs.get("act_id")
+        progression_raw = kwargs.get("progression")
+        if not isinstance(act_id, str) or not act_id.strip():
+            raise FunctionValidationError("act_id must be provided")
+        try:
+            progression = float(progression_raw)
+        except (TypeError, ValueError) as exc:
+            raise FunctionValidationError("progression must be numeric") from exc
+        if progression < 0.0 or progression > 1.0:
+            raise FunctionValidationError("progression must be between 0.0 and 1.0")
+        sanitized = {
+            "act_id": act_id.strip(),
+            "progression": progression,
+        }
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
+
+    def _validate_lock_player_option_call(self, call: FunctionCall) -> FunctionCall:
+        if call.args:
+            raise FunctionValidationError(
+                "lock_player_option does not accept positional arguments"
+            )
+        kwargs = dict(call.kwargs)
+        option_id = kwargs.get("option_id")
+        reason = kwargs.get("reason", "")
+        if not isinstance(option_id, str) or not option_id.strip():
+            raise FunctionValidationError("option_id must be provided")
+        sanitized = {
+            "option_id": option_id.strip(),
+            "reason": str(reason).strip(),
+        }
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
 
     def _validate_spawn_item_call(
         self,
@@ -2144,12 +2875,18 @@ class Orchestrator:
         if not isinstance(item_id, str) or not item_id.strip():
             raise FunctionValidationError("move_and_take_item requires 'item_id'")
         location = kwargs.get("location")
-        if location is not None and (not isinstance(location, str) or not location.strip()):
-            raise FunctionValidationError("location must be a non-empty string if provided")
+        if location is not None and (
+            not isinstance(location, str) or not location.strip()
+        ):
+            raise FunctionValidationError(
+                "location must be a non-empty string if provided"
+            )
         sanitized = {"npc_id": npc_id.strip(), "item_id": item_id.strip()}
         if isinstance(location, str) and location.strip():
             sanitized["location"] = location.strip()
-        return FunctionCall(name=call.name, args=(), kwargs=sanitized, metadata=call.metadata)
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
 
     def _validate_patrol_and_report_call(self, call: FunctionCall) -> FunctionCall:
         if call.args:
@@ -2161,7 +2898,9 @@ class Orchestrator:
         if not isinstance(npc_id, str) or not npc_id.strip():
             raise FunctionValidationError("patrol_and_report requires 'npc_id'")
         sanitized = {"npc_id": npc_id.strip()}
-        return FunctionCall(name=call.name, args=(), kwargs=sanitized, metadata=call.metadata)
+        return FunctionCall(
+            name=call.name, args=(), kwargs=sanitized, metadata=call.metadata
+        )
 
     def _safe_change_weather(
         self,
@@ -2288,7 +3027,9 @@ class Orchestrator:
         self.state_store.persist(state)
         return {"npc_id": npc_id, "items": list(bag)}
 
-    def _safe_remove_item_from_npc(self, *, npc_id: str, item_id: str) -> Dict[str, Any]:
+    def _safe_remove_item_from_npc(
+        self, *, npc_id: str, item_id: str
+    ) -> Dict[str, Any]:
         state = self.state_store.snapshot()
         npc_items = state.setdefault("npc_items", {})
         bag = npc_items.setdefault(npc_id, [])
@@ -2297,7 +3038,9 @@ class Orchestrator:
         self.state_store.persist(state)
         return {"npc_id": npc_id, "items": list(bag)}
 
-    def _safe_add_status(self, *, npc_id: str, status: str, duration: int) -> Dict[str, Any]:
+    def _safe_add_status(
+        self, *, npc_id: str, status: str, duration: int
+    ) -> Dict[str, Any]:
         state = self.state_store.snapshot()
         status_reg = state.setdefault("status_effects", {})
         effects = status_reg.setdefault(npc_id, [])
@@ -2332,6 +3075,357 @@ class Orchestrator:
         state.setdefault("status_effects", {}).pop(npc_id, None)
         self.state_store.persist(state)
         return {"npc_id": npc_id, "removed": bool(removed)}
+
+    def _safe_set_time_of_day(self, *, time_slot: str) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        previous_slot = state.get("time")
+        state["time"] = time_slot
+        timeline = state.setdefault("timeline", [])
+        timeline.append(
+            {
+                "turn": int(state.get("turn", state.get("current_turn", 0)) or 0),
+                "type": "time_shift",
+                "from": previous_slot,
+                "to": time_slot,
+            }
+        )
+        self.state_store.persist(state)
+        return {"previous": previous_slot, "current": time_slot}
+
+    def _safe_set_weather_pattern(
+        self, *, pattern: str, duration: int
+    ) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        current_turn = int(state.get("turn", state.get("current_turn", 0)) or 0)
+        lock_until = current_turn + int(duration)
+        weather_state = state.setdefault("weather_pattern", {})
+        weather_state.update(
+            {
+                "pattern": pattern,
+                "remaining": int(duration),
+                "lock_until": lock_until,
+            }
+        )
+        state["_world_lock_until"] = lock_until
+        state["last_weather_change_turn"] = current_turn
+        self.state_store.persist(state)
+        return {
+            "pattern": pattern,
+            "duration": int(duration),
+            "lock_until": lock_until,
+        }
+
+    def _safe_trigger_environment_hazard(
+        self, *, hazard_id: str, severity: int, duration: int
+    ) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        hazards = state.setdefault("environment_hazards", [])
+        current_turn = int(state.get("turn", state.get("current_turn", 0)) or 0)
+        existing = next((h for h in hazards if h.get("hazard_id") == hazard_id), None)
+        if existing:
+            existing.update(
+                {
+                    "severity": int(severity),
+                    "remaining": int(duration),
+                    "last_triggered": current_turn,
+                }
+            )
+            entry = existing.copy()
+        else:
+            entry = {
+                "hazard_id": hazard_id,
+                "severity": int(severity),
+                "remaining": int(duration),
+                "origin_turn": current_turn,
+            }
+            hazards.append(entry.copy())
+        cooldowns = state.setdefault("hazard_cooldowns", {})
+        cooldowns[hazard_id] = current_turn + int(duration)
+        self.state_store.persist(state)
+        return entry
+
+    def _safe_reinforce_structure(
+        self, *, structure_id: str, amount: int
+    ) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        structures = state.setdefault("structures", {})
+        structure = structures.setdefault(
+            structure_id,
+            {"durability": 0, "max_durability": 100, "status": "unknown"},
+        )
+        before = int(structure.get("durability", 0) or 0)
+        max_durability = int(structure.get("max_durability", before + amount) or 0)
+        after = min(before + int(amount), max_durability)
+        structure["durability"] = after
+        structure["status"] = "reinforced"
+        structure["last_reinforced_turn"] = int(
+            state.get("turn", state.get("current_turn", 0)) or 0
+        )
+        self.state_store.persist(state)
+        return {"structure_id": structure_id, "before": before, "after": after}
+
+    def _safe_repair_breach(
+        self, *, section_id: str, resources_spent: int
+    ) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        structures = state.setdefault("structures", {})
+        section = structures.setdefault(
+            section_id,
+            {"durability": 0, "max_durability": 100, "status": "unknown"},
+        )
+        previous_status = section.get("status", "unknown")
+        metrics_manager = MetricManager(state, log_sink=self._metric_log_sink())
+        if resources_spent:
+            metrics_manager.adjust_metric(
+                "resources", -int(resources_spent), cause="repair_breach"
+            )
+        section["status"] = "stable"
+        max_durability = int(section.get("max_durability", 100) or 100)
+        current_durability = int(section.get("durability", 0) or 0)
+        section["durability"] = min(
+            max_durability, current_durability + max(int(resources_spent), 0)
+        )
+        section["last_repaired_turn"] = int(
+            state.get("turn", state.get("current_turn", 0)) or 0
+        )
+        self.state_store.persist(state)
+        return {
+            "section_id": section_id,
+            "previous_status": previous_status,
+            "current_status": section["status"],
+            "resources_spent": int(resources_spent),
+        }
+
+    def _safe_set_watcher_route(
+        self, *, route_id: str, npc_ids: List[str]
+    ) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        patrols = state.setdefault("patrols", {})
+        record = patrols.setdefault(route_id, {})
+        record.update(
+            {
+                "members": list(npc_ids),
+                "kind": "watch_route",
+                "status": "assigned",
+                "last_updated_turn": int(
+                    state.get("turn", state.get("current_turn", 0)) or 0
+                ),
+            }
+        )
+        self.state_store.persist(state)
+        return {"route_id": route_id, "members": list(npc_ids)}
+
+    def _safe_schedule_npc_activity(
+        self, *, npc_id: str, activity: str, duration: int
+    ) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        schedule = state.setdefault("npc_schedule", {})
+        queue = schedule.setdefault(npc_id, [])
+        entry = {
+            "activity": activity,
+            "duration": int(duration),
+            "assigned_turn": int(state.get("turn", state.get("current_turn", 0)) or 0),
+        }
+        queue.append(entry)
+        self.state_store.persist(state)
+        return {"npc_id": npc_id, "queue": list(queue)}
+
+    def _safe_spawn_patrol(
+        self, *, patrol_id: str, members: List[str], path: List[str]
+    ) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        patrols = state.setdefault("patrols", {})
+        patrols[patrol_id] = {
+            "members": list(members),
+            "path": list(path),
+            "status": "active",
+            "origin_turn": int(state.get("turn", state.get("current_turn", 0)) or 0),
+        }
+        self.state_store.persist(state)
+        return {
+            "patrol_id": patrol_id,
+            "members": list(members),
+            "path": list(path),
+        }
+
+    def _safe_resolve_combat(
+        self, *, attacker: str, defender: str, outcome: str
+    ) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        metrics_manager = MetricManager(state, log_sink=self._metric_log_sink())
+        outcome_deltas: Dict[str, List[tuple[str, int, str]]] = {
+            "attacker_win": [
+                ("morale", 3, "combat_attacker_win"),
+                ("resources", -2, "combat_attacker_win"),
+                ("order", 1, "combat_attacker_win"),
+            ],
+            "defender_win": [
+                ("morale", -2, "combat_defender_win"),
+                ("order", -1, "combat_defender_win"),
+                ("glitch", 1, "combat_defender_win"),
+            ],
+            "stalemate": [
+                ("morale", -1, "combat_stalemate"),
+                ("resources", -1, "combat_stalemate"),
+            ],
+        }
+        for metric, delta, cause in outcome_deltas.get(outcome, []):
+            metrics_manager.adjust_metric(metric, delta, cause=cause)
+        combat_log = state.setdefault("combat_log", [])
+        entry = {
+            "attacker": attacker,
+            "defender": defender,
+            "outcome": outcome,
+            "turn": int(state.get("turn", state.get("current_turn", 0)) or 0),
+        }
+        combat_log.append(entry)
+        self.state_store.persist(state)
+        return entry.copy()
+
+    def _safe_transfer_item(
+        self, *, from_id: str, to_id: str, item_id: str
+    ) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+
+        def _inventory_for(entity_id: str) -> List[str]:
+            if entity_id == "player":
+                player = state.setdefault("player", {})
+                return player.setdefault("inventory", [])
+            storage = state.setdefault("items", {})
+            return storage.setdefault(entity_id, [])
+
+        from_inventory = _inventory_for(from_id)
+        to_inventory = _inventory_for(to_id)
+        if item_id in from_inventory:
+            from_inventory.remove(item_id)
+        if item_id not in to_inventory:
+            to_inventory.append(item_id)
+        state.setdefault("item_transfers", []).append(
+            {
+                "from": from_id,
+                "to": to_id,
+                "item_id": item_id,
+                "turn": int(state.get("turn", state.get("current_turn", 0)) or 0),
+            }
+        )
+        self.state_store.persist(state)
+        return {
+            "item_id": item_id,
+            "from": from_id,
+            "to": to_id,
+            "from_inventory": list(from_inventory),
+            "to_inventory": list(to_inventory),
+        }
+
+    def _safe_adjust_stockpile(
+        self, *, resource_id: str, delta: int, cause: str
+    ) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        stockpiles = state.setdefault("stockpiles", {})
+        before = int(stockpiles.get(resource_id, 0) or 0)
+        after = max(0, before + int(delta))
+        stockpiles[resource_id] = after
+        state.setdefault("stockpile_log", []).append(
+            {
+                "resource": resource_id,
+                "delta": int(delta),
+                "cause": cause,
+                "turn": int(state.get("turn", state.get("current_turn", 0)) or 0),
+            }
+        )
+        self.state_store.persist(state)
+        return {"resource_id": resource_id, "before": before, "after": after}
+
+    def _safe_open_trade_route(
+        self, *, route_id: str, risk: int, reward: int
+    ) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        routes = state.setdefault("trade_routes", {})
+        current_turn = int(state.get("turn", state.get("current_turn", 0)) or 0)
+        record = {
+            "status": "open",
+            "risk": int(risk),
+            "reward": int(reward),
+            "opened_turn": current_turn,
+        }
+        routes[route_id] = record
+        metrics_manager = MetricManager(state, log_sink=self._metric_log_sink())
+        metrics_manager.adjust_metric("risk_applied_total", risk, cause="trade_open")
+        self.state_store.persist(state)
+        return record.copy()
+
+    def _safe_close_trade_route(self, *, route_id: str, reason: str) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        routes = state.setdefault("trade_routes", {})
+        current_turn = int(state.get("turn", state.get("current_turn", 0)) or 0)
+        record = routes.pop(route_id, None)
+        if record is None:
+            record = {"status": "unknown", "risk": 0, "reward": 0}
+        record.update(
+            {"status": "closed", "reason": reason, "closed_turn": current_turn}
+        )
+        state.setdefault("trade_route_history", []).append(
+            {"route_id": route_id, **record}
+        )
+        self.state_store.persist(state)
+        return {"route_id": route_id, "status": record.get("status"), "reason": reason}
+
+    def _safe_queue_major_event(
+        self, *, event_id: str, trigger_turn: int
+    ) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        scheduled = state.setdefault("scheduled_events", [])
+        entry = {
+            "event_id": event_id,
+            "trigger_turn": int(trigger_turn),
+        }
+        existing = next(
+            (evt for evt in scheduled if evt.get("event_id") == event_id), None
+        )
+        if existing:
+            existing.update(entry)
+        else:
+            scheduled.append(entry.copy())
+        self.state_store.persist(state)
+        return entry
+
+    def _safe_advance_story_act(
+        self, *, act_id: str, progression: float
+    ) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        story = state.setdefault(
+            "story_progress",
+            {"act": act_id, "progress": 0.0, "act_history": []},
+        )
+        previous_act = story.get("act")
+        story["act"] = act_id
+        story["progress"] = max(0.0, min(1.0, float(progression)))
+        history = story.setdefault("act_history", [])
+        history.append(
+            {
+                "act": act_id,
+                "progress": story["progress"],
+                "turn": int(state.get("turn", state.get("current_turn", 0)) or 0),
+            }
+        )
+        self.state_store.persist(state)
+        return {
+            "previous_act": previous_act,
+            "current_act": act_id,
+            "progress": story["progress"],
+        }
+
+    def _safe_lock_player_option(
+        self, *, option_id: str, reason: str
+    ) -> Dict[str, Any]:
+        state = self.state_store.snapshot()
+        locked = state.setdefault("locked_options", {})
+        locked[option_id] = {
+            "reason": reason,
+            "turn": int(state.get("turn", state.get("current_turn", 0)) or 0),
+        }
+        self.state_store.persist(state)
+        return {"option_id": option_id, "reason": reason}
 
     def _safe_move_room(
         self,
@@ -2428,6 +3522,7 @@ class Orchestrator:
         event_output: Dict[str, Any],
         character_output: List[Dict[str, Any]],
         world_output: Optional[Dict[str, Any]] = None,
+        planner_calls: Optional[List[Any]] = None,
     ) -> List[Dict[str, Any]]:
         """Execute any safe function requests emitted by agents. On validation error, rollback and abort turn."""
         from fortress_director.codeaware.function_registry import (
@@ -2439,16 +3534,20 @@ class Orchestrator:
             event_output=event_output,
             character_output=character_output,
             world_output=world_output or {},
+            planner_calls=planner_calls,
         )
+        filtered_calls, guardrail_stats = self._apply_safe_function_guardrails(calls)
+        setattr(self, "_last_guardrail_stats", guardrail_stats)
         results: List[Dict[str, Any]] = []
         try:
-            for payload, metadata in calls:
+            for payload, metadata in filtered_calls:
                 outcome = self.run_safe_function(payload, metadata=metadata)
                 results.append(
                     {
                         "name": payload["name"],
                         "result": outcome,
                         "metadata": metadata,
+                        "success": True,
                     }
                 )
             return results
@@ -2456,9 +3555,7 @@ class Orchestrator:
             # Rollback'i burada yapmayalım; üst seviye run_turn bloğu tekil rollback uygulasın.
             import logging
 
-            logging.error(
-                f"Turn aborted due to safe function error: {exc}"
-            )
+            logging.error(f"Turn aborted due to safe function error: {exc}")
             raise
 
     def _execute_safe_function(
@@ -2493,12 +3590,20 @@ class Orchestrator:
         event_output: Dict[str, Any],
         character_output: List[Dict[str, Any]],
         world_output: Dict[str, Any],
+        planner_calls: Optional[List[Any]] = None,
     ) -> List[Tuple[Dict[str, Any], Dict[str, Any]]]:
         queue: List[Tuple[Dict[str, Any], Dict[str, Any]]] = []
+        planner_ids: Set[int] = set()
+        if planner_calls:
+            try:
+                planner_ids = {id(entry) for entry in planner_calls}
+            except Exception:
+                planner_ids = set()
         queue.extend(
             self._normalize_safe_function_entries(
                 event_output.get("safe_functions"),
                 source="event_agent",
+                planner_ids=planner_ids,
             )
         )
         # Collect from WorldAgent output if present
@@ -2531,7 +3636,9 @@ class Orchestrator:
                 prev_world = state.get("world_constraint_from_prev_turn", {}) or {}
                 prev_atmo = (prev_world.get("atmosphere") or "").strip()
                 current_turn = int(state.get("turn", 0))
-                last_weather_turn = int(state.get("last_weather_change_turn", -9999) or -9999)
+                last_weather_turn = int(
+                    state.get("last_weather_change_turn", -9999) or -9999
+                )
                 filtered: List[Tuple[Dict[str, Any], Dict[str, Any]]] = []
                 for payload, metadata in queue:
                     try:
@@ -2539,9 +3646,10 @@ class Orchestrator:
                             kw = payload.get("kwargs", {}) or {}
                             new_atmo = (kw.get("atmosphere") or "").strip()
                             # Skip if atmosphere wouldn't change or if on cooldown (<=4 turns)
-                            if (new_atmo and new_atmo.lower() == (prev_atmo or "").lower()) or (
-                                current_turn - last_weather_turn <= 4
-                            ):
+                            if (
+                                new_atmo
+                                and new_atmo.lower() == (prev_atmo or "").lower()
+                            ) or (current_turn - last_weather_turn <= 4):
                                 continue
                     except Exception:
                         pass
@@ -2551,16 +3659,119 @@ class Orchestrator:
                 pass
         return queue
 
+    def _apply_safe_function_guardrails(
+        self,
+        calls: List[Tuple[Dict[str, Any], Dict[str, Any]]],
+    ) -> Tuple[List[Tuple[Dict[str, Any], Dict[str, Any]]], Dict[str, Any]]:
+        """Enforce cross-agent guardrails before executing safe functions."""
+        if not calls:
+            return [], {
+                "planner_lowered_wall_integrity": False,
+                "world_wall_integrity_skipped": 0,
+                "objective_urgency_skipped": [],
+                "stockpile_collapsed": [],
+            }
+
+        planner_lowered_wall = False
+        for payload, metadata in calls:
+            if str(payload.get("name", "")) != "adjust_metric":
+                continue
+            kwargs = payload.get("kwargs") or {}
+            metric = str(kwargs.get("metric", "")).strip().lower()
+            if metric != "wall_integrity":
+                continue
+            delta_raw = kwargs.get("delta", 0)
+            try:
+                delta_val = float(delta_raw)
+            except (TypeError, ValueError):
+                continue
+            if delta_val < 0 and metadata.get("planner_origin"):
+                planner_lowered_wall = True
+                break
+
+        stats = {
+            "planner_lowered_wall_integrity": planner_lowered_wall,
+            "world_wall_integrity_skipped": 0,
+            "objective_urgency_skipped": [],
+            "stockpile_collapsed": set(),
+        }
+        filtered: List[Tuple[Dict[str, Any], Dict[str, Any]]] = []
+        adjust_stockpile_sources: Dict[str, str] = {}
+        objective_urgency_adjusted = False
+
+        for payload, metadata in calls:
+            name = str(payload.get("name", "")).strip()
+            kwargs = payload.get("kwargs") or {}
+            source = str(metadata.get("source", "unknown"))
+
+            if (
+                planner_lowered_wall
+                and source == "world_agent"
+                and name == "adjust_metric"
+            ):
+                metric = str(kwargs.get("metric", "")).strip().lower()
+                if metric == "wall_integrity":
+                    delta_raw = kwargs.get("delta", 0)
+                    try:
+                        delta_val = float(delta_raw)
+                    except (TypeError, ValueError):
+                        delta_val = 0
+                    if delta_val < 0:
+                        LOGGER.info(
+                            "Skipping world_agent wall_integrity reduction; planner already applied one this turn.",
+                        )
+                        stats["world_wall_integrity_skipped"] += 1
+                        continue
+
+            if name == "adjust_stockpile":
+                resource_id = kwargs.get("resource_id")
+                resource_key = str(resource_id or "__unknown__").strip().lower()
+                previous_source = adjust_stockpile_sources.get(resource_key)
+                if previous_source is None:
+                    adjust_stockpile_sources[resource_key] = source
+                elif previous_source != source:
+                    LOGGER.info(
+                        "Collapsing duplicate adjust_stockpile on '%s' from '%s'; '%s' already adjusted this turn.",
+                        resource_key,
+                        source,
+                        previous_source,
+                    )
+                    stats["stockpile_collapsed"].add(resource_key)
+                    continue
+
+            if name == "adjust_metric":
+                metric = str(kwargs.get("metric", "")).strip().lower()
+                if metric == "objective_urgency" and source.startswith("character:"):
+                    if objective_urgency_adjusted:
+                        LOGGER.info(
+                            "Skipping additional objective_urgency adjustment from %s; already applied this turn.",
+                            source,
+                        )
+                        stats["objective_urgency_skipped"].append(source)
+                        continue
+                    objective_urgency_adjusted = True
+
+            filtered.append((payload, metadata))
+
+        stats["stockpile_collapsed"] = sorted(stats["stockpile_collapsed"])
+        stats["objective_urgency_skipped"] = sorted(
+            set(stats["objective_urgency_skipped"])
+        )
+
+        return filtered, stats
+
     def _normalize_safe_function_entries(
         self,
         entries: Any,
         *,
         source: str,
+        planner_ids: Optional[Set[int]] = None,
     ) -> List[Tuple[Dict[str, Any], Dict[str, Any]]]:
         if not isinstance(entries, list):
             return []
         normalized: List[Tuple[Dict[str, Any], Dict[str, Any]]] = []
         for entry in entries:
+            is_planner_origin = bool(planner_ids and id(entry) in planner_ids)
             if isinstance(entry, str):
                 try:
                     node = ast.parse(entry, mode="eval").body
@@ -2595,6 +3806,8 @@ class Orchestrator:
                     }:
                         payload["args"] = remaining_args
                     metadata: Dict[str, Any] = {"source": source}
+                    if is_planner_origin:
+                        metadata["planner_origin"] = True
                     normalized.append((payload, metadata))
                 except Exception as exc:
                     LOGGER.warning(
@@ -2620,6 +3833,8 @@ class Orchestrator:
                     payload["metadata"] = payload_metadata
                 metadata: Dict[str, Any] = {"source": source}
                 metadata.update(payload_metadata)
+                if is_planner_origin:
+                    metadata["planner_origin"] = True
                 normalized.append((payload, metadata))
             else:
                 continue
@@ -2893,7 +4108,9 @@ class Orchestrator:
 
     def _derive_objective(self, state: Dict[str, Any]) -> str:
         try:
-            flags = [str(f).lower() for f in state.get("flags", []) if isinstance(f, str)]
+            flags = [
+                str(f).lower() for f in state.get("flags", []) if isinstance(f, str)
+            ]
             motifs = state.get("recent_motifs", []) or []
             motif = str(motifs[-1]).lower() if motifs else ""
             if any("hidden_room" in f for f in flags) or "hidden" in motif:
@@ -3702,6 +4919,170 @@ class Orchestrator:
         for item in ranked[:count]:
             actions.append(item)
         return actions
+
+    @staticmethod
+    def _update_flags(
+        state_snapshot: Dict[str, Any],
+        *,
+        add: Optional[List[str]] = None,
+        remove: Optional[List[str]] = None,
+    ) -> List[str]:
+        flags_raw = state_snapshot.get("flags", [])
+        if not isinstance(flags_raw, list):
+            flags_raw = []
+        cleaned: List[str] = []
+        seen: Set[str] = set()
+        for flag in flags_raw:
+            if not isinstance(flag, str):
+                continue
+            name = flag.strip()
+            if not name or name in seen:
+                continue
+            cleaned.append(name)
+            seen.add(name)
+        if remove:
+            for flag in remove:
+                if not isinstance(flag, str):
+                    continue
+                name = flag.strip()
+                if not name:
+                    continue
+                if name in cleaned:
+                    cleaned.remove(name)
+                    seen.discard(name)
+        if add:
+            for flag in add:
+                if not isinstance(flag, str):
+                    continue
+                name = flag.strip()
+                if not name or name in seen:
+                    continue
+                cleaned.append(name)
+                seen.add(name)
+        state_snapshot["flags"] = cleaned
+        return cleaned
+
+    @staticmethod
+    def _apply_director_guidance(
+        state_snapshot: Dict[str, Any],
+        payload: Dict[str, Any],
+        *,
+        base_risk_budget: int,
+        allow_major: bool,
+    ) -> Tuple[int, bool]:
+        risk_budget = int(base_risk_budget)
+        existing_guidance = state_snapshot.get("_director_guidance") or {}
+        current_pacing = "steady"
+        if isinstance(existing_guidance, dict):
+            current_pacing = existing_guidance.get("pacing", "steady")
+        current_pacing = str(current_pacing).strip().lower() or "steady"
+        if not isinstance(payload, dict):
+            state_snapshot["_director_guidance"] = {
+                "pacing": current_pacing,
+                "risk_budget": risk_budget,
+                "major_event": "allow" if allow_major else "delay",
+                "notes": "",
+                "flags_to_add": [],
+                "flags_to_remove": [],
+            }
+            return risk_budget, allow_major
+
+        guidance: Dict[str, Any] = {}
+
+        pacing_value = payload.get("pacing")
+        if isinstance(pacing_value, str):
+            pacing_norm = pacing_value.strip().lower()
+            if pacing_norm in {"steady", "accelerate", "decelerate"}:
+                current_pacing = pacing_norm
+        guidance["pacing"] = current_pacing
+        state_snapshot["_director_pacing"] = current_pacing
+
+        risk_value = payload.get("risk_budget")
+        if isinstance(risk_value, (int, float)):
+            normalized = max(0, min(int(risk_value), MAX_DIRECTOR_RISK_BUDGET))
+            risk_budget = normalized
+        guidance["risk_budget"] = risk_budget
+
+        major_norm: Optional[str] = None
+        major_value = payload.get("major_event")
+        if isinstance(major_value, str):
+            major_norm = major_value.strip().lower()
+
+        if major_norm == "force":
+            allow_major = True
+            guidance["major_event"] = "force"
+            Orchestrator._update_flags(state_snapshot, add=["force_major_event"])
+        elif major_norm == "delay":
+            allow_major = False
+            guidance["major_event"] = "delay"
+            Orchestrator._update_flags(state_snapshot, add=["delay_major_event"])
+        elif major_norm == "allow":
+            allow_major = True
+            guidance["major_event"] = "allow"
+            Orchestrator._update_flags(state_snapshot, remove=["delay_major_event"])
+        else:
+            guidance["major_event"] = "allow" if allow_major else "delay"
+
+        added_flags: List[str] = []
+        raw_add = payload.get("flags_to_add")
+        if isinstance(raw_add, list):
+            filtered_add = [
+                str(flag).strip()
+                for flag in raw_add
+                if isinstance(flag, str) and flag.strip()
+            ]
+            if filtered_add:
+                Orchestrator._update_flags(state_snapshot, add=filtered_add)
+                added_flags = filtered_add
+
+        removed_flags: List[str] = []
+        raw_remove = payload.get("flags_to_remove")
+        if isinstance(raw_remove, list):
+            filtered_remove = [
+                str(flag).strip()
+                for flag in raw_remove
+                if isinstance(flag, str) and flag.strip()
+            ]
+            if filtered_remove:
+                Orchestrator._update_flags(state_snapshot, remove=filtered_remove)
+                removed_flags = filtered_remove
+
+        note_value = payload.get("notes")
+        note_text = ""
+        if isinstance(note_value, str):
+            note_text = note_value.strip()
+        elif note_value is not None:
+            note_text = str(note_value).strip()
+        note_text = note_text[:MAX_DIRECTOR_NOTE_LENGTH]
+        if note_text:
+            notes = state_snapshot.setdefault("_director_notes", [])
+            notes.append(
+                {
+                    "turn": state_snapshot.get("turn"),
+                    "note": note_text,
+                }
+            )
+        guidance["notes"] = note_text
+        guidance["flags_to_add"] = added_flags
+        guidance["flags_to_remove"] = removed_flags
+
+        state_snapshot["_director_guidance"] = guidance
+        LOGGER.info(
+            "Applied director guidance: pacing=%s, risk=%s, major=%s",
+            guidance["pacing"],
+            guidance["risk_budget"],
+            guidance["major_event"],
+        )
+        if added_flags or removed_flags:
+            LOGGER.debug(
+                "Director flag updates (added=%s, removed=%s)",
+                added_flags,
+                removed_flags,
+            )
+        if note_text:
+            LOGGER.debug("Director note: %s", note_text)
+
+        return risk_budget, allow_major
 
     def _should_allow_major_event(self, state_snapshot: Dict[str, Any]) -> bool:
         """Check if major event should be allowed based on throttling interval."""

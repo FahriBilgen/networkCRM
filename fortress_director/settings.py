@@ -8,8 +8,11 @@ from typing import Mapping
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-# Repo kökünü (proje kökü) fortress_director klasörünün bir üstü olarak kabul edelim
+# Repo kökünü fortress_director klasörünün bir üstü olarak kabul edelim
 REPO_ROOT = PROJECT_ROOT.parent
+
+
+ACTIVE_SCHEMA_VERSION = 2
 
 
 @dataclass(frozen=True)
@@ -40,6 +43,7 @@ class Settings:
 
 
 DEFAULT_WORLD_STATE = {
+    "schema_version": ACTIVE_SCHEMA_VERSION,
     "campaign_id": "default_campaign",
     "turn_limit": 30,
     "current_turn": 0,
@@ -61,9 +65,10 @@ DEFAULT_WORLD_STATE = {
     "current_room": "entrance",
     "recent_events": [],
     "recent_motifs": [],
+    "recent_world_atmospheres": [],
     "world_constraint_from_prev_turn": {
         "atmosphere": "low clouds hug the battlements",
-        "sensory_details": "Drums thud beyond the walls while the wind carries grit.",
+        "sensory_details": ("Drums thud beyond the walls while the wind carries grit."),
     },
     "player": {
         "name": "The Shieldbearer",
@@ -71,8 +76,10 @@ DEFAULT_WORLD_STATE = {
         "stats": {"resolve": 3, "empathy": 2},
         "summary": "A weary defender holding the western wall.",
     },
-    "character_summary": "Rhea is loyal but impulsive; Boris is cautious and calculating.",
-    "relationship_summary": "Rhea trusts the player; Boris weighs every trade.",
+    "character_summary": (
+        "Rhea is loyal but impulsive; Boris is cautious and calculating."
+    ),
+    "relationship_summary": ("Rhea trusts the player; Boris weighs every trade."),
     "metrics": {
         "order": 50,
         "morale": 50,
@@ -86,11 +93,62 @@ DEFAULT_WORLD_STATE = {
         "major_event_last_turn": None,
     },
     "npc_trust": {},
+    "environment_hazards": [],
+    "weather_pattern": {
+        "pattern": "overcast",
+        "remaining": 0,
+        "lock_until": 0,
+    },
+    "structures": {
+        "western_wall": {
+            "durability": 80,
+            "max_durability": 100,
+            "status": "stable",
+        },
+        "inner_gate": {
+            "durability": 70,
+            "max_durability": 100,
+            "status": "stable",
+        },
+        "watchtower": {
+            "durability": 60,
+            "max_durability": 80,
+            "status": "stable",
+        },
+        "granary": {
+            "durability": 55,
+            "max_durability": 70,
+            "status": "stable",
+        },
+    },
+    "npc_schedule": {},
+    "patrols": {},
+    "combat_log": [],
+    "item_transfers": [],
+    "stockpiles": {
+        "food": 120,
+        "wood": 60,
+        "ore": 40,
+    },
+    "stockpile_log": [],
+    "trade_routes": {},
+    "trade_route_history": [],
+    "scheduled_events": [],
+    "story_progress": {
+        "act": "build_up",
+        "progress": 0.0,
+        "act_history": [],
+    },
+    "timeline": [],
+    "hazard_cooldowns": {},
+    "schema_notes": {},
+    "locked_options": {},
     # Drama governor memory
     "_drama_window": [],
     "_anomaly_active_until": None,
     "_world_lock_until": None,
     "_high_volatility_mode": False,
+    "last_weather_change_turn": None,
 }
 
 SETTINGS = Settings(
@@ -128,6 +186,12 @@ SETTINGS = Settings(
             temperature=0.05,
             top_p=0.2,
             max_tokens=256,
+        ),
+        "director": ModelConfig(
+            name="qwen2:1.5b",
+            temperature=0.08,
+            top_p=0.25,
+            max_tokens=320,
         ),
         "planner": ModelConfig(
             name="qwen2:1.5b",
@@ -173,7 +237,9 @@ JUDGE_TONE_ALIGNMENT_THRESHOLD = 90
 JUDGE_BASE_VETO_PROB = 0.02
 # Soft editing policy: cap how much normalization can happen per turn and
 # require anomalies to persist for a short window so tension can breathe.
-JUDGE_SOFT_MAX_CORRECTION_PER_TURN = 0.15  # allow more creative deviation before normalization
+JUDGE_SOFT_MAX_CORRECTION_PER_TURN = (
+    0.15  # allow more creative deviation before normalization
+)
 JUDGE_PERSIST_WINDOW = 4  # turns anomaly must be allowed to live
 # Minimum turn gap before allowing veto on identical content.
 JUDGE_MIN_TURN_GAP = 3
@@ -181,8 +247,9 @@ JUDGE_MIN_TURN_GAP = 3
 MAJOR_EVENT_MIN_INTERVAL = 5
 # Maximum motif injections per window (e.g., per 5 turns).
 MAX_MOTIF_INJECTIONS_PER_WINDOW = 1
-# Interval for motif injection attempts (every N turns) defined above as CREATIVITY_MOTIF_INTERVAL.
-# Probability and sandbox flags are also defined above; avoid duplicate definitions.
+# Interval for motif injection attempts (every N turns) defined above as
+# CREATIVITY_MOTIF_INTERVAL. Probability and sandbox flags are defined
+# above as well; avoid duplicate definitions here.
 # Pool of diverse event types to ensure variety and break repetition.
 EVENT_DIVERSITY_POOL = [
     "siege_incident",
@@ -196,18 +263,20 @@ EVENT_DIVERSITY_POOL = [
 ]
 
 # World state persistence and drama tuning
-# Minimum number of turns a world shift (e.g., weather/atmosphere) must persist.
+# Minimum number of turns a world shift (e.g., weather/atmosphere) must
+# persist.
 WORLD_STATE_PERSIST_MIN_TURNS = 3
 
 # Drama governor toggles low-variance runs into higher risk/novelty mode.
 DRAMA_GOVERNOR_ENABLED = True
-DRAMA_TARGET_VARIANCE = 10          # average absolute delta across core metrics
-DRAMA_BOREDOM_WINDOW = 4            # turns to measure low variance before acting
-RISK_BUDGET_DEFAULT = 3             # structural risk ops allowed per act
+DRAMA_TARGET_VARIANCE = 10  # average absolute delta across core metrics
+DRAMA_BOREDOM_WINDOW = 4  # turns to measure low variance before acting
+RISK_BUDGET_DEFAULT = 3  # structural risk ops allowed per act
 
-# High-volatility glitch mode scalar. Allows larger glitches when drama mode on.
-GLITCH_VOLATILITY_SCALAR = 3        # 1=default; 3=higher volatility in drama mode
-GLITCH_MIN_FLOOR = 50              # baseline minimum glitch to avoid flat lines
+# High-volatility glitch mode scalar. Allows larger glitches when drama
+# mode is active.
+GLITCH_VOLATILITY_SCALAR = 3  # 1=default; 3=higher volatility in drama mode
+GLITCH_MIN_FLOOR = 50  # baseline minimum glitch to avoid flat lines
 
 
 def ensure_runtime_paths(settings: Settings = SETTINGS) -> None:

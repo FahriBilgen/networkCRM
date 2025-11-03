@@ -22,17 +22,17 @@ def test_motif_injection_every_3rd_turn():
     try:
         agent = CreativityAgent(client=DummyClient(), use_llm=False)
         event_output = {"scene": "Test scene", "options": [], "recent_motifs": []}
-        # 3. turda motif injection beklenir
+        # Ayar CREATIVITY_MOTIF_INTERVAL = 2; çift turlarda motif beklenir
         with patch(
             "fortress_director.agents.creativity_agent.random.random", return_value=0.1
         ):
-            enriched = agent.enrich_event(event_output, turn=3)
+            enriched = agent.enrich_event(event_output, turn=2)
         assert enriched.get("motif_injected") in MOTIF_TABLE
-        # 2. turda motif injection olmaz
+        # 3. turda motif injection beklenmez
         with patch(
             "fortress_director.agents.creativity_agent.random.random", return_value=0.1
         ):
-            enriched2 = agent.enrich_event(event_output, turn=2)
+            enriched2 = agent.enrich_event(event_output, turn=3)
         assert (
             "motif_injected" not in enriched2 or enriched2.get("motif_injected") is None
         )
