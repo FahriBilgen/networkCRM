@@ -77,3 +77,35 @@ Sonraki Adimlar
 - [x] Perf/telemetri raporlarini otomatik tetiklemek icin `.github/workflows/weekly-kpi.yml` eklendi; bu aksiyon tools/perf_watchdog.py + tools/kpi_digest.py ciktilarini haftalik olarak olusturup GitHub step summary uzerinden paylasiyor.
 - [x] Tema/prompt backlog'u `docs/theme_prompt_backlog.md` dosyasinda guncellendi; perf_report_20251107_182136 ve runs/regressions/* verilerine dayali onceliklendirme sirasi eklendi.
 - [x] Release checklist'i `docs/release_checklist.md` altinda toplandi; dependency_log_audit.py ve docs_consistency_check.py ciktilari her sprint sonunda manuel olarak gozden gecirilecek.
+
+Yeni Yol Haritasi - Dinamik Oyun Hedefi
+
+Faz A - Oyuncu Deneyimi Temeli
+
+- Turn HUD'una kazanma/kaybetme kosullari, kalan tur sayisi ve kaynak barlarini ekle; risk gostergeleri ve Judge vetolari icin aksiyon onerileri uret.
+- Ilk 3 turu kapsayan tutorial senaryosu yaz; Character/Judge ajan promptlarina onboarding ornekleri ekle.
+- UI prototipini oyuncu testiyle dogrula, erisilebilirlik (kontrast, font, renk) hedeflerini belirle.
+
+Faz B - Dinamik Dunya Katmani
+
+- FunctionRegistry'ye map ve NPC odakli yeni safe function'lar (`update_map_layer`, `adjust_npc_role`, `spawn_event_marker`) ekle; JSON schema + limitleri tanimla.
+- Safe function ciktilarini isleyip SSE/WebSocket ile UI'ya aktaran map diff adapter'i yaz; client tarafinda animasyonlu guncelleme uygula.
+- NPC davranis sablonlarini tanimla; LLM yalnizca hedef/niyet cikarirken pathfinding ve tepki suresi deterministik motor tarafindan yonetilsin.
+
+Faz C - Performans ve Guardrail
+
+- Map/NPC fonksiyonlari icin cagri limitleri ve batching uygula; profile_turn/perf_watchdog raporlarina `map_fn_latency`, `snapshot_batch_ms` gibi yeni metrikler ekle.
+- Validator kurallarini genislet; map diff'lerini schema + is kuralina gore dogrula, hatada otomatik rollback + oyuncu-facing fallback metni yaz.
+- Siklikla kullanilan fonksiyonlarin ozetini ana prompt'a ekleyip nadir fonksiyonlar icin lookup tablo kullan; token maliyetini dusur.
+
+Faz D - Icerik, Replay ve Sosyal Katman
+
+- `docs/theme_prompt_backlog.md` u oyuncu perspektifiyle tekrar yaz; map/NPC fonksiyonlarini kullanan yeni senaryolar planla.
+- NPC loyalty, kaynak baskisi ve event zincirlerini UI'da gorunur kilarak karar-sonuc bagini guclendir.
+- Meta progression (kilit acma, basari, paylasilabilir hikaye ozetleri) icin taslak hazirla ve telemetri raporlarini buna gore duzenle.
+
+Faz E - Gercek Modellerle Oynanabilir Pilot
+
+- LLM cikti planlarini mikroadim event queue'suna dokun; oyuncu aksiyonlariyla carpisma durumlari icin lock/priority sistemi yaz.
+- Dusek gecikmeli modeller (quantized/adapter) ve cache stratejileri sec; canli modellerle tur surelerini <=3 saniye hedefle.
+- Web/desktop pilot istemcisi baglayip oyuncu oynarken LLM'in map/NPC degisikliklerini gosteren entegrasyonu tamamla; KPI'lar icin go/no-go kriterleri belirle.
