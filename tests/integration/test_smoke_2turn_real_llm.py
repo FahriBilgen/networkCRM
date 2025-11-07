@@ -24,6 +24,9 @@ def test_smoke_2turn_real_llm(tmp_path: Path) -> None:
     from fortress_director.agents.event_agent import EventAgent
     from fortress_director.agents.world_agent import WorldAgent
     from fortress_director.agents.character_agent import CharacterAgent
+    from fortress_director.agents.director_agent import DirectorAgent
+    from fortress_director.agents.planner_agent import PlannerAgent
+    from fortress_director.agents.creativity_agent import CreativityAgent
     from fortress_director.agents.judge_agent import JudgeAgent
     from fortress_director.rules.rules_engine import RulesEngine
     from fortress_director.codeaware.function_registry import SafeFunctionRegistry
@@ -35,6 +38,9 @@ def test_smoke_2turn_real_llm(tmp_path: Path) -> None:
     orchestrator.event_agent = EventAgent()
     orchestrator.world_agent = WorldAgent()
     orchestrator.character_agent = CharacterAgent()
+    orchestrator.creativity_agent = CreativityAgent()
+    orchestrator.planner_agent = PlannerAgent()
+    orchestrator.director_agent = DirectorAgent()
     orchestrator.judge_agent = JudgeAgent()
     orchestrator.rules_engine = RulesEngine(judge_agent=orchestrator.judge_agent)
     orchestrator.function_registry = SafeFunctionRegistry()

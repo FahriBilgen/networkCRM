@@ -1,0 +1,303 @@
+{
+  "schema_version": 2,
+  "campaign_id": "default_campaign",
+  "turn_limit": 30,
+  "current_turn": 1,
+  "rng_seed": 12345,
+  "scores": {
+    "logic_score": 0,
+    "emotion_score": 0,
+    "corruption": 0
+  },
+  "flags": [
+    "storm_vigil"
+  ],
+  "memory_layers": [],
+  "active_layer": null,
+  "npc_fragments": {},
+  "inventory": [],
+  "lore": {},
+  "turn": 1,
+  "day": 1,
+  "time": "morning",
+  "current_room": "entrance",
+  "recent_events": [
+    "Storm clouds gather over the western wall as watch fires hiss. (Motif: fire)"
+  ],
+  "recent_motifs": [
+    "unknown_action"
+  ],
+  "recent_world_atmospheres": [],
+  "world_constraint_from_prev_turn": {
+    "atmosphere": "storm glare",
+    "sensory_details": "hail rattles the stones"
+  },
+  "player": {
+    "name": "The Shieldbearer",
+    "inventory": [
+      "oil lamp",
+      "patched shield"
+    ],
+    "stats": {
+      "resolve": 3,
+      "empathy": 2
+    },
+    "summary": "A weary defender holding the western wall."
+  },
+  "character_summary": "Rhea is loyal but impulsive; Boris is cautious and calculating.",
+  "relationship_summary": "Rhea trusts the player",
+  "metrics": {
+    "order": 51,
+    "morale": 50,
+    "resources": 41,
+    "knowledge": 47,
+    "corruption": 10,
+    "glitch": 50,
+    "risk_applied_total": 0,
+    "major_flag_set": false,
+    "major_events_triggered": 0,
+    "major_event_last_turn": null
+  },
+  "npc_trust": {
+    "Rhea": 1
+  },
+  "environment_hazards": [],
+  "weather_pattern": {
+    "pattern": "overcast",
+    "remaining": 0,
+    "lock_until": 0
+  },
+  "structures": {
+    "western_wall": {
+      "durability": 80,
+      "max_durability": 100,
+      "status": "stable"
+    },
+    "inner_gate": {
+      "durability": 70,
+      "max_durability": 100,
+      "status": "stable"
+    },
+    "watchtower": {
+      "durability": 60,
+      "max_durability": 80,
+      "status": "stable"
+    },
+    "granary": {
+      "durability": 55,
+      "max_durability": 70,
+      "status": "stable"
+    }
+  },
+  "npc_schedule": {},
+  "patrols": {},
+  "combat_log": [],
+  "item_transfers": [],
+  "stockpiles": {
+    "food": 120,
+    "wood": 60,
+    "ore": 40
+  },
+  "stockpile_log": [],
+  "trade_routes": {},
+  "trade_route_history": [],
+  "scheduled_events": [],
+  "story_progress": {
+    "act": "build_up",
+    "progress": 0.0,
+    "act_history": []
+  },
+  "timeline": [],
+  "hazard_cooldowns": {},
+  "schema_notes": {},
+  "locked_options": {},
+  "_drama_window": [
+    [
+      50,
+      49,
+      40,
+      45,
+      50
+    ]
+  ],
+  "_anomaly_active_until": 4,
+  "_world_lock_until": 3,
+  "_high_volatility_mode": false,
+  "last_weather_change_turn": null,
+  "_glitch_buffer": 0,
+  "_director_pacing": "steady",
+  "_director_guidance": {
+    "pacing": "steady",
+    "risk_budget": 0,
+    "major_event": "delay",
+    "notes": "",
+    "flags_to_add": [],
+    "flags_to_remove": []
+  },
+  "persistent_motif": {
+    "motif": "fire",
+    "remaining": 4
+  },
+  "previous_judge_verdict": {
+    "consistent": true,
+    "reason": "offline stub",
+    "soft_edit_policy": {
+      "max_correction_per_turn": 0.15,
+      "persist_window": 4
+    },
+    "penalty_applied": "none"
+  },
+  "player_choice_history": [
+    "exploration"
+  ],
+  "summary_text": "A routine day settles over Lornhaven.",
+  "emotional_memory": [
+    {
+      "turn": 0,
+      "name": "Rhea",
+      "intent": "defend",
+      "speech": "I'll keep the storm off the wall while you plan our next move."
+    },
+    {
+      "turn": 0,
+      "name": "Rhea",
+      "intent": "observe",
+      "speech": "Rhea shifts tactics with a observe maneuver."
+    },
+    {
+      "turn": 0,
+      "name": "Boris",
+      "intent": "assist",
+      "speech": "Boris shifts tactics with a assist maneuver."
+    },
+    {
+      "turn": 0,
+      "name": "Rhea",
+      "intent": "command",
+      "speech": "Rhea shifts tactics with a command maneuver."
+    },
+    {
+      "turn": 0,
+      "name": "Boris",
+      "intent": "plan",
+      "speech": "Boris shifts tactics with a plan maneuver."
+    }
+  ],
+  "npc_journal": [
+    {
+      "turn": 0,
+      "name": "Rhea",
+      "intent": "defend",
+      "entry": "I'll keep the storm off the wall while you plan our next move."
+    },
+    {
+      "turn": 0,
+      "name": "Rhea",
+      "intent": "observe",
+      "entry": "Rhea shifts tactics with a observe maneuver."
+    },
+    {
+      "turn": 0,
+      "name": "Boris",
+      "intent": "assist",
+      "entry": "Boris shifts tactics with a assist maneuver."
+    },
+    {
+      "turn": 0,
+      "name": "Rhea",
+      "intent": "command",
+      "entry": "Rhea shifts tactics with a command maneuver."
+    },
+    {
+      "turn": 0,
+      "name": "Boris",
+      "intent": "plan",
+      "entry": "Boris shifts tactics with a plan maneuver."
+    }
+  ],
+  "memory_short": [
+    "Turn 1: Rally the nearby scouts to reinforce the gate. (focus: exploration) -> Storm clouds gather over the western wall as watch fires hiss. (Motif: fire)..."
+  ],
+  "memory_long": [],
+  "status_effects": [],
+  "_telemetry_digest": {
+    "turn": 1,
+    "agents": {
+      "World": {
+        "agent_name": "World",
+        "response_times": [
+          2.8999987989664078e-05,
+          1.8700025975704193e-05,
+          1.3300043065100908e-05,
+          2.1299987565726042e-05
+        ],
+        "success_count": 4,
+        "failure_count": 0,
+        "consistency_violations": 0,
+        "quality_issues": 0,
+        "average_response_time": 2.0575011149048805e-05,
+        "success_rate": 100.0,
+        "last_response_time": 2.1299987565726042e-05
+      },
+      "Event": {
+        "agent_name": "Event",
+        "response_times": [
+          7.720000576227903e-05,
+          2.1899992134422064e-05
+        ],
+        "success_count": 2,
+        "failure_count": 0,
+        "consistency_violations": 0,
+        "quality_issues": 0,
+        "average_response_time": 4.954999894835055e-05,
+        "success_rate": 100.0,
+        "last_response_time": 2.1899992134422064e-05
+      },
+      "Judge": {
+        "agent_name": "Judge",
+        "response_times": [
+          2.1000043489038944e-05,
+          1.309998333454132e-05,
+          1.0199961252510548e-05,
+          8.700008038431406e-06,
+          1.309998333454132e-05,
+          1.1899974197149277e-05,
+          1.2399978004395962e-05,
+          6.89999433234334e-06,
+          5.900044925510883e-06,
+          6.099988240748644e-06,
+          9.200011845678091e-06
+        ],
+        "success_count": 11,
+        "failure_count": 0,
+        "consistency_violations": 0,
+        "quality_issues": 0,
+        "average_response_time": 1.0772724635899067e-05,
+        "success_rate": 100.0,
+        "last_response_time": 9.200011845678091e-06
+      },
+      "Character": {
+        "agent_name": "Character",
+        "response_times": [
+          3.0800001695752144e-05,
+          1.9199971575289965e-05
+        ],
+        "success_count": 2,
+        "failure_count": 0,
+        "consistency_violations": 0,
+        "quality_issues": 0,
+        "average_response_time": 2.4999986635521054e-05,
+        "success_rate": 100.0,
+        "last_response_time": 1.9199971575289965e-05
+      }
+    },
+    "judge": {},
+    "glitch": {
+      "roll": 7,
+      "effects": [
+        "Minor static ripples along the parapets."
+      ],
+      "triggered_loss": false
+    }
+  }
+}

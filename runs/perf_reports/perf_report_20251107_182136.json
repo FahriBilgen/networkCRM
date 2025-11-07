@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-11-07 18:21:36 UTC",
+  "run_dir": "C:\\Users\\Fahri\\OneDrive\\Masa\u00fcst\u00fc\\oyun\\fortress_director\\runs\\profile_20251107_182136",
+  "turns_requested": 1,
+  "turns_executed": 1,
+  "avg_turn_duration_s": 0.14967429998796433,
+  "max_turn_duration_s": 0.14967429998796433,
+  "llm_avg_s": 6.838997942395508e-05,
+  "storage_snapshot_avg_ms": 0.0,
+  "storage_snapshot_p95_ms": 0.0,
+  "storage_persist_avg_ms": 0.0,
+  "storage_persist_p95_ms": 0.0,
+  "telemetry_agent_latency_avg": 6.838997942395508e-05,
+  "peak_memory_bytes": 551304
+}

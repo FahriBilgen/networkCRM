@@ -5,6 +5,7 @@ import logging
 import random
 
 """Implementation of the Event Agent that talks to a local Ollama model."""
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 from fortress_director.agents.base_agent import (
@@ -22,8 +23,14 @@ class EventAgent(BaseAgent):
     LOGGER = logging.getLogger(__name__)
     """Creates short narrative scenes and diegetic player options."""
 
-    def __init__(self, *, client: Optional[OllamaClient] = None) -> None:
-        template = PromptTemplate(build_prompt_path("event_prompt.txt"))
+    def __init__(
+        self,
+        *,
+        client: Optional[OllamaClient] = None,
+        prompt_path: Optional[Path] = None,
+    ) -> None:
+        template_path = prompt_path or build_prompt_path("event_prompt.txt")
+        template = PromptTemplate(template_path)
         super().__init__(
             name="Event",
             prompt_template=template,
@@ -387,7 +394,8 @@ class EventAgent(BaseAgent):
             option["action_type"] = action_type.strip()
             normalised_options.append(option)
 
-        # Ensure at least 4 unique action_types in options
+        original_count = len(normalised_options)
+        # Ensure at least 4 unique action_types in options when we already have multiple valid choices
         required_types = [
             ("exploration", "Explore the area for clues or resources."),
             ("item_use", "Use an item from your inventory."),
@@ -398,21 +406,22 @@ class EventAgent(BaseAgent):
             ("trade", "Trade supplies with a villager."),
             ("assistance", "Offer help to someone nearby."),
         ]
-        existing_types = set(opt.get("action_type") for opt in normalised_options)
-        idx = 1
-        for action_type, text in required_types:
-            if len(set(opt.get("action_type") for opt in normalised_options)) >= 4:
-                break
-            if action_type not in existing_types:
-                normalised_options.append(
-                    {
-                        "id": f"auto_{action_type}_{idx}",
-                        "text": text,
-                        "action_type": action_type,
-                    }
-                )
-                existing_types.add(action_type)
-                idx += 1
+        if original_count >= 2:
+            existing_types = set(opt.get("action_type") for opt in normalised_options)
+            idx = 1
+            for action_type, text in required_types:
+                if len(set(opt.get("action_type") for opt in normalised_options)) >= 4:
+                    break
+                if action_type not in existing_types:
+                    normalised_options.append(
+                        {
+                            "id": f"auto_{action_type}_{idx}",
+                            "text": text,
+                            "action_type": action_type,
+                        }
+                    )
+                    existing_types.add(action_type)
+                    idx += 1
 
         if not normalised_options:
             normalised_options.append(

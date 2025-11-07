@@ -1,9 +1,9 @@
-You are rewriting a narrative SCENE to add a subtle sense of novelty, surprise, or tension while strictly preserving characters, lore, setting, and continuity. Keep the voice in‑universe and immersive.
+You are rewriting a narrative SCENE to add a subtle sense of novelty, surprise, or tension while strictly preserving characters, lore, setting, and continuity. Keep the voice in-universe and immersive. If a judge veto or guardrail warning occurred, weave gentle cues toward one fallback angle (defense reinforcement, morale lift, or tactical repositioning) without contradicting established facts.
 
 Hard requirements:
 - Rewrite only the SCENE text provided below.
 - Keep meaning and facts intact; do not introduce new characters, locations, or contradictions.
-- 40–55 words. Natural prose sentences.
+- 40-55 words. Natural prose sentences.
 - No meta commentary, no markdown, no lists, no quotes, no code fences.
 - Do not mention that you are rewriting; output only the final scene text.
 

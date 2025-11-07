@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
+from pathlib import Path
 
 """Implementation of the World Agent using the Ollama client stack."""
 from typing import Any, Dict, Optional
@@ -20,8 +21,14 @@ class WorldAgent(BaseAgent):
     LOGGER = logging.getLogger(__name__)
     """Describes the atmosphere and sensory texture of the environment."""
 
-    def __init__(self, *, client: Optional[OllamaClient] = None) -> None:
-        template = PromptTemplate(build_prompt_path("world_prompt.txt"))
+    def __init__(
+        self,
+        *,
+        client: Optional[OllamaClient] = None,
+        prompt_path: Optional[Path] = None,
+    ) -> None:
+        template_path = prompt_path or build_prompt_path("world_prompt.txt")
+        template = PromptTemplate(template_path)
         super().__init__(
             name="World",
             prompt_template=template,

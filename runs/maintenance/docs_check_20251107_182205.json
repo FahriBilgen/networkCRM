@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-11-07T18:22:05.188604+00:00",
+  "docs": {
+    "docs/current_state_baseline.md": {
+      "status": "keywords_missing",
+      "missing_keywords": [
+        "StateStore",
+        "Metrics"
+      ]
+    },
+    "docs/theme_packages.md": {
+      "status": "keywords_missing",
+      "missing_keywords": [
+        "Theme validate",
+        "Simulate"
+      ]
+    },
+    "docs/player_view_summary.md": {
+      "status": "ok",
+      "missing_keywords": []
+    }
+  }
+}

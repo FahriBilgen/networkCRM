@@ -1,6 +1,7 @@
 from __future__ import annotations
 import logging
 import random
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 from fortress_director.agents.base_agent import (
@@ -20,7 +21,7 @@ from fortress_director.settings import (
 
 LOGGER = logging.getLogger(__name__)
 
-MOTIF_TABLE = [
+DEFAULT_MOTIF_TABLE = [
     "betrayal",
     "fire",
     "memory",
@@ -32,6 +33,8 @@ MOTIF_TABLE = [
     "loss",
     "mystery",
 ]
+
+MOTIF_TABLE = tuple(DEFAULT_MOTIF_TABLE)
 
 FALLBACK_TEMPLATES = [
     "The air grows tense with an unexpected twist.",
@@ -50,10 +53,18 @@ class CreativityAgent(BaseAgent):
     motif injection.
     """
 
+    # Expose motif choices for tests and downstream orchestration logic.
+    MOTIF_TABLE = tuple(DEFAULT_MOTIF_TABLE)
+
     def __init__(
-        self, *, client: Optional[OllamaClient] = None, use_llm: bool = True
+        self,
+        *,
+        client: Optional[OllamaClient] = None,
+        use_llm: bool = True,
+        prompt_path: Optional[Path] = None,
     ) -> None:
-        template = PromptTemplate(build_prompt_path("creativity_prompt.txt"))
+        template_path = prompt_path or build_prompt_path("creativity_prompt.txt")
+        template = PromptTemplate(template_path)
         super().__init__(
             name="Creativity",
             prompt_template=template,
@@ -85,7 +96,8 @@ class CreativityAgent(BaseAgent):
         # Prefer LLM-based rewrites when available. If the orchestrator
         # signalled novelty via a novelty_flag or sandbox mode is enabled,
         # be more aggressive about rewrites.
-        force_sandbox = bool(event.get("novelty_flag")) or (CREATIVITY_FORCE_SANDBOX)
+        force_sandbox = bool(event.get("novelty_flag")) or CREATIVITY_FORCE_SANDBOX
+        rewrite_applied = False
         if self.use_llm:
             prompt_vars = {
                 "scene": event.get("scene", ""),
@@ -117,8 +129,8 @@ class CreativityAgent(BaseAgent):
                         event["scene"] = clean
                         event["motif_injected"] = None
                         event.setdefault("creative_persist_for", 4)
+                        rewrite_applied = True
                         LOGGER.info("CreativityAgent LLM event rewrite applied.")
-                        return event
                 LOGGER.warning(
                     "CreativityAgent LLM returned empty/invalid or meta-like string."
                 )
@@ -140,27 +152,33 @@ class CreativityAgent(BaseAgent):
             # Check window limit for motif injections
             recent_motifs = event.get("recent_motifs", [])
             recent_injections = sum(1 for m in recent_motifs[-5:] if m)  # Last 5 turns
-            if recent_injections >= MAX_MOTIF_INJECTIONS_PER_WINDOW:
+            if (
+                recent_injections >= MAX_MOTIF_INJECTIONS_PER_WINDOW
+                and not (do_interval or force_sandbox)
+            ):
                 LOGGER.debug("CreativityAgent: motif injection limit reached")
             else:
-                # Use stochastic injection so motif variety remains unpredictable
+                # Use stochastic injection so motif variety remains unpredictable.
+                # Interval turns always inject unless recent window already saturated.
                 prob = float(CREATIVITY_MOTIF_PROBABILITY)
                 roll = random.random()
+                should_inject = force_sandbox or do_interval or (roll < prob)
                 LOGGER.debug(
                     "CreativityAgent motif decision interval=%s force_sandbox=%s "
-                    "roll=%.3f prob=%.3f",
+                    "roll=%.3f prob=%.3f inject=%s",
                     do_interval,
                     force_sandbox,
                     roll,
                     prob,
+                    should_inject,
                 )
-                if roll < prob or force_sandbox:
+                if should_inject:
                     # Motif rotation: avoid repeating recent motifs
                     available_motifs = [
-                        m for m in MOTIF_TABLE if m not in recent_motifs[-3:]
+                        m for m in self.MOTIF_TABLE if m not in recent_motifs[-3:]
                     ]
                     if not available_motifs:
-                        available_motifs = MOTIF_TABLE  # Fallback if all recent
+                        available_motifs = list(self.MOTIF_TABLE)  # Fallback if all recent
                     motif = random.choice(available_motifs)
                     motifs = list(recent_motifs) + [motif]
                     event["recent_motifs"] = motifs[-10:]
@@ -183,3 +201,4 @@ class CreativityAgent(BaseAgent):
         else:
             LOGGER.debug("CreativityAgent: not interval; no motif injected")
         return event
+

@@ -24,6 +24,8 @@ def test_full_run_10_turns(tmp_path: Path) -> None:
     from fortress_director.agents.world_agent import WorldAgent
     from fortress_director.agents.character_agent import CharacterAgent
     from fortress_director.agents.judge_agent import JudgeAgent
+    from fortress_director.agents.director_agent import DirectorAgent
+    from fortress_director.agents.planner_agent import PlannerAgent
     from fortress_director.rules.rules_engine import RulesEngine
     from fortress_director.codeaware.function_registry import SafeFunctionRegistry
     from fortress_director.codeaware.function_validator import FunctionCallValidator
@@ -35,6 +37,8 @@ def test_full_run_10_turns(tmp_path: Path) -> None:
     orchestrator.event_agent = EventAgent()
     orchestrator.world_agent = WorldAgent()
     orchestrator.character_agent = CharacterAgent()
+    orchestrator.director_agent = DirectorAgent()
+    orchestrator.planner_agent = PlannerAgent()
     orchestrator.judge_agent = JudgeAgent()
     orchestrator.rules_engine = RulesEngine(judge_agent=orchestrator.judge_agent)
     orchestrator.function_registry = SafeFunctionRegistry()

@@ -1,5 +1,7 @@
 # Current Scenario Baseline
 
+> Referans StateStore katmanı JSON + SQLite arasında sıcak/soguk ayrımı yapar; snapshot()/persist() çağrılarında <50 ms hedefi için `StateStore` ve `MetricManager` ölçümleri `metrics` blokları üzerinden izlenir.
+
 ## Safe Function Registry Snapshot (2025-11-02)
 Name | Purpose | Notes on Validation / Side Effects
 ---- | ------- | ----------------------------------
@@ -61,3 +63,4 @@ Additional integration tests (`test_orchestrator_*`, `test_logging_workflow.py`,
 - World state merges JSON defaults with runtime expansions; no schema versioning in file yet.
 - Agent prompts receive available function list but rarely emit calls, leading to fallback usage by orchestrator.
 - Tests rely on deterministic snapshots; any schema expansion will need migration logic and updated fixtures.
+- Metrics katmanı `MetricManager` üzerinden okunup `metrics` alanına yazılıyor; yeni özellikler eklenirken bu panonun güncel kalması gerekiyor.

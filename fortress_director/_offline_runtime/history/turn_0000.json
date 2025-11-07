@@ -1,0 +1,26 @@
+{
+  "turn": 0,
+  "diff": [
+    {
+      "path": "npc_journal",
+      "kind": "removed",
+      "previous": [
+        {
+          "turn": 1,
+          "name": "Rhea",
+          "intent": "defend",
+          "entry": "Rally the nearby scouts to reinforce the gate. (focus: exploration)"
+        }
+      ]
+    },
+    {
+      "path": "recent_events",
+      "kind": "changed",
+      "previous": [
+        "Storm clouds gather over the western wall as watch fires hiss."
+      ],
+      "current": []
+    }
+  ],
+  "timestamp": 1762534669.9182022
+}

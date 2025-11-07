@@ -6,7 +6,9 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Optional, Union
+from typing import Dict, Optional, Union
+
+from fortress_director.utils.archive_manager import compress_pattern
 
 LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 
@@ -25,14 +27,44 @@ def _normalise_level(level: Union[str, int, None], *, default: int) -> int:
     return default
 
 
+def _parse_logger_overrides(raw: Optional[str]) -> Dict[str, int]:
+    overrides: Dict[str, int] = {}
+    if not raw:
+        return overrides
+    for token in raw.split(","):
+        token = token.strip()
+        if not token:
+            continue
+        if ":" in token:
+            name, level_str = token.split(":", 1)
+        else:
+            name, level_str = token, "WARNING"
+        overrides[name.strip()] = _normalise_level(
+            level_str.strip(), default=logging.WARNING
+        )
+    return overrides
+
+
 def configure_logging(
     *,
     console_level: Union[str, int, None] = None,
     file_level: Union[str, int, None] = None,
     log_path: Optional[Union[str, Path]] = None,
     force: bool = False,
+    quiet_loggers: Optional[Dict[str, Union[str, int]]] = None,
 ) -> Path:
-    """Configure root logging handlers once and return the active log path."""
+    """Configure root logging handlers once and return the active log path.
+
+    Args:
+        console_level: Desired console logging level (string or int).
+        file_level: Desired file logging level (string or int).
+        log_path: Optional explicit path for the rotating log file.
+        force: When True, existing handlers are replaced.
+        quiet_loggers: Optional mapping of logger names to their desired levels,
+            applied after handler configuration. Environment variable
+            FORTRESS_LOGGER_OVERRIDES can be used to supply additional overrides
+            in the form ``module:LEVEL,module2:LEVEL``.
+    """
 
     if getattr(configure_logging, "_configured", False) and not force:
         return Path(getattr(configure_logging, "_log_path"))
@@ -86,6 +118,16 @@ def configure_logging(
 
     root_logger.addHandler(console_handler)
     root_logger.addHandler(file_handler)
+
+    # Compress older run_* log files to keep the folder tidy.
+    compress_pattern(log_file_path.parent, "run_*.log", keep=5)
+
+    overrides = _parse_logger_overrides(os.getenv("FORTRESS_LOGGER_OVERRIDES"))
+    if quiet_loggers:
+        for name, level in quiet_loggers.items():
+            overrides[name] = _normalise_level(level, default=logging.WARNING)
+    for logger_name, level in overrides.items():
+        logging.getLogger(logger_name).setLevel(level)
 
     root_logger.debug(
         "Logging configured (console=%s, file=%s, path=%s)",

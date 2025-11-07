@@ -1,0 +1,2 @@
+turn,motif_injected,motif_text,motif_origin,motif_remaining,judge_veto,veto_reason,major_event,safe_function_executions,order,morale,resources,knowledge,corruption,glitch,fallback_strategy,fallback_summary,guardrail_note_types,snapshot_avg_ms,snapshot_p95_ms,persist_avg_ms,persist_p95_ms
+0,False,,,0,False,,True,4,54,45,37,53,10,62,,,,3.672677777811057,4.822899994906038,38.618233326512076,38.61379995942116

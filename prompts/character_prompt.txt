@@ -25,6 +25,11 @@ QUALITY CONSTRAINTS:
 - Trust changes: only -1, 0, or +1
 - Focus on immediate reactions to player action
 - Speech variety: For vigilance intents, alternate between "I stand watch", "Eyes on the horizon", "Maintaining guard", etc.
+- If a judge veto or guardrail warning occurred, bias one NPC toward a
+  stabilising response (defend/inspire/plan) and briefly justify morale impact.
+- When suggesting safe functions, prefer concrete JSON objects such as:
+  - {{"name": "spawn_item", "kwargs": {{"item_id": "bandage", "target": "player"}}}}
+  - {{"name": "move_npc", "kwargs": {{"npc_id": "scout_elan", "destination": "parapet"}}}}
 
 TASK:
 Generate immediate reactions for each NPC to the current scene and player choice.

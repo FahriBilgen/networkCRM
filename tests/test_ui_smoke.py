@@ -72,6 +72,8 @@ def test_orchestrator_returns_structured_ui_fields(tmp_path):
     assert isinstance(result["safe_function_history"], list)
     assert "room_history" in result
     assert isinstance(result["room_history"], list)
+    assert "player_view" in result
+    assert isinstance(result["player_view"], dict)
 
     # Detailed structure validation for UI data contracts
     # Validate npcs structure
@@ -91,6 +93,7 @@ def test_orchestrator_returns_structured_ui_fields(tmp_path):
         assert "success" in func_result
         assert "timestamp" in func_result
         assert "metadata" in func_result
+        assert "summary" in func_result
         assert isinstance(func_result["name"], str)
         assert isinstance(func_result["success"], bool)
         # timestamp can be None or str/datetime
@@ -105,3 +108,17 @@ def test_orchestrator_returns_structured_ui_fields(tmp_path):
         assert isinstance(room_entry["room"], str)
         assert isinstance(room_entry["turn"], int)
         assert isinstance(room_entry["description"], str)
+
+    # Validate player_view canonical fields
+    pv = result["player_view"]
+    assert "metrics_panel" in pv
+    assert "map_state" in pv
+    assert isinstance(pv["map_state"], dict)
+    assert "npc_locations" in pv
+    assert isinstance(pv["npc_locations"], list)
+    assert "guardrail_notes" in pv
+    assert isinstance(pv["guardrail_notes"], list)
+    assert "safe_function_history" in pv
+    assert isinstance(pv["safe_function_history"], list)
+    assert "npc_journal_recent" in pv
+    assert isinstance(pv["npc_journal_recent"], list)

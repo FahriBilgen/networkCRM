@@ -2,6 +2,7 @@ from __future__ import annotations
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 """Implementation of the Character Agent for NPC reactions."""
 from typing import Any, Dict, List, Optional
@@ -43,8 +44,14 @@ class CharacterAgent(BaseAgent):
         "explore",
     ]
 
-    def __init__(self, *, client: Optional[OllamaClient] = None) -> None:
-        template = PromptTemplate(build_prompt_path("character_prompt.txt"))
+    def __init__(
+        self,
+        *,
+        client: Optional[OllamaClient] = None,
+        prompt_path: Optional[Path] = None,
+    ) -> None:
+        template_path = prompt_path or build_prompt_path("character_prompt.txt")
+        template = PromptTemplate(template_path)
         super().__init__(
             name="Character",
             prompt_template=template,
@@ -274,12 +281,15 @@ class CharacterAgent(BaseAgent):
                 if intent not in unique_intents:
                     # Add a synthetic autonomous action for Rhea or Boris
                     npc_name = "Rhea" if idx % 2 == 1 else "Boris"
+                    speech_text = (
+                        f"{npc_name} shifts tactics with a {intent} maneuver."
+                    )
                     out.append(
                         {
                             "name": npc_name,
                             "intent": intent,
                             "action": f"Autonomously performs {intent} action.",
-                            "speech": f"({intent} autonomous)",
+                            "speech": speech_text,
                             "effects": {},
                             "safe_functions": [],
                         }
@@ -310,8 +320,16 @@ class CharacterAgent(BaseAgent):
                         clone[field] = "" if field != "name" else "Unknown"
                     else:
                         clone[field] = str(value)
-                if field == "speech" and len(clone[field]) > MAX_SPEECH_LENGTH:
-                    clone[field] = clone[field][:MAX_SPEECH_LENGTH]
+                if field == "speech":
+                    speech_text = clone[field].strip()
+                    if speech_text and speech_text[-1] not in ".!?":
+                        speech_text = f"{speech_text}."
+                    if len(speech_text) < 10:
+                        npc_name = clone.get("name") or "The defender"
+                        speech_text = f"{npc_name} steels their resolve."
+                    if len(speech_text) > MAX_SPEECH_LENGTH:
+                        speech_text = speech_text[:MAX_SPEECH_LENGTH]
+                    clone[field] = speech_text
             effects_raw = clone.get("effects")
             effects: Dict[str, Any] = (
                 dict(effects_raw) if isinstance(effects_raw, dict) else {}

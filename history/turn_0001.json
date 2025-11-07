@@ -1,0 +1,16 @@
+{
+  "turn": 1,
+  "diff": [
+    {
+      "path": "recent_events",
+      "kind": "changed",
+      "previous": [],
+      "current": [
+        {
+          "text": "alpha"
+        }
+      ]
+    }
+  ],
+  "timestamp": 1762533981.6351576
+}

@@ -21,6 +21,9 @@
 - Instrument orchestrator to log per-agent latency and tokens (if API provides data).
 - Add profiling CLI `python fortress_director/cli.py profile --turns N` capturing average turn duration & safe function count.
 - Define warning thresholds (e.g., >90s per turn or >10 safe function calls).
+- Use `py tools/profile_state_io.py --iterations 50` to benchmark `StateStore.snapshot()` / `persist()` latency and validate the <50ms target.
+- `py fortress_director/cli.py debug_state` artik `io_metrics` alaninda son 200 snapshot/persist orneklerinin ortalama/p95 degerlerini gosterir; `tools/telemetry_aggregate.py` bu metrikleri `snapshot_avg_ms`, `persist_p95_ms` kolonlarina yazar.
+- Mini regression script `tools/regression_runner.py` unit + integration testlerini tek komutla calistirip `runs/regressions/<tag>` altina log ve ozet kaydeder; `--dry-run` ile olasi komutlar incelenebilir.
 
 ## Tooling Additions
 - Fixture generators under `tests/fixtures/` for world state snapshots and agent outputs.

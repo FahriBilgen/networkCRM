@@ -6,7 +6,8 @@ import random
 import re
 from copy import deepcopy
 import os
-from dataclasses import dataclass
+import time
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
@@ -27,7 +28,7 @@ from fortress_director.settings import (
     JUDGE_MIN_TURN_GAP,
     MAJOR_EVENT_MIN_INTERVAL,
 )
-from fortress_director.rules.rules_engine import (
+from fortress_rules.rules_engine import (
     RulesEngine,
     TierTwoValidationError,
 )
@@ -41,7 +42,16 @@ from fortress_director.codeaware.function_registry import (
 from fortress_director.utils.glitch_manager import GlitchManager
 from fortress_director.utils.logging_config import configure_logging
 from fortress_director.utils.metrics_manager import MetricManager
+from utils.agent_monitor import AGENT_MONITOR
+from fortress_director.utils.telemetry_bus import TelemetryBus
 from fortress_director.utils.sqlite_sync import sync_state_to_sqlite
+from fortress_director.orchestrator.safe_function_executor import SafeFunctionExecutor
+from fortress_director.orchestrator.state_services import StateServices
+from fortress_director.orchestrator.telemetry_builder import TelemetryBuilder
+from fortress_director.orchestrator.turn_runner import (
+    handle_end_flag,
+    handle_finalized_game,
+)
 
 # Not: CLI, oturum başına log dosyasını belirliyor ve configure_logging'i
 # force=True ile çağırıyor. Import anında otomatik yapılandırmayı kaldırıyoruz
@@ -370,6 +380,15 @@ class Orchestrator:
     function_validator: FunctionCallValidator
     rollback_system: RollbackSystem
     runs_dir: Path
+    telemetry_bus: Optional[TelemetryBus] = None
+    state_services: "StateServices" = field(init=False, repr=False)
+    telemetry_builder: "TelemetryBuilder" = field(init=False, repr=False)
+    safe_function_executor: "SafeFunctionExecutor" = field(init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        self.state_services = StateServices()
+        self.telemetry_builder = TelemetryBuilder(self.state_services)
+        self.safe_function_executor = SafeFunctionExecutor(self)
 
     @classmethod
     def build_default(cls) -> "Orchestrator":
@@ -441,53 +460,9 @@ class Orchestrator:
                 "Pre-turn state snapshot: %s",
                 self._stringify(state_snapshot),
             )
-            # Early exit if game is already finalized
-            if state_snapshot.get("finalized", False):
-                LOGGER.info("Game already finalized, terminating turn early.")
-                # Build a minimal, validator-compliant payload signalling end state
-                metric_manager = MetricManager(
-                    state_snapshot,
-                    log_sink=self._metric_log_sink(),
-                )
-                metrics_after = metric_manager.snapshot()
-                world = {
-                    "atmosphere": "The campaign has concluded.",
-                    "sensory_details": "All is quiet across Lornhaven.",
-                }
-                result = {
-                    "WORLD_CONTEXT": self._build_world_context(state_snapshot),
-                    "scene": "The campaign has concluded.",
-                    "options": [],
-                    "world": world,
-                    "event": {"scene": "", "options": [], "major_event": False},
-                    "player_choice": {
-                        "id": "end",
-                        "text": "Campaign ended.",
-                        "action_type": "end",
-                    },
-                    "character_reactions": [],
-                    "npcs": self.build_npcs_for_ui(state_snapshot),
-                    "safe_function_history": [],
-                    "room_history": self.build_room_history(state_snapshot),
-                    "summary_text": state_snapshot.get("summary_text", ""),
-                    "metrics_after": metrics_after,
-                    "glitch": {"roll": 0, "effects": []},
-                    "logs": list(self._metric_log_buffer),
-                    "win_loss": {"status": "loss", "reason": "game_over"},
-                    "narrative": "Campaign ended.",
-                }
-                # Text normalization for consistency
-                try:
-                    world["atmosphere"] = self._clean_text(world["atmosphere"])
-                    world["sensory_details"] = self._clean_text(
-                        world["sensory_details"]
-                    )
-                    result["scene"] = self._clean_text(result["scene"])
-                    result["narrative"] = self._clean_text(result["narrative"])
-                except Exception:
-                    pass
-                validate_turn_output(result)
-                return result
+            finalized_payload = handle_finalized_game(self, state_snapshot)
+            if finalized_payload:
+                return finalized_payload
             # Check for end flag at turn start
             flags = state_snapshot.get("flags", [])
             if "end" in flags:
@@ -1334,6 +1309,8 @@ class Orchestrator:
                             )
 
             warnings: List[str] = []
+            fallback_details: Optional[Dict[str, str]] = None
+            judge_output: Dict[str, Any] = {}
             try:
                 LOGGER.info("Submitting reactions to rules engine...")
                 LOGGER.debug(
@@ -1348,7 +1325,10 @@ class Orchestrator:
                     player_choice=chosen_option,
                     seed=rng_seed,
                 )
-                self._accumulate_emotional_memory(state, character_output)
+                self.state_services.accumulate_emotional_memory(
+                    state, character_output
+                )
+                self.state_services.record_npc_journal(state, character_output)
                 if "_anomaly_active_until" in state_snapshot:
                     state["_anomaly_active_until"] = state_snapshot[
                         "_anomaly_active_until"
@@ -1368,6 +1348,10 @@ class Orchestrator:
                 fallback_note = "Applied fallback defensive stance for primary NPC."
                 warnings.append(fallback_note)
                 LOGGER.info(fallback_note)
+                fallback_details = {
+                    "strategy": "defensive_stance",
+                    "summary": f"Fallback strategy engaged after judge veto: {exc}",
+                }
                 state = state_snapshot
                 major_event_effect = self._inject_major_event_effect(
                     state_snapshot,
@@ -1384,7 +1368,10 @@ class Orchestrator:
                     if major_event_effect
                     else None
                 )
-                self._accumulate_emotional_memory(state, character_output)
+                self.state_services.accumulate_emotional_memory(
+                    state, character_output
+                )
+                self.state_services.record_npc_journal(state, character_output)
                 if "_anomaly_active_until" in state_snapshot:
                     state["_anomaly_active_until"] = state_snapshot[
                         "_anomaly_active_until"
@@ -1517,7 +1504,7 @@ class Orchestrator:
                 pass
 
             LOGGER.info("Executing safe function queue...")
-            safe_function_results = self._execute_safe_function_queue(
+            safe_function_results = self.safe_function_executor.execute_queue(
                 event_output=event_output,
                 character_output=character_output,
                 world_output=world_output,
@@ -1607,6 +1594,9 @@ class Orchestrator:
                     LOGGER.warning("Failed to inject fallback safe function: %s", exc)
 
             # Re-describe world if weather or environment changed
+            guardrail_notes = self.telemetry_builder.build_guardrail_notes(
+                self.safe_function_executor.last_guardrail_stats
+            )
             weather_changed = any(
                 result.get("name") == "change_weather"
                 for result in safe_function_results
@@ -1708,6 +1698,7 @@ class Orchestrator:
                     safe_function_results
                 ),
                 "room_history": self.build_room_history(final_state),
+                "guardrail_notes": guardrail_notes,
                 # --- Feedback summary layer ---
                 "summary_text": final_state.get("summary_text", ""),
                 "telemetry": {
@@ -1715,17 +1706,58 @@ class Orchestrator:
                     "planner_calls_executed": planner_calls_used,
                     "safe_functions_executed": len(safe_function_results),
                     "safe_function_guardrails": deepcopy(
-                        getattr(self, "_last_guardrail_stats", {}) or {}
+                        self.safe_function_executor.last_guardrail_stats
                     ),
                 },
             }
+            if fallback_details:
+                result["fallback_strategy"] = fallback_details["strategy"]
+                result["fallback_summary"] = fallback_details["summary"]
+            agent_report = AGENT_MONITOR.get_performance_report()
+            result["telemetry"]["agents"] = agent_report.get("agents", {})
+            result["telemetry"]["agent_system_health"] = agent_report.get(
+                "system_health"
+            )
+            result["telemetry"]["judge"] = judge_output
+            result["telemetry"]["glitch_snapshot"] = glitch_info
+            result["telemetry"]["guardrail_notes"] = guardrail_notes
+            result["telemetry"]["safe_function_history"] = result[
+                "safe_function_history"
+            ]
+            if fallback_details:
+                result["telemetry"]["fallback_strategy"] = fallback_details["strategy"]
+                result["telemetry"]["fallback_summary"] = fallback_details["summary"]
+            try:
+                final_state["_telemetry_digest"] = {
+                    "turn": final_state.get("turn"),
+                    "agents": result["telemetry"]["agents"],
+                    "judge": judge_output,
+                    "glitch": glitch_info,
+                }
+                self.state_store.persist(final_state)
+            except Exception:  # pragma: no cover - best effort
+                LOGGER.debug("Failed to persist telemetry digest", exc_info=True)
             if result["summary_text"]:
                 LOGGER.info(f"Turn summary: {result['summary_text']}")
             # Build a compact, player-facing view summarizing the important
             # bits (scene, short world text, options, primary NPC reaction,
             # and final summary if present).
             try:
-                result["player_view"] = self.build_player_view(final_state, result)
+                scene_text = result.get("scene", "")
+                try:
+                    scene_text = self._clean_text(scene_text)
+                except Exception:
+                    pass
+                world_summary = self._dedupe_sentences(
+                    self._build_world_context(final_state)
+                )
+                result["player_view"] = self.telemetry_builder.build_player_view(
+                    final_state,
+                    result,
+                    guardrail_notes=guardrail_notes,
+                    scene_text=scene_text,
+                    world_text=world_summary,
+                )
             except Exception as exc:  # pragma: no cover - defensive
                 LOGGER.warning("Failed to build player_view: %s", exc)
             # Include final summary in the result if present
@@ -1803,6 +1835,18 @@ class Orchestrator:
         else:
             self.rollback_system.clear()
             LOGGER.info("Turn completed successfully.")
+            if self.telemetry_bus:
+                try:
+                    self.telemetry_bus.publish(
+                        {
+                            "turn": final_state.get("turn"),
+                            "win_loss": result.get("win_loss"),
+                            "telemetry": result.get("telemetry"),
+                            "player_view": result.get("player_view"),
+                        }
+                    )
+                except Exception:
+                    LOGGER.debug("Telemetry publish failed", exc_info=True)
             return result
 
     def register_safe_function(
@@ -3516,48 +3560,6 @@ class Orchestrator:
             self._metric_log_buffer = buffer
         return buffer
 
-    def _execute_safe_function_queue(
-        self,
-        *,
-        event_output: Dict[str, Any],
-        character_output: List[Dict[str, Any]],
-        world_output: Optional[Dict[str, Any]] = None,
-        planner_calls: Optional[List[Any]] = None,
-    ) -> List[Dict[str, Any]]:
-        """Execute any safe function requests emitted by agents. On validation error, rollback and abort turn."""
-        from fortress_director.codeaware.function_registry import (
-            FunctionValidationError,
-            FunctionNotRegisteredError,
-        )
-
-        calls = self._collect_safe_function_calls(
-            event_output=event_output,
-            character_output=character_output,
-            world_output=world_output or {},
-            planner_calls=planner_calls,
-        )
-        filtered_calls, guardrail_stats = self._apply_safe_function_guardrails(calls)
-        setattr(self, "_last_guardrail_stats", guardrail_stats)
-        results: List[Dict[str, Any]] = []
-        try:
-            for payload, metadata in filtered_calls:
-                outcome = self.run_safe_function(payload, metadata=metadata)
-                results.append(
-                    {
-                        "name": payload["name"],
-                        "result": outcome,
-                        "metadata": metadata,
-                        "success": True,
-                    }
-                )
-            return results
-        except (FunctionValidationError, FunctionNotRegisteredError) as exc:
-            # Rollback'i burada yapmayalım; üst seviye run_turn bloğu tekil rollback uygulasın.
-            import logging
-
-            logging.error(f"Turn aborted due to safe function error: {exc}")
-            raise
-
     def _execute_safe_function(
         self,
         func_payload: Dict[str, Any],
@@ -3583,327 +3585,6 @@ class Orchestrator:
         except Exception:
             pass
         return outcome
-
-    def _collect_safe_function_calls(
-        self,
-        *,
-        event_output: Dict[str, Any],
-        character_output: List[Dict[str, Any]],
-        world_output: Dict[str, Any],
-        planner_calls: Optional[List[Any]] = None,
-    ) -> List[Tuple[Dict[str, Any], Dict[str, Any]]]:
-        queue: List[Tuple[Dict[str, Any], Dict[str, Any]]] = []
-        planner_ids: Set[int] = set()
-        if planner_calls:
-            try:
-                planner_ids = {id(entry) for entry in planner_calls}
-            except Exception:
-                planner_ids = set()
-        queue.extend(
-            self._normalize_safe_function_entries(
-                event_output.get("safe_functions"),
-                source="event_agent",
-                planner_ids=planner_ids,
-            )
-        )
-        # Collect from WorldAgent output if present
-        try:
-            queue.extend(
-                self._normalize_safe_function_entries(
-                    world_output.get("safe_functions"),
-                    source="world_agent",
-                )
-            )
-        except Exception:
-            pass
-        for reaction in character_output:
-            if not isinstance(reaction, dict):
-                continue
-            reaction_name = reaction.get("name", "unknown")
-            if isinstance(reaction_name, str) and reaction_name.strip():
-                source_label = f"character:{reaction_name.strip()}"
-            else:
-                source_label = "character:unknown"
-            queue.extend(
-                self._normalize_safe_function_entries(
-                    reaction.get("safe_functions"),
-                    source=source_label,
-                )
-            )
-            # De-duplicate and throttle redundant change_weather calls before executing
-            try:
-                state = self.state_store.snapshot()
-                prev_world = state.get("world_constraint_from_prev_turn", {}) or {}
-                prev_atmo = (prev_world.get("atmosphere") or "").strip()
-                current_turn = int(state.get("turn", 0))
-                last_weather_turn = int(
-                    state.get("last_weather_change_turn", -9999) or -9999
-                )
-                filtered: List[Tuple[Dict[str, Any], Dict[str, Any]]] = []
-                for payload, metadata in queue:
-                    try:
-                        if payload.get("name") == "change_weather":
-                            kw = payload.get("kwargs", {}) or {}
-                            new_atmo = (kw.get("atmosphere") or "").strip()
-                            # Skip if atmosphere wouldn't change or if on cooldown (<=4 turns)
-                            if (
-                                new_atmo
-                                and new_atmo.lower() == (prev_atmo or "").lower()
-                            ) or (current_turn - last_weather_turn <= 4):
-                                continue
-                    except Exception:
-                        pass
-                    filtered.append((payload, metadata))
-                queue = filtered
-            except Exception:
-                pass
-        return queue
-
-    def _apply_safe_function_guardrails(
-        self,
-        calls: List[Tuple[Dict[str, Any], Dict[str, Any]]],
-    ) -> Tuple[List[Tuple[Dict[str, Any], Dict[str, Any]]], Dict[str, Any]]:
-        """Enforce cross-agent guardrails before executing safe functions."""
-        if not calls:
-            return [], {
-                "planner_lowered_wall_integrity": False,
-                "world_wall_integrity_skipped": 0,
-                "objective_urgency_skipped": [],
-                "stockpile_collapsed": [],
-            }
-
-        planner_lowered_wall = False
-        for payload, metadata in calls:
-            if str(payload.get("name", "")) != "adjust_metric":
-                continue
-            kwargs = payload.get("kwargs") or {}
-            metric = str(kwargs.get("metric", "")).strip().lower()
-            if metric != "wall_integrity":
-                continue
-            delta_raw = kwargs.get("delta", 0)
-            try:
-                delta_val = float(delta_raw)
-            except (TypeError, ValueError):
-                continue
-            if delta_val < 0 and metadata.get("planner_origin"):
-                planner_lowered_wall = True
-                break
-
-        stats = {
-            "planner_lowered_wall_integrity": planner_lowered_wall,
-            "world_wall_integrity_skipped": 0,
-            "objective_urgency_skipped": [],
-            "stockpile_collapsed": set(),
-        }
-        filtered: List[Tuple[Dict[str, Any], Dict[str, Any]]] = []
-        adjust_stockpile_sources: Dict[str, str] = {}
-        objective_urgency_adjusted = False
-
-        for payload, metadata in calls:
-            name = str(payload.get("name", "")).strip()
-            kwargs = payload.get("kwargs") or {}
-            source = str(metadata.get("source", "unknown"))
-
-            if (
-                planner_lowered_wall
-                and source == "world_agent"
-                and name == "adjust_metric"
-            ):
-                metric = str(kwargs.get("metric", "")).strip().lower()
-                if metric == "wall_integrity":
-                    delta_raw = kwargs.get("delta", 0)
-                    try:
-                        delta_val = float(delta_raw)
-                    except (TypeError, ValueError):
-                        delta_val = 0
-                    if delta_val < 0:
-                        LOGGER.info(
-                            "Skipping world_agent wall_integrity reduction; planner already applied one this turn.",
-                        )
-                        stats["world_wall_integrity_skipped"] += 1
-                        continue
-
-            if name == "adjust_stockpile":
-                resource_id = kwargs.get("resource_id")
-                resource_key = str(resource_id or "__unknown__").strip().lower()
-                previous_source = adjust_stockpile_sources.get(resource_key)
-                if previous_source is None:
-                    adjust_stockpile_sources[resource_key] = source
-                elif previous_source != source:
-                    LOGGER.info(
-                        "Collapsing duplicate adjust_stockpile on '%s' from '%s'; '%s' already adjusted this turn.",
-                        resource_key,
-                        source,
-                        previous_source,
-                    )
-                    stats["stockpile_collapsed"].add(resource_key)
-                    continue
-
-            if name == "adjust_metric":
-                metric = str(kwargs.get("metric", "")).strip().lower()
-                if metric == "objective_urgency" and source.startswith("character:"):
-                    if objective_urgency_adjusted:
-                        LOGGER.info(
-                            "Skipping additional objective_urgency adjustment from %s; already applied this turn.",
-                            source,
-                        )
-                        stats["objective_urgency_skipped"].append(source)
-                        continue
-                    objective_urgency_adjusted = True
-
-            filtered.append((payload, metadata))
-
-        stats["stockpile_collapsed"] = sorted(stats["stockpile_collapsed"])
-        stats["objective_urgency_skipped"] = sorted(
-            set(stats["objective_urgency_skipped"])
-        )
-
-        return filtered, stats
-
-    def _normalize_safe_function_entries(
-        self,
-        entries: Any,
-        *,
-        source: str,
-        planner_ids: Optional[Set[int]] = None,
-    ) -> List[Tuple[Dict[str, Any], Dict[str, Any]]]:
-        if not isinstance(entries, list):
-            return []
-        normalized: List[Tuple[Dict[str, Any], Dict[str, Any]]] = []
-        for entry in entries:
-            is_planner_origin = bool(planner_ids and id(entry) in planner_ids)
-            if isinstance(entry, str):
-                try:
-                    node = ast.parse(entry, mode="eval").body
-                    if not isinstance(node, ast.Call) or not isinstance(
-                        node.func, ast.Name
-                    ):
-                        LOGGER.warning(
-                            "Skipping invalid safe function expression: %r",
-                            entry,
-                        )
-                        continue
-                    func_name = node.func.id
-                    args = [ast.literal_eval(arg) for arg in node.args]
-                    kwargs = {
-                        kw.arg: ast.literal_eval(kw.value)
-                        for kw in node.keywords
-                        if kw.arg is not None
-                    }
-                    payload: Dict[str, Any] = {"name": func_name}
-                    normalized_kwargs = self._normalize_safe_function_kwargs(
-                        func_name,
-                        args,
-                        kwargs,
-                    )
-                    if normalized_kwargs:
-                        payload["kwargs"] = normalized_kwargs
-                    remaining_args = [value for value in args if value is not None]
-                    if remaining_args and func_name not in {
-                        "change_weather",
-                        "spawn_item",
-                        "move_npc",
-                    }:
-                        payload["args"] = remaining_args
-                    metadata: Dict[str, Any] = {"source": source}
-                    if is_planner_origin:
-                        metadata["planner_origin"] = True
-                    normalized.append((payload, metadata))
-                except Exception as exc:
-                    LOGGER.warning(
-                        "Skipping unparsable safe function call '%s': %s",
-                        entry,
-                        exc,
-                    )
-                    continue
-            elif isinstance(entry, dict):
-                # Existing dict format
-                raw_name = entry.get("name")
-                if not isinstance(raw_name, str) or not raw_name.strip():
-                    continue
-                payload: Dict[str, Any] = {"name": raw_name.strip()}
-                if "args" in entry:
-                    payload["args"] = entry.get("args")
-                if "kwargs" in entry:
-                    payload["kwargs"] = entry.get("kwargs")
-                entry_metadata = entry.get("metadata")
-                payload_metadata: Dict[str, Any] = {}
-                if isinstance(entry_metadata, dict):
-                    payload_metadata = dict(entry_metadata)
-                    payload["metadata"] = payload_metadata
-                metadata: Dict[str, Any] = {"source": source}
-                metadata.update(payload_metadata)
-                if is_planner_origin:
-                    metadata["planner_origin"] = True
-                normalized.append((payload, metadata))
-            else:
-                continue
-        return normalized
-
-    @staticmethod
-    def _normalize_safe_function_kwargs(
-        name: str,
-        args: List[Any],
-        kwargs: Dict[str, Any],
-    ) -> Dict[str, Any]:
-        def _as_text(value: Any) -> str:
-            text = str(value) if value is not None else ""
-            return text.strip()
-
-        if name == "change_weather":
-            atmosphere = kwargs.get("atmosphere")
-            details = kwargs.get("sensory_details")
-            if args:
-                atmosphere = args[0]
-                if len(args) > 1:
-                    details = args[1]
-            atmosphere_text = _as_text(atmosphere)
-            if not atmosphere_text:
-                raise ValueError("change_weather requires an atmosphere")
-            details_text = _as_text(details) or "The weather shifts subtly."
-            return {
-                "atmosphere": atmosphere_text,
-                "sensory_details": details_text,
-            }
-
-        if name == "spawn_item":
-            item_id = kwargs.get("item_id")
-            target = kwargs.get("target")
-            if args:
-                if len(args) > 0:
-                    item_id = args[0]
-                if len(args) > 1:
-                    target = args[1]
-            item_text = _as_text(item_id)
-            target_text = _as_text(target)
-            if not item_text or not target_text:
-                raise ValueError("spawn_item requires item_id and target")
-            return {
-                "item_id": item_text,
-                "target": target_text,
-            }
-
-        if name == "move_npc":
-            npc_id = kwargs.get("npc_id") or kwargs.get("npc_name")
-            location = kwargs.get("location") or kwargs.get("target")
-            if args:
-                if len(args) > 0:
-                    npc_id = args[0]
-                if len(args) > 1:
-                    location = args[1]
-            npc_text = _as_text(npc_id)
-            location_text = _as_text(location)
-            if not npc_text or not location_text:
-                raise ValueError("move_npc requires npc identifier and location")
-            return {
-                "npc_id": npc_text,
-                "location": location_text,
-            }
-
-        cleaned = {
-            key: value for key, value in kwargs.items() if key and value is not None
-        }
-        return cleaned
 
     def _resolve_player_choice(
         self,
@@ -4518,10 +4199,13 @@ class Orchestrator:
             if isinstance(result, dict):
                 history.append(
                     {
-                        "name": result.get("name", "unknown"),
-                        "success": result.get("success", False),
+                        "name": str(result.get("name", "unknown")),
+                        "success": bool(result.get("success", False)),
                         "timestamp": result.get("timestamp"),
-                        "metadata": result.get("metadata", {}),
+                        "metadata": dict(result.get("metadata", {}) or {}),
+                        "summary": result.get("summary"),
+                        "effects": result.get("effects", result.get("result")),
+                        "guardrail_notes": result.get("guardrail_notes", []),
                     }
                 )
         return history
@@ -4545,58 +4229,6 @@ class Orchestrator:
                 "description": f"Currently in {current_room}",
             }
         ]
-
-    def build_player_view(
-        self, state: Dict[str, Any], result: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Compose a concise, player-facing view of the turn result.
-
-        The output is deliberately compact and safe for UI display.
-        """
-        scene = result.get("scene", "").strip()
-        try:
-            scene = self._clean_text(scene)
-        except Exception:
-            pass
-        # Short world text (use existing builder but keep it concise)
-        world_text = self._build_world_context(state)[:400]
-        world_text = self._dedupe_sentences(world_text)
-
-        # Options: id and short text
-        raw_options = result.get("options") or []
-        options = []
-        for opt in raw_options:
-            if isinstance(opt, dict):
-                options.append(
-                    {"id": opt.get("id"), "text": str(opt.get("text", "")).strip()}
-                )
-
-        # Primary NPC reaction
-        primary_reaction = ""
-        reactions = result.get("character_reactions") or []
-        if reactions and isinstance(reactions, list):
-            first = reactions[0]
-            if isinstance(first, dict):
-                primary_reaction = str(
-                    first.get("speech") or first.get("action") or ""
-                ).strip()
-
-        # Safe functions executed (names only)
-        sfs = result.get("safe_function_results") or []
-        sf_names = [
-            sf.get("name") for sf in sfs if isinstance(sf, dict) and sf.get("name")
-        ]
-
-        player_view = {
-            "short_scene": scene[:400],
-            "short_world": world_text,
-            "options": options,
-            "primary_reaction": primary_reaction,
-            "safe_functions": sf_names,
-        }
-        if state.get("final_summary"):
-            player_view["final_summary"] = state.get("final_summary")
-        return player_view
 
     def _update_motifs_from_choice(
         self, state: dict, chosen_option: dict, event_output: dict
@@ -4685,35 +4317,6 @@ class Orchestrator:
 
         # Keep only last 10 motifs to allow longer emotional arcs
         state["recent_motifs"] = recent_motifs[-10:]
-
-    def _accumulate_emotional_memory(
-        self, state: Dict[str, Any], character_output: List[Dict[str, Any]]
-    ) -> None:
-        """Persist NPC emotional echoes so duygular katman katman biriksin."""
-
-        try:
-            if not isinstance(state, dict):
-                return
-            emotions = state.setdefault("emotional_memory", [])
-            turn_value = state.get("turn") or state.get("current_turn", 0)
-            for entry in character_output or []:
-                if not isinstance(entry, dict):
-                    continue
-                speech = str(entry.get("speech", "")).strip()
-                if not speech:
-                    continue
-                emotions.append(
-                    {
-                        "turn": turn_value,
-                        "name": entry.get("name", "Unknown"),
-                        "intent": entry.get("intent"),
-                        "speech": speech,
-                    }
-                )
-            if len(emotions) > 40:
-                del emotions[:-40]
-        except Exception:
-            LOGGER.debug("Failed to accumulate emotional memory.", exc_info=True)
 
     def _check_room_progression(self, state):
         current_turn = state.get("current_turn", 0)

@@ -1,0 +1,3 @@
+2025-11-07 18:41:18,594 [DEBUG] root: Logging configured (console=INFO, file=DEBUG, path=C:\Users\Fahri\OneDrive\Masaüstü\oyun\logs\run_20251107_154118_593693.log)
+2025-11-07 18:41:18,594 [DEBUG] __main__: Logging configured via CLI (console level=INFO, path=C:\Users\Fahri\OneDrive\Masaüstü\oyun\logs\run_20251107_154118_593693.log)
+2025-11-07 18:41:18,594 [INFO] __main__: Detailed logs written to C:\Users\Fahri\OneDrive\Masaüstü\oyun\logs\run_20251107_154118_593693.log

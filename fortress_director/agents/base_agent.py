@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -14,6 +15,7 @@ from fortress_director.llm.ollama_client import (
     OllamaClientError,
 )
 from fortress_director.settings import ModelConfig, SETTINGS
+from utils.agent_monitor import AGENT_MONITOR
 
 
 class AgentError(RuntimeError):
@@ -108,6 +110,7 @@ class BaseAgent:
 
         prompt = self._template.render(**vars_copy)
         options = self._build_options(options_override)
+        start_time = time.perf_counter()
         try:
             response = self._client.generate(
                 model=self._model.name,
@@ -115,13 +118,29 @@ class BaseAgent:
                 options=options,
                 response_format="json" if self._expects_json else None,
             )
+            text = response.get("response", "").strip()
+            if not self._expects_json:
+                result: Any = text
+            else:
+                result = self._parse_json(text)
         except OllamaClientError as exc:
+            AGENT_MONITOR.record_failure(self.name, error_type="client_error")
             raise AgentError(f"{self.name} agent failed: {exc}") from exc
-
-        text = response.get("response", "").strip()
-        if not self._expects_json:
-            return text
-        return self._parse_json(text)
+        except AgentError:
+            AGENT_MONITOR.record_failure(self.name, error_type="agent_error")
+            raise
+        except Exception as exc:  # pragma: no cover - defensive guard
+            AGENT_MONITOR.record_failure(
+                self.name,
+                error_type=exc.__class__.__name__,
+            )
+            raise
+        else:
+            AGENT_MONITOR.record_success(self.name)
+            return result
+        finally:
+            elapsed = time.perf_counter() - start_time
+            AGENT_MONITOR.record_response_time(self.name, elapsed)
 
     def _build_options(
         self,

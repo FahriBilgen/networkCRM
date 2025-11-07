@@ -6,6 +6,7 @@ The agent receives compact world context and a list of available safe
 functions, and returns a minimal plan with a bounded number of calls.
 """
 
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 from fortress_director.agents.base_agent import (
@@ -21,8 +22,14 @@ from fortress_director.llm.ollama_client import OllamaClient
 class PlannerAgent(BaseAgent):
     """Produces a deterministic, validator-friendly execution plan."""
 
-    def __init__(self, *, client: Optional[OllamaClient] = None) -> None:
-        template = PromptTemplate(build_prompt_path("planner_prompt.txt"))
+    def __init__(
+        self,
+        *,
+        client: Optional[OllamaClient] = None,
+        prompt_path: Optional[Path] = None,
+    ) -> None:
+        template_path = prompt_path or build_prompt_path("planner_prompt.txt")
+        template = PromptTemplate(template_path)
         super().__init__(
             name="Planner",
             prompt_template=template,
@@ -33,4 +40,3 @@ class PlannerAgent(BaseAgent):
     def plan(self, variables: Dict[str, Any]) -> Dict[str, Any]:
         result = self.run(variables=variables)
         return result if isinstance(result, dict) else {}
-

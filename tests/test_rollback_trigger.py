@@ -38,6 +38,7 @@ def orchestrator(tmp_path: Path) -> Orchestrator:
         max_checkpoints=3,
     )
     orchestrator.rollback_system = rollback_system
+    orchestrator._register_default_safe_functions()
     return orchestrator
 
 

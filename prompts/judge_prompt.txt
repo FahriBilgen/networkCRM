@@ -14,6 +14,8 @@ VALIDATION FRAMEWORK:
 - WORLD RULES: No anachronisms, modern technology, or established lore violations
 - NARRATIVE COHERENCE: Story elements should connect logically and maintain thematic consistency
 - TONE ALIGNMENT: Content should match established atmosphere and emotional register
+- MOTIF & WEATHER CHECK: Reject if content reuses {WORLD_CONTEXT} motifs verbatim
+  without escalation, or if weather shifts contradict the locked constraint.
 
 JUDGMENT CRITERIA:
 ACCEPT: Content following established world physics, character logic, and narrative consistency
@@ -61,9 +63,10 @@ OUTPUT FORMAT (JSON only):
   "integrity": 0-100,
   "tone_alignment": 0-100,
   "penalty": "none|mild|medium|severe",
-  "reason": "brief explanation of judgment (max 100 chars)"
-  , "suggested_safe_functions": [
-    "optional list of safe function suggestions (either call-like strings e.g. change_weather(atmosphere='overcast', sensory_details='cold wind') or JSON objects {\"name\":..., \"kwargs\":{...}})"
+  "reason": "brief explanation of judgment (max 100 chars)",
+  "suggested_safe_functions": [
+    {{"name": "change_weather", "kwargs": {{"atmosphere": "overcast", "sensory_details": "cold wind"}}}},
+    {{"name": "move_npc", "kwargs": {{"npc_id": "Boris", "destination": "east_wall"}}}}
   ]
 }}
 

@@ -6,7 +6,7 @@ import json
 import logging
 import sqlite3
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 from fortress_director.settings import SETTINGS
 
@@ -37,7 +37,12 @@ class SQLiteStateSync:
             else:
                 self._schema_path = candidates[0]
 
-    def sync(self, state: Dict[str, Any]) -> None:
+    def sync(
+        self,
+        state: Dict[str, Any],
+        *,
+        changed_keys: Optional[Set[str]] = None,
+    ) -> None:
         self._db_path.parent.mkdir(parents=True, exist_ok=True)
         with sqlite3.connect(self._db_path) as conn:
             conn.execute("PRAGMA foreign_keys = ON")
@@ -46,15 +51,24 @@ class SQLiteStateSync:
             cursor.execute("BEGIN IMMEDIATE")
             try:
                 self._sync_metadata(cursor, state)
-                self._sync_npc_state(cursor, state)
-                self._sync_structure_state(cursor, state)
-                self._sync_stockpiles(cursor, state)
-                self._sync_trade_routes(cursor, state)
-                self._sync_scheduled_events(cursor, state)
-                self._sync_timeline(cursor, state)
-                self._sync_hazards(cursor, state)
-                self._sync_combat_log(cursor, state)
-                self._sync_story_progress(cursor, state)
+                if self._should_sync(changed_keys, {"npc_trust", "npc_schedule", "npc_locations", "npc_fragments"}):
+                    self._sync_npc_state(cursor, state)
+                if self._should_sync(changed_keys, {"structures"}):
+                    self._sync_structure_state(cursor, state)
+                if self._should_sync(changed_keys, {"stockpiles", "stockpile_log"}):
+                    self._sync_stockpiles(cursor, state)
+                if self._should_sync(changed_keys, {"trade_routes", "trade_route_history"}):
+                    self._sync_trade_routes(cursor, state)
+                if self._should_sync(changed_keys, {"scheduled_events"}):
+                    self._sync_scheduled_events(cursor, state)
+                if self._should_sync(changed_keys, {"timeline"}):
+                    self._sync_timeline(cursor, state)
+                if self._should_sync(changed_keys, {"environment_hazards", "weather_pattern", "hazard_cooldowns"}):
+                    self._sync_hazards(cursor, state)
+                if self._should_sync(changed_keys, {"combat_log"}):
+                    self._sync_combat_log(cursor, state)
+                if self._should_sync(changed_keys, {"story_progress"}):
+                    self._sync_story_progress(cursor, state)
             except Exception as exc:
                 conn.rollback()
                 LOGGER.exception("SQLite sync failed: %s", exc)
@@ -414,6 +428,15 @@ class SQLiteStateSync:
             rows,
         )
 
+    @staticmethod
+    def _should_sync(
+        changed_keys: Optional[Set[str]],
+        watched: Set[str],
+    ) -> bool:
+        if not changed_keys or not watched:
+            return True
+        return bool(changed_keys & watched)
+
 
 def _replace_table(
     cursor: sqlite3.Cursor,
@@ -476,10 +499,11 @@ def sync_state_to_sqlite(
     state: Dict[str, Any],
     *,
     db_path: Path | None = None,
+    changed_keys: Optional[Set[str]] = None,
 ) -> None:
     path = Path(db_path or SETTINGS.db_path)
     syncer = _sync_cache.get(path)
     if syncer is None:
         syncer = SQLiteStateSync(db_path=path)
         _sync_cache[path] = syncer
-    syncer.sync(state)
+    syncer.sync(state, changed_keys=changed_keys)

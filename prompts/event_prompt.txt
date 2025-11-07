@@ -13,7 +13,7 @@ CONTEXT VARIABLES:
 - Judge Verdict: {judge_verdict}
 - Judge Feedback: {judge_feedback}
 - Objective: {objective}
- - Available Functions: {available_functions}
+- Available Functions: {available_functions}
 
 STYLE PROFILE:
 - Narrative Style: Dramatic, tension-building, choice-driven
@@ -24,16 +24,21 @@ STYLE PROFILE:
 
 QUALITY CONSTRAINTS:
 - Reference recent events for continuity
-- Avoid motif repetition (don't repeat {recent_motifs})
+- Avoid motif repetition (don't repeat {recent_motifs}); if no new motif fits,
+  reinforce existing one with fresh imagery instead of reusing phrasing.
 - Maintain world consistency and lore
+- Weather & atmosphere: if previous atmosphere persists, note the carry-over
+  and avoid inventing sudden clear skies or storms without cause.
 - Generate exactly 3 diverse options with concrete mechanical effects
 - Ensure at least 2 distinct action_type values among the 3 options.
 - Prefer action_type diversity across turns (avoid repeating the same
   primary type from the previous turn if possible).
 - Use action_type: dialog/interaction/exploration/defense/trade
- - Align with the Objective when choosing focus or function suggestions.
+- Align with the Objective when choosing focus or function suggestions.
 - Judge Compliance: Adjust content based on judge verdict scores - prioritize coherence if low, reinforce integrity if low, realign tone if misaligned
 - Concrete Actions: Avoid abstract options like "contemplate destiny" - use specific actions like "search for supplies", "fortify position", "negotiate terms"
+- Repetition guard: If a suggested option is similar to the previous turn,
+  rewrite it or swap in a different risk profile (defense vs. morale boost vs. tactic).
 
 AVAILABLE FUNCTIONS:
 - change_weather(weather_type)
@@ -42,6 +47,11 @@ AVAILABLE FUNCTIONS:
 - adjust_logic(), adjust_emotion(), raise_corruption()
 - modify_resources(delta), adjust_metric(metric_name, delta)
 - move_room(room)
+
+SAFE FUNCTION EXAMPLES:
+- {{"name": "change_weather", "kwargs": {{"atmosphere": "low mist", "sensory_details": "dew beads on the battlements"}}}}
+- {{"name": "spawn_item", "kwargs": {{"item_id": "signal_flare", "target": "player"}}}}
+- {{"name": "move_npc", "kwargs": {{"npc_id": "Boris", "destination": "east_tower"}}}}
 
 TASK:
 Write a short scene description and generate exactly 3 diegetic player options that advance the story with concrete mechanical consequences.

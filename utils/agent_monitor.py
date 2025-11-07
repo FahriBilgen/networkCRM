@@ -110,11 +110,15 @@ class AgentMonitor:
 
         # Check response time
         if metrics.average_response_time > 30.0:
-            issues.append(".1f")
+            issues.append(
+                f"High response time: {metrics.average_response_time:.1f}s"
+            )
 
         # Check success rate
         if metrics.success_rate < 80.0:
-            issues.append(".1f")
+            issues.append(
+                f"Low success rate: {metrics.success_rate:.1f}%"
+            )
 
         # Check consistency violations
         if metrics.consistency_violations > 5:
@@ -188,3 +192,9 @@ class AgentMonitor:
 
 # Global monitor instance
 AGENT_MONITOR = AgentMonitor()
+
+
+def reset_agent_monitor() -> None:
+    """Clear all recorded agent metrics."""
+
+    AGENT_MONITOR.metrics.clear()

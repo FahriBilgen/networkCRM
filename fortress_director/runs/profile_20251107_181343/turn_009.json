@@ -1,0 +1,692 @@
+{
+  "WORLD_CONTEXT": "Turn 8 | Day 2 | Time evening\nLocation: courtyard\nObjective: reinforce defenses\nPlayer: The Shieldbearer — A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Dawn hin mist veils over stone and mortar.\", \"sensory_details\": \"The chill air carries the scent of rain on dry earth, while distant drums echo with a somber rhythm.\"}\nRecent events: The Shieldbearer' eyes narrowed as the shimmering light pulsed with an unsettling energy. The shadowed gateway, once steadfast, hung precariously over the chasm, its hinges twisted and distorted. A si...; The shimmering tendrils of the corrupted gate writhed and strained, their hinges groaning like an ancient beast. A sudden cascade of supplies tumbled down the chasm, the metal glinting with an unsettl...; The Shieldbearer' heart hammered against their ribs like a frantic bird trapped in a cage. The writhing gate, their once pristine obsidian expanse now coated in a sickly green, churned and groaned wit... Recent motifs: mystery, mystery, mystery\nRecent major events: none\nRelationship summary: Rhea is neutral toward the player\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating. Metrics: {\"order\": 53, \"morale\": 46, \"resources\": 36, \"knowledge\": 51, \"corruption\": 10, \"glitch\": 62, \"risk_applied_total\": 0, \"major_flag_set\": false, \"major_events_triggered\": 0, \"major_event_last_turn\": null}",
+  "scene": "{\"response\": \"offline stub\"} (Motif: storm)",
+  "options": [
+    {
+      "id": "opt_1",
+      "text": "Rally the nearby scouts to reinforce the gate. (focus: exploration)",
+      "action_type": "exploration"
+    },
+    {
+      "id": "opt_2",
+      "text": "Signal the keep for additional lantern oil. (focus: defense)",
+      "action_type": "defense"
+    },
+    {
+      "id": "opt_3",
+      "text": "Quietly observe the storm's strange rhythm. (focus: trade)",
+      "action_type": "trade"
+    }
+  ],
+  "world": {
+    "atmosphere": "storm glare",
+    "sensory_details": "hail rattles the stones"
+  },
+  "event": {
+    "scene": "{\"response\": \"offline stub\"} (Motif: storm)",
+    "options": [
+      {
+        "id": "opt_1",
+        "text": "Rally the nearby scouts to reinforce the gate. (focus: exploration)",
+        "action_type": "exploration"
+      },
+      {
+        "id": "opt_2",
+        "text": "Signal the keep for additional lantern oil. (focus: defense)",
+        "action_type": "defense"
+      },
+      {
+        "id": "opt_3",
+        "text": "Quietly observe the storm's strange rhythm. (focus: trade)",
+        "action_type": "trade"
+      }
+    ],
+    "major_event": true,
+    "safe_functions": [
+      {
+        "name": "change_weather",
+        "kwargs": {
+          "atmosphere": "electric storm",
+          "sensory_details": "lightning traces the parapets"
+        },
+        "metadata": {
+          "origin": "event_stub"
+        }
+      },
+      {
+        "name": "spawn_item",
+        "args": [],
+        "kwargs": {
+          "item_id": "fire_extinguisher",
+          "target": "nearby"
+        },
+        "metadata": {
+          "source": "event_autoinject"
+        }
+      },
+      {
+        "name": "move_npc",
+        "args": [],
+        "kwargs": {
+          "npc_id": "Boris",
+          "location": "courtyard"
+        },
+        "metadata": {
+          "source": "orchestrator:fallback"
+        }
+      }
+    ],
+    "motif_injected": "storm",
+    "creative_persist_for": 4,
+    "recent_motifs": [
+      "storm"
+    ],
+    "motif_persist_for": 5
+  },
+  "player_choice": {
+    "id": "opt_1",
+    "text": "Rally the nearby scouts to reinforce the gate. (focus: exploration)",
+    "action_type": "exploration"
+  },
+  "character_reactions": [
+    {
+      "name": "Rhea",
+      "intent": "defend",
+      "action": "hold_position",
+      "speech": "Rally the nearby scouts to reinforce the gate. (focus: exploration)",
+      "effects": {
+        "flag_set": [
+          "major_wall_alert"
+        ],
+        "status_change": {
+          "target": "Rhea",
+          "status": "tense_watch",
+          "duration": 3
+        },
+        "trust_delta": 0
+      }
+    }
+  ],
+  "npcs": [
+    {
+      "name": "Rhea",
+      "trust": 0,
+      "summary": "Rhea is loyal but impulsive"
+    },
+    {
+      "name": "Bor",
+      "trust": 0,
+      "summary": "Boris is cautious and calculating."
+    }
+  ],
+  "safe_function_history": [
+    {
+      "name": "change_weather",
+      "success": true,
+      "timestamp": 1762539223462,
+      "metadata": {
+        "source": "event_agent",
+        "origin": "event_stub"
+      },
+      "summary": "change_weather",
+      "effects": {
+        "atmosphere": "electric storm",
+        "sensory_details": "lightning traces the parapets"
+      },
+      "guardrail_notes": []
+    },
+    {
+      "name": "spawn_item",
+      "success": true,
+      "timestamp": 1762539223482,
+      "metadata": {
+        "source": "event_autoinject"
+      },
+      "summary": "spawn_item",
+      "effects": {
+        "target": "nearby",
+        "items": [
+          "fire_extinguisher"
+        ]
+      },
+      "guardrail_notes": []
+    },
+    {
+      "name": "move_npc",
+      "success": true,
+      "timestamp": 1762539223501,
+      "metadata": {
+        "source": "orchestrator:fallback"
+      },
+      "summary": "move_npc(npc_id=Boris)",
+      "effects": {
+        "npc_id": "Boris",
+        "location": "courtyard"
+      },
+      "guardrail_notes": []
+    }
+  ],
+  "room_history": [
+    {
+      "room": "courtyard",
+      "turn": 9,
+      "description": "Currently in courtyard"
+    }
+  ],
+  "guardrail_notes": [],
+  "summary_text": "Whispers fade and the walls hold steady.",
+  "telemetry": {
+    "planner_calls_proposed": 0,
+    "planner_calls_executed": 0,
+    "safe_functions_executed": 3,
+    "safe_function_guardrails": {
+      "planner_lowered_wall_integrity": false,
+      "world_wall_integrity_skipped": 0,
+      "objective_urgency_skipped": [],
+      "stockpile_collapsed": []
+    },
+    "agents": {
+      "Event": {
+        "agent_name": "Event",
+        "response_times": [
+          0.00011310004629194736
+        ],
+        "success_count": 1,
+        "failure_count": 0,
+        "consistency_violations": 0,
+        "quality_issues": 0,
+        "average_response_time": 0.00011310004629194736,
+        "success_rate": 100.0,
+        "last_response_time": 0.00011310004629194736
+      },
+      "Creativity": {
+        "agent_name": "Creativity",
+        "response_times": [
+          2.8600043151527643e-05
+        ],
+        "success_count": 1,
+        "failure_count": 0,
+        "consistency_violations": 0,
+        "quality_issues": 0,
+        "average_response_time": 2.8600043151527643e-05,
+        "success_rate": 100.0,
+        "last_response_time": 2.8600043151527643e-05
+      },
+      "Judge": {
+        "agent_name": "Judge",
+        "response_times": [
+          3.789999755099416e-05,
+          3.2100011594593525e-05,
+          6.079999729990959e-05,
+          3.950000973418355e-05,
+          2.659996971487999e-05,
+          2.5399960577487946e-05
+        ],
+        "success_count": 6,
+        "failure_count": 0,
+        "consistency_violations": 0,
+        "quality_issues": 0,
+        "average_response_time": 3.704999107867479e-05,
+        "success_rate": 100.0,
+        "last_response_time": 2.5399960577487946e-05
+      },
+      "Character": {
+        "agent_name": "Character",
+        "response_times": [
+          0.00010259996633976698
+        ],
+        "success_count": 1,
+        "failure_count": 0,
+        "consistency_violations": 0,
+        "quality_issues": 0,
+        "average_response_time": 0.00010259996633976698,
+        "success_rate": 100.0,
+        "last_response_time": 0.00010259996633976698
+      },
+      "World": {
+        "agent_name": "World",
+        "response_times": [
+          6.310001481324434e-05
+        ],
+        "success_count": 1,
+        "failure_count": 0,
+        "consistency_violations": 0,
+        "quality_issues": 0,
+        "average_response_time": 6.310001481324434e-05,
+        "success_rate": 100.0,
+        "last_response_time": 6.310001481324434e-05
+      }
+    },
+    "agent_system_health": "good",
+    "judge": {},
+    "glitch_snapshot": {
+      "roll": 43,
+      "effects": [
+        "Pathfinding errors unsettle the patrol routes."
+      ],
+      "triggered_loss": false
+    },
+    "guardrail_notes": [],
+    "safe_function_history": [
+      {
+        "name": "change_weather",
+        "success": true,
+        "timestamp": 1762539223462,
+        "metadata": {
+          "source": "event_agent",
+          "origin": "event_stub"
+        },
+        "summary": "change_weather",
+        "effects": {
+          "atmosphere": "electric storm",
+          "sensory_details": "lightning traces the parapets"
+        },
+        "guardrail_notes": []
+      },
+      {
+        "name": "spawn_item",
+        "success": true,
+        "timestamp": 1762539223482,
+        "metadata": {
+          "source": "event_autoinject"
+        },
+        "summary": "spawn_item",
+        "effects": {
+          "target": "nearby",
+          "items": [
+            "fire_extinguisher"
+          ]
+        },
+        "guardrail_notes": []
+      },
+      {
+        "name": "move_npc",
+        "success": true,
+        "timestamp": 1762539223501,
+        "metadata": {
+          "source": "orchestrator:fallback"
+        },
+        "summary": "move_npc(npc_id=Boris)",
+        "effects": {
+          "npc_id": "Boris",
+          "location": "courtyard"
+        },
+        "guardrail_notes": []
+      }
+    ],
+    "fallback_strategy": "defensive_stance",
+    "fallback_summary": "Fallback strategy engaged after judge veto: Judge rejected update for 'Boris': stochastic_repetition_veto"
+  },
+  "fallback_strategy": "defensive_stance",
+  "fallback_summary": "Fallback strategy engaged after judge veto: Judge rejected update for 'Boris': stochastic_repetition_veto",
+  "player_view": {
+    "short_scene": "{\"response\": \"offline stub\"} (Motif: storm)",
+    "short_world": "Turn 9 | Day 2 | Time night\nLocation: courtyard\nObjective: reinforce defenses\nPlayer: The Shieldbearer — A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Dawn hin mist veils over stone and mortar.\", \"sensory_details\": \"The chill air carries the scent of rain on dry earth, while distant drums echo with a somber rhythm.\"}\nRecent events:",
+    "options": [
+      {
+        "id": "opt_1",
+        "text": "Rally the nearby scouts to reinforce the gate. (focus: exploration)"
+      },
+      {
+        "id": "opt_2",
+        "text": "Signal the keep for additional lantern oil. (focus: defense)"
+      },
+      {
+        "id": "opt_3",
+        "text": "Quietly observe the storm's strange rhythm. (focus: trade)"
+      }
+    ],
+    "primary_reaction": "Rally the nearby scouts to reinforce the gate. (focus: exploration)",
+    "safe_functions": [],
+    "metrics_panel": {
+      "order": 54.0,
+      "morale": 45.0,
+      "resources": 37.0,
+      "knowledge": 53.0,
+      "corruption": 10.0,
+      "glitch": 62.0
+    },
+    "active_flags": [
+      "low_cloud_presence",
+      "explore",
+      "major_wall_alert",
+      "stage_escalation"
+    ],
+    "npc_trust_overview": [
+      {
+        "name": "Rhea",
+        "trust": 0.0
+      }
+    ],
+    "npc_journal_recent": [
+      {
+        "turn": 8,
+        "name": "Rhea",
+        "intent": "observe",
+        "entry": "Rhea shifts tactics with a observe maneuver."
+      },
+      {
+        "turn": 8,
+        "name": "Boris",
+        "intent": "assist",
+        "entry": "Boris shifts tactics with a assist maneuver."
+      },
+      {
+        "turn": 8,
+        "name": "Rhea",
+        "intent": "command",
+        "entry": "Rhea shifts tactics with a command maneuver."
+      },
+      {
+        "turn": 8,
+        "name": "Boris",
+        "intent": "plan",
+        "entry": "Boris shifts tactics with a plan maneuver."
+      },
+      {
+        "turn": 8,
+        "name": "Rhea",
+        "intent": "defend",
+        "entry": "Rally the nearby scouts to reinforce the gate. (focus: exploration)"
+      }
+    ],
+    "guardrail_notes": [],
+    "map_state": {
+      "current_room": "courtyard",
+      "day": 2,
+      "time": "night",
+      "npc_positions": [],
+      "structures": [
+        {
+          "id": "western_wall",
+          "status": "stable",
+          "durability": 80,
+          "max_durability": 100
+        },
+        {
+          "id": "inner_gate",
+          "status": "stable",
+          "durability": 70,
+          "max_durability": 100
+        },
+        {
+          "id": "watchtower",
+          "status": "stable",
+          "durability": 60,
+          "max_durability": 80
+        },
+        {
+          "id": "granary",
+          "status": "stable",
+          "durability": 55,
+          "max_durability": 70
+        }
+      ]
+    },
+    "npc_locations": [],
+    "safe_function_history": [
+      {
+        "name": "change_weather",
+        "success": true,
+        "timestamp": 1762539223462,
+        "metadata": {
+          "source": "event_agent",
+          "origin": "event_stub"
+        },
+        "summary": "change_weather",
+        "effects": {
+          "atmosphere": "electric storm",
+          "sensory_details": "lightning traces the parapets"
+        },
+        "guardrail_notes": []
+      },
+      {
+        "name": "spawn_item",
+        "success": true,
+        "timestamp": 1762539223482,
+        "metadata": {
+          "source": "event_autoinject"
+        },
+        "summary": "spawn_item",
+        "effects": {
+          "target": "nearby",
+          "items": [
+            "fire_extinguisher"
+          ]
+        },
+        "guardrail_notes": []
+      },
+      {
+        "name": "move_npc",
+        "success": true,
+        "timestamp": 1762539223501,
+        "metadata": {
+          "source": "orchestrator:fallback"
+        },
+        "summary": "move_npc(npc_id=Boris)",
+        "effects": {
+          "npc_id": "Boris",
+          "location": "courtyard"
+        },
+        "guardrail_notes": []
+      }
+    ],
+    "fallback_strategy": "defensive_stance",
+    "fallback_summary": "Fallback strategy engaged after judge veto: Judge rejected update for 'Boris': stochastic_repetition_veto"
+  },
+  "effects": [
+    {
+      "flag_set": [
+        "major_wall_alert"
+      ],
+      "status_change": {
+        "target": "Rhea",
+        "status": "tense_watch",
+        "duration": 3
+      },
+      "trust_delta": 0
+    },
+    {
+      "name": "change_weather",
+      "result": {
+        "atmosphere": "electric storm",
+        "sensory_details": "lightning traces the parapets"
+      },
+      "effects": {
+        "atmosphere": "electric storm",
+        "sensory_details": "lightning traces the parapets"
+      },
+      "metadata": {
+        "source": "event_agent",
+        "origin": "event_stub"
+      },
+      "success": true,
+      "timestamp": 1762539223462,
+      "summary": "change_weather"
+    },
+    {
+      "name": "spawn_item",
+      "result": {
+        "target": "nearby",
+        "items": [
+          "fire_extinguisher"
+        ]
+      },
+      "effects": {
+        "target": "nearby",
+        "items": [
+          "fire_extinguisher"
+        ]
+      },
+      "metadata": {
+        "source": "event_autoinject"
+      },
+      "success": true,
+      "timestamp": 1762539223482,
+      "summary": "spawn_item"
+    },
+    {
+      "name": "move_npc",
+      "result": {
+        "npc_id": "Boris",
+        "location": "courtyard"
+      },
+      "effects": {
+        "npc_id": "Boris",
+        "location": "courtyard"
+      },
+      "metadata": {
+        "source": "orchestrator:fallback"
+      },
+      "success": true,
+      "timestamp": 1762539223501,
+      "summary": "move_npc(npc_id=Boris)"
+    }
+  ],
+  "major_event_effect": {
+    "applied_flag": "major_wall_alert",
+    "status_change": {
+      "target": "Rhea",
+      "status": "tense_watch",
+      "duration": 3
+    },
+    "applied_to": "Rhea"
+  },
+  "major_event_effect_summary": "major_wall_alert -> Rhea (tense_watch, 3 turns)",
+  "warnings": [
+    "Judge rejected update for 'Boris': stochastic_repetition_veto",
+    "Applied fallback defensive stance for primary NPC."
+  ],
+  "safe_function_results": [
+    {
+      "name": "change_weather",
+      "result": {
+        "atmosphere": "electric storm",
+        "sensory_details": "lightning traces the parapets"
+      },
+      "effects": {
+        "atmosphere": "electric storm",
+        "sensory_details": "lightning traces the parapets"
+      },
+      "metadata": {
+        "source": "event_agent",
+        "origin": "event_stub"
+      },
+      "success": true,
+      "timestamp": 1762539223462,
+      "summary": "change_weather"
+    },
+    {
+      "name": "spawn_item",
+      "result": {
+        "target": "nearby",
+        "items": [
+          "fire_extinguisher"
+        ]
+      },
+      "effects": {
+        "target": "nearby",
+        "items": [
+          "fire_extinguisher"
+        ]
+      },
+      "metadata": {
+        "source": "event_autoinject"
+      },
+      "success": true,
+      "timestamp": 1762539223482,
+      "summary": "spawn_item"
+    },
+    {
+      "name": "move_npc",
+      "result": {
+        "npc_id": "Boris",
+        "location": "courtyard"
+      },
+      "effects": {
+        "npc_id": "Boris",
+        "location": "courtyard"
+      },
+      "metadata": {
+        "source": "orchestrator:fallback"
+      },
+      "success": true,
+      "timestamp": 1762539223501,
+      "summary": "move_npc(npc_id=Boris)"
+    }
+  ],
+  "metrics_after": {
+    "order": 54,
+    "morale": 45,
+    "resources": 37,
+    "knowledge": 53,
+    "corruption": 10,
+    "glitch": 62,
+    "risk_applied_total": 0,
+    "major_flag_set": false,
+    "major_events_triggered": 0,
+    "major_event_last_turn": null
+  },
+  "glitch": {
+    "roll": 43,
+    "effects": [
+      "Pathfinding errors unsettle the patrol routes."
+    ]
+  },
+  "logs": [
+    {
+      "metric": "order",
+      "delta": -2,
+      "value": 53,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 46,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 2,
+      "value": 63,
+      "cause": "glitch:medium_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 62,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 53,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 37,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 45,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 54,
+      "cause": "autonomous_Rhea"
+    }
+  ],
+  "win_loss": {
+    "status": "ongoing",
+    "reason": "conditions_not_met",
+    "description": "Oyun devam ediyor..."
+  },
+  "narrative": "Turn 9 | Rally the nearby scouts to reinforce the gate. (focus: exploration) | Rally the nearby scouts to reinforce the gate. (focus: exploration) | Pathfinding errors unsettle the patrol routes."
+}

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import errno
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping
@@ -279,13 +281,34 @@ GLITCH_VOLATILITY_SCALAR = 3  # 1=default; 3=higher volatility in drama mode
 GLITCH_MIN_FLOOR = 50  # baseline minimum glitch to avoid flat lines
 
 
+LOGGER = logging.getLogger(__name__)
+
+
+def _safe_mkdir(path: Path) -> None:
+    """Create a directory while tolerating read-only environments."""
+
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+    except PermissionError:
+        LOGGER.warning("Skipping creation of %s; permission denied", path)
+    except OSError as exc:
+        if exc.errno in (errno.EROFS, errno.EACCES):
+            LOGGER.warning(
+                "Skipping creation of %s; read-only filesystem (%s)",
+                path,
+                exc.strerror or exc.errno,
+            )
+        else:
+            raise
+
+
 def ensure_runtime_paths(settings: Settings = SETTINGS) -> None:
     """Create required directories deterministically if they are missing."""
 
-    settings.cache_dir.mkdir(parents=True, exist_ok=True)
-    settings.db_path.parent.mkdir(parents=True, exist_ok=True)
-    settings.world_state_path.parent.mkdir(parents=True, exist_ok=True)
-    settings.log_dir.mkdir(parents=True, exist_ok=True)
+    _safe_mkdir(settings.cache_dir)
+    _safe_mkdir(settings.db_path.parent)
+    _safe_mkdir(settings.world_state_path.parent)
+    _safe_mkdir(settings.log_dir)
 
 
 ensure_runtime_paths()

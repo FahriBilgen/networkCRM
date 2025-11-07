@@ -2,34 +2,51 @@
   "schema_version": 2,
   "campaign_id": "default_campaign",
   "turn_limit": 30,
-  "current_turn": 2,
+  "current_turn": 8,
   "rng_seed": 12345,
   "scores": {
     "logic_score": 0,
     "emotion_score": 0,
     "corruption": 0
   },
-  "flags": [],
+  "flags": [
+    "low_cloud_presence",
+    "explore",
+    "major_wall_alert",
+    "stage_escalation",
+    "force_major_event",
+    "major_starvation_hint"
+  ],
   "memory_layers": [],
   "active_layer": null,
   "npc_fragments": {},
   "inventory": [],
   "lore": {},
-  "turn": 2,
-  "day": 1,
-  "time": "afternoon",
-  "current_room": "entrance",
+  "turn": 8,
+  "day": 2,
+  "time": "evening",
+  "current_room": "courtyard",
   "recent_events": [
-    "The Shieldbearer stands at the entrance, his gaze fixed on the horizon. The low clouds hug the battlements and the wind carries grit. (Motif: echoes)",
-    ""
+    "The Shieldbearer' eyes narrowed as the shimmering light pulsed with an unsettling energy. The shadowed gateway, once steadfast, hung precariously over the chasm, its hinges twisted and distorted. A si...",
+    "The shimmering tendrils of the corrupted gate writhed and strained, their hinges groaning like an ancient beast. A sudden cascade of supplies tumbled down the chasm, the metal glinting with an unsettl...",
+    "The Shieldbearer' heart hammered against their ribs like a frantic bird trapped in a cage. The writhing gate, their once pristine obsidian expanse now coated in a sickly green, churned and groaned wit..."
   ],
   "recent_motifs": [
-    "communication"
+    "loss",
+    "unknown_action",
+    "memory",
+    "memory",
+    "memory",
+    "unknown_action",
+    "unknown_action",
+    "mystery",
+    "mystery",
+    "mystery"
   ],
   "recent_world_atmospheres": [],
   "world_constraint_from_prev_turn": {
-    "atmosphere": "Dawn hin clouds cloak the battlements, a gentle light begins to pierce through.",
-    "sensory_details": "The air is cool and crisp with an undercurrent of salt from sea spray. The distant clang of metal on stone mingles with the rhythmic beating of drums."
+    "atmosphere": "Dawn hin mist veils over stone and mortar.",
+    "sensory_details": "The chill air carries the scent of rain on dry earth, while distant drums echo with a somber rhythm."
   },
   "player": {
     "name": "The Shieldbearer",
@@ -44,20 +61,22 @@
     "summary": "A weary defender holding the western wall."
   },
   "character_summary": "Rhea is loyal but impulsive; Boris is cautious and calculating.",
-  "relationship_summary": "Rhea trusts the player; Boris weighs every trade.",
+  "relationship_summary": "Rhea is neutral toward the player",
   "metrics": {
-    "order": 50,
-    "morale": 54,
-    "resources": 42,
-    "knowledge": 49,
+    "order": 55,
+    "morale": 47,
+    "resources": 36,
+    "knowledge": 51,
     "corruption": 10,
-    "glitch": 51,
+    "glitch": 61,
     "risk_applied_total": 0,
     "major_flag_set": false,
     "major_events_triggered": 0,
     "major_event_last_turn": null
   },
-  "npc_trust": {},
+  "npc_trust": {
+    "Rhea": 0
+  },
   "environment_hazards": [],
   "weather_pattern": {
     "pattern": "overcast",
@@ -104,7 +123,32 @@
     "progress": 0.0,
     "act_history": []
   },
-  "timeline": [],
+  "timeline": [
+    {
+      "turn": 6,
+      "scene": "The Shieldbearer' eyes narrowed as the shimmering light pulsed with an unsettling energy. The shadowed gateway, once steadfast, hung precariously over the chasm, its hinges twisted and distorted. A si...",
+      "choice_id": "option3",
+      "action_type": "trade",
+      "motif": "memory",
+      "major_event": true
+    },
+    {
+      "turn": 7,
+      "scene": "The shimmering tendrils of the corrupted gate writhed and strained, their hinges groaning like an ancient beast. A sudden cascade of supplies tumbled down the chasm, the metal glinting with an unsettl...",
+      "choice_id": "option2",
+      "action_type": "defense",
+      "motif": "unknown_action",
+      "major_event": true
+    },
+    {
+      "turn": 8,
+      "scene": "The Shieldbearer' heart hammered against their ribs like a frantic bird trapped in a cage. The writhing gate, their once pristine obsidian expanse now coated in a sickly green, churned and groaned wit...",
+      "choice_id": "option3",
+      "action_type": "trade",
+      "motif": "mystery",
+      "major_event": false
+    }
+  ],
   "hazard_cooldowns": {},
   "schema_notes": {},
   "locked_options": {},
@@ -122,29 +166,106 @@
       41,
       47,
       51
+    ],
+    [
+      50,
+      52,
+      42,
+      49,
+      53
+    ],
+    [
+      51,
+      53,
+      43,
+      51,
+      55
+    ],
+    [
+      50,
+      51,
+      45,
+      53,
+      56
+    ],
+    [
+      51,
+      50,
+      43,
+      53,
+      58
+    ],
+    [
+      50,
+      50,
+      47,
+      53,
+      59
+    ],
+    [
+      54,
+      51,
+      43,
+      51,
+      61
     ]
   ],
-  "_anomaly_active_until": 5,
-  "_world_lock_until": 4,
-  "_high_volatility_mode": false,
+  "_anomaly_active_until": 11,
+  "_world_lock_until": 10,
+  "_high_volatility_mode": true,
   "last_weather_change_turn": null,
   "_glitch_buffer": 0,
   "_director_pacing": "steady",
+  "_director_notes": [
+    {
+      "turn": 0,
+      "note": "The campaign is progressing at a steady pace. No major events are needed for this turn."
+    },
+    {
+      "turn": 1,
+      "note": "The campaign is moving at a steady pace. No major events are needed for this turn."
+    },
+    {
+      "turn": 2,
+      "note": "The campaign is progressing at a steady pace. No major events are needed for this turn."
+    },
+    {
+      "turn": 3,
+      "note": "The campaign is progressing at a steady pace. No major events are needed for this turn."
+    },
+    {
+      "turn": 4,
+      "note": "The campaign is progressing at a steady pace. No major events are needed for this turn."
+    },
+    {
+      "turn": 5,
+      "note": "The campaign is progressing at a steady pace. No major events are needed for this turn."
+    },
+    {
+      "turn": 6,
+      "note": "The campaign is progressing at a steady pace. No major events are needed for this turn."
+    },
+    {
+      "turn": 7,
+      "note": "The campaign is moving at a steady pace. No major events are needed for this turn."
+    }
+  ],
   "_director_guidance": {
     "pacing": "steady",
-    "risk_budget": 0,
-    "major_event": "delay",
-    "notes": "",
+    "risk_budget": 3,
+    "major_event": "force",
+    "notes": "The campaign is moving at a steady pace. No major events are needed for this turn.",
     "flags_to_add": [],
     "flags_to_remove": []
   },
-  "persistent_motif": {
-    "motif": "echoes",
-    "remaining": 3
-  },
   "previous_judge_verdict": {
     "consistent": true,
-    "reason": "The content is consistent with established world, lore, and character logic. The scene setting matches the established atmosphere and sensory details.",
+    "coherence": 95,
+    "integrity": 87,
+    "tone_alignment": 90,
+    "penalty": "none",
+    "reason": "The content follows established world physics, character logic, and narrative consistency. The scene is coherent with the previous events and motifs. The tone matches the established atmosphere and emotional register.",
+    "suggested_safe_functions": [],
     "soft_edit_policy": {
       "max_correction_per_turn": 0.15,
       "persist_window": 4
@@ -153,15 +274,19 @@
   },
   "player_choice_history": [
     "dialogue",
-    "dialogue"
+    "dialogue",
+    "dialogue",
+    "exploration",
+    "trade",
+    "trade"
   ],
-  "summary_text": "Little stirs; watch posts rotate without incident.",
+  "summary_text": "Whispers fade and the walls hold steady.",
   "emotional_memory": [
     {
       "turn": 0,
       "name": "Rhea",
       "intent": "observe",
-      "speech": "I stand vigilant, listening for any signs of danger. The clouds are thick with the whispers of the sea, a stark contrast to the usual vibrant sky."
+      "speech": "I stand vigilant, my senses alert for any sign of danger."
     },
     {
       "turn": 0,
@@ -191,7 +316,7 @@
       "turn": 1,
       "name": "Rhea",
       "intent": "observe",
-      "speech": "I stand vigilant, my senses alert to any sign of danger. The clouds are a pale gray, the wind whispers a warning tale."
+      "speech": "I stand vigilant, my senses alert for any sign of danger. The storm rages on, a symphony of wind and rain."
     },
     {
       "turn": 1,
@@ -216,12 +341,341 @@
       "name": "Boris",
       "intent": "inquire",
       "speech": "(inquire autonomous)"
+    },
+    {
+      "turn": 2,
+      "name": "Rhea",
+      "intent": "observe",
+      "speech": "The shadows lengthen, whispering secrets I can barely decipher. I stand guard, waiting for any sign of movement."
+    },
+    {
+      "turn": 2,
+      "name": "Rhea",
+      "intent": "assist",
+      "speech": "(assist autonomous)"
+    },
+    {
+      "turn": 2,
+      "name": "Boris",
+      "intent": "command",
+      "speech": "(command autonomous)"
+    },
+    {
+      "turn": 2,
+      "name": "Rhea",
+      "intent": "plan",
+      "speech": "(plan autonomous)"
+    },
+    {
+      "turn": 2,
+      "name": "Boris",
+      "intent": "inquire",
+      "speech": "(inquire autonomous)"
+    },
+    {
+      "turn": 3,
+      "name": "Rhea",
+      "intent": "defend",
+      "speech": "Approach the glowing light and investigate its source."
+    },
+    {
+      "turn": 4,
+      "name": "Rhea",
+      "intent": "observe",
+      "speech": "I notice a faint glow emanating from the distant light source. It's as if something is hidden there, waiting to be discovered."
+    },
+    {
+      "turn": 4,
+      "name": "Rhea",
+      "intent": "assist",
+      "speech": "(assist autonomous)"
+    },
+    {
+      "turn": 4,
+      "name": "Boris",
+      "intent": "command",
+      "speech": "(command autonomous)"
+    },
+    {
+      "turn": 4,
+      "name": "Rhea",
+      "intent": "plan",
+      "speech": "(plan autonomous)"
+    },
+    {
+      "turn": 4,
+      "name": "Boris",
+      "intent": "inquire",
+      "speech": "(inquire autonomous)"
+    },
+    {
+      "turn": 5,
+      "name": "Rhea",
+      "intent": "single_word_motivation",
+      "speech": "I stand watch, my vigilance heightened. The air is thick with the scent of danger, a stark contrast to the usual morning freshness."
+    },
+    {
+      "turn": 5,
+      "name": "Rhea",
+      "intent": "observe",
+      "speech": "Rhea shifts tactics with a observe maneuver."
+    },
+    {
+      "turn": 5,
+      "name": "Boris",
+      "intent": "assist",
+      "speech": "Boris shifts tactics with a assist maneuver."
+    },
+    {
+      "turn": 5,
+      "name": "Rhea",
+      "intent": "command",
+      "speech": "Rhea shifts tactics with a command maneuver."
+    },
+    {
+      "turn": 5,
+      "name": "Boris",
+      "intent": "plan",
+      "speech": "Boris shifts tactics with a plan maneuver."
+    },
+    {
+      "turn": 6,
+      "name": "Rhea",
+      "intent": "defend",
+      "speech": "Call out to Boris, requesting his assistance in assessing the situation and devising a plan to secure the gateway. (focu"
+    },
+    {
+      "turn": 7,
+      "name": "Rhea",
+      "intent": "single_word_motivation",
+      "speech": "I stand watch, my vigilance never falters. Keep your distance, for the shadows are my only allies."
+    },
+    {
+      "turn": 7,
+      "name": "Rhea",
+      "intent": "observe",
+      "speech": "Rhea shifts tactics with a observe maneuver."
+    },
+    {
+      "turn": 7,
+      "name": "Boris",
+      "intent": "assist",
+      "speech": "Boris shifts tactics with a assist maneuver."
+    },
+    {
+      "turn": 7,
+      "name": "Rhea",
+      "intent": "command",
+      "speech": "Rhea shifts tactics with a command maneuver."
+    },
+    {
+      "turn": 7,
+      "name": "Boris",
+      "intent": "plan",
+      "speech": "Boris shifts tactics with a plan maneuver."
     }
   ],
   "memory_short": [
-    "Turn 1: Ask the Shieldbearer about any recent threats to Lornhaven. -> The Shieldbearer stands at the entrance, his gaze fixed on the horizon. The low clouds hug the battl...",
-    "Turn 2: Ask the Shieldbearer about any recent threats to Lornhaven. -> ..."
+    "Turn 1: Ask the Shieldbearer about any recent threats to Lornhaven. -> ' the rewritten prompt: I find myself trapped within a labyrinthine mansion, its walls adorned with ...",
+    "Turn 2: Ask the Shieldbearer about any recent threats to Lornhaven. -> (Motif: storm)...",
+    "Turn 3: Ask the Shieldbearer about any recent threats to Lornhaven. -> The Shieldbearer stands guard at the entrance, his eyes scanning the horizon for any signs of danger...",
+    "Memory summary: Turn 1: Ask the Shieldbearer about any recent threats to Lornhaven. -> ' the rewritten prompt: I find myself trapped within a labyrinthine mansion, its walls adorned with ... | Turn 2: Ask the Shieldb...",
+    "Turn 4: Approach the glowing light and investigate its source. -> The Shieldbearer stands guard at the entrance, his eyes scanning the horizon for any signs of danger...",
+    "Turn 5: Approach the glowing light and investigate its source. -> The Shieldbearer, standing guard at the entrance, notices a faint glow in the distance. As he squint...",
+    "Turn 6: Ignite your patched shield with the remaining oil from your lamp, creating a makeshift torch to better illuminate the entrance. (focus: trade) -> The Shieldbearer' eyes narrowed as the shimmering light pulsed with an unsettling energy. The shadow...",
+    "Memory summary: Turn 4: Approach the glowing light and investigate its source. -> The Shieldbearer stands guard at the entrance, his eyes scanning the horizon for any signs of danger... | Turn 5: Approach the glowing...",
+    "Turn 7: Call out to Boris, requesting his assistance in assessing the situation and devising a plan to secure the gateway. (focus: defense) -> The shimmering tendrils of the corrupted gate writhed and strained, their hinges groaning like an an...",
+    "Turn 8: Light your oil lamp and signal for help, hoping that someone from the village below might have supplies or knowledge to aid in this crisis. (focus: trade) -> The Shieldbearer' heart hammered against their ribs like a frantic bird trapped in a cage. The writh..."
   ],
-  "memory_long": [],
-  "status_effects": []
+  "memory_long": [
+    "Turn 5: Major event triggered (major_wall_alert)",
+    "Turn 6: Major event triggered (major_wall_alert)",
+    "Turn 7: Major event triggered (major_wall_alert)",
+    "Turn 8: Major event triggered (major_wall_alert, major_starvation_hint)"
+  ],
+  "status_effects": [],
+  "persistent_motif": {
+    "motif": "mystery",
+    "remaining": 4
+  },
+  "last_major_event_turn": 6,
+  "world_constraint": {
+    "atmosphere": "Dawn hin mist veils over stone and mortar.",
+    "sensory_details": "The chill air carries the scent of rain on dry earth, while distant drums echo with a somber rhythm."
+  },
+  "major_events_triggered": 3,
+  "major_event_last_turn": 7,
+  "_dramaturgy_state": {
+    "stage": "escalation",
+    "history": [
+      {
+        "stage": "build_up",
+        "turn": 5
+      },
+      {
+        "stage": "escalation",
+        "turn": 6
+      }
+    ],
+    "last_turn": 7,
+    "major_events": 0,
+    "last_major_turn": 7,
+    "risk_delta": 1,
+    "allow_major": true,
+    "force_major": false,
+    "directives": [
+      "stage_major_event",
+      "pressure_player_choices"
+    ],
+    "finale_hint": null
+  },
+  "_dramaturgy_directives": [
+    "stage_major_event",
+    "pressure_player_choices"
+  ],
+  "npc_journal": [
+    {
+      "turn": 6,
+      "name": "Rhea",
+      "intent": "single_word_motivation",
+      "entry": "I stand watch, my vigilance heightened. The air is thick with the scent of danger, a stark contrast to the usual morning freshness."
+    },
+    {
+      "turn": 6,
+      "name": "Rhea",
+      "intent": "observe",
+      "entry": "Rhea shifts tactics with a observe maneuver."
+    },
+    {
+      "turn": 6,
+      "name": "Boris",
+      "intent": "assist",
+      "entry": "Boris shifts tactics with a assist maneuver."
+    },
+    {
+      "turn": 6,
+      "name": "Rhea",
+      "intent": "command",
+      "entry": "Rhea shifts tactics with a command maneuver."
+    },
+    {
+      "turn": 6,
+      "name": "Boris",
+      "intent": "plan",
+      "entry": "Boris shifts tactics with a plan maneuver."
+    },
+    {
+      "turn": 7,
+      "name": "Rhea",
+      "intent": "defend",
+      "entry": "Call out to Boris, requesting his assistance in assessing the situation and devising a plan to secure the gateway. (focu"
+    },
+    {
+      "turn": 8,
+      "name": "Rhea",
+      "intent": "single_word_motivation",
+      "entry": "I stand watch, my vigilance never falters. Keep your distance, for the shadows are my only allies."
+    },
+    {
+      "turn": 8,
+      "name": "Rhea",
+      "intent": "observe",
+      "entry": "Rhea shifts tactics with a observe maneuver."
+    },
+    {
+      "turn": 8,
+      "name": "Boris",
+      "intent": "assist",
+      "entry": "Boris shifts tactics with a assist maneuver."
+    },
+    {
+      "turn": 8,
+      "name": "Rhea",
+      "intent": "command",
+      "entry": "Rhea shifts tactics with a command maneuver."
+    },
+    {
+      "turn": 8,
+      "name": "Boris",
+      "intent": "plan",
+      "entry": "Boris shifts tactics with a plan maneuver."
+    }
+  ],
+  "_last_journal_entries": [
+    {
+      "turn": 8,
+      "name": "Rhea",
+      "intent": "single_word_motivation",
+      "entry": "I stand watch, my vigilance never falters. Keep your distance, for the shadows are my only allies."
+    },
+    {
+      "turn": 8,
+      "name": "Rhea",
+      "intent": "observe",
+      "entry": "Rhea shifts tactics with a observe maneuver."
+    },
+    {
+      "turn": 8,
+      "name": "Boris",
+      "intent": "assist",
+      "entry": "Boris shifts tactics with a assist maneuver."
+    },
+    {
+      "turn": 8,
+      "name": "Rhea",
+      "intent": "command",
+      "entry": "Rhea shifts tactics with a command maneuver."
+    },
+    {
+      "turn": 8,
+      "name": "Boris",
+      "intent": "plan",
+      "entry": "Boris shifts tactics with a plan maneuver."
+    }
+  ],
+  "_fallback_strategy_index": 1,
+  "_turn_history": [
+    {
+      "turn": 7,
+      "choice": {
+        "id": "option2",
+        "text": "Call out to Boris, requesting his assistance in assessing the situation and devising a plan to secure the gateway. (focus: defense)",
+        "action_type": "defense"
+      },
+      "options": [
+        {
+          "id": "option1",
+          "text": "Approach cautiously, scanning for any signs of danger as you move towards the mysterious light.",
+          "action_type": "exploration"
+        },
+        {
+          "id": "option2",
+          "text": "Call out to Boris, requesting his assistance in assessing the situation and devising a plan to secure the gateway. (focus: defense)",
+          "action_type": "defense"
+        },
+        {
+          "id": "option3",
+          "text": "Ignite your oil lamp, using its light to signal for help from any nearby allies who might be able to reinforce the defenses. (focus: trade)",
+          "action_type": "trade"
+        }
+      ],
+      "safe_functions": [
+        {
+          "name": "change_weather",
+          "source": "event_agent",
+          "success": true
+        },
+        {
+          "name": "move_npc",
+          "source": "orchestrator:fallback",
+          "success": true
+        }
+      ],
+      "judge": {
+        "consistent": true,
+        "penalty": "none",
+        "reason": "The content follows established world physics, character logic, and narrative consistency. The scene is coherent with the previous events and motifs. The tone matches the established atmosphere and emotional register."
+      }
+    }
+  ]
 }

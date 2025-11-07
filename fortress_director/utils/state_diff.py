@@ -99,3 +99,43 @@ def _format_path(segments: Sequence[str]) -> str:
     if not segments:
         return "<root>"
     return ".".join(segments)
+
+
+def apply_state_diff(
+    state: Dict[str, Any],
+    diff: Iterable[DiffEntry],
+) -> Dict[str, Any]:
+    """Apply a diff (as produced by ``compute_state_diff``) onto *state*."""
+
+    for entry in diff or []:
+        path = entry.get("path") or "<root>"
+        kind = entry.get("kind", "changed")
+        if path == "<root>":
+            if kind == "removed":
+                state.clear()
+            else:
+                state.clear()
+                current = entry.get("current")
+                if isinstance(current, dict):
+                    state.update(current)
+                else:
+                    raise ValueError("Root diff requires a dict payload")
+            continue
+
+        segments = path.split(".")
+        parent = state
+        for segment in segments[:-1]:
+            node = parent.get(segment)
+            if not isinstance(node, dict):
+                node = {}
+                parent[segment] = node
+            parent = node
+        leaf = segments[-1]
+
+        if kind == "removed":
+            parent.pop(leaf, None)
+            continue
+
+        parent[leaf] = entry.get("current")
+
+    return state

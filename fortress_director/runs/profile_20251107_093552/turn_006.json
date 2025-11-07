@@ -1,0 +1,442 @@
+{
+  "WORLD_CONTEXT": "Turn 5 | Day 2 | Time dawn\nLocation: entrance\nObjective: reinforce defenses\nPlayer: The Shieldbearer — A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Dawn hin mist veils over stone and mortar.\", \"sensory_details\": \"The chill air carries the scent of rain on dry earth, while distant drums echo with a somber rhythm.\"}\nRecent events: The Shieldbearer stands guard at the entrance, his eyes scanning the horizon for any signs of danger.; The Shieldbearer stands guard at the entrance, his eyes scanning the horizon for any signs of danger. As twilight deepens, he notices a faint glow in the distance. Suddenly, a discovery is made! (Moti...; The Shieldbearer, standing guard at the entrance, notices a faint glow in the distance. As he squints to get a better look, you decide to approach the mysterious light. Suddenly, an inner gate buckles... Recent motifs: storm, loss, unknown_action\nRecent major events: none\nRelationship summary: Rhea trusts the player deeply\nCharacter summary: Rhea is loyal but impulsive; Boris is cautious and calculating. Metrics: {\"order\": 51, \"morale\": 50, \"resources\": 43, \"knowledge\": 53, \"corruption\": 10, \"glitch\": 58, \"risk_applied_total\": 0, \"major_flag_set\": false, \"major_events_triggered\": 0, \"major_event_last_turn\": null}",
+  "scene": "{\"response\": \"offline stub\"} (Motif: shadows)",
+  "options": [
+    {
+      "id": "opt_1",
+      "text": "Rally the nearby scouts to reinforce the gate. (focus: exploration)",
+      "action_type": "exploration"
+    },
+    {
+      "id": "opt_2",
+      "text": "Signal the keep for additional lantern oil. (focus: defense)",
+      "action_type": "defense"
+    },
+    {
+      "id": "opt_3",
+      "text": "Quietly observe the storm's strange rhythm. (focus: trade)",
+      "action_type": "trade"
+    }
+  ],
+  "world": {
+    "atmosphere": "storm glare",
+    "sensory_details": "hail rattles the stones"
+  },
+  "event": {
+    "scene": "{\"response\": \"offline stub\"} (Motif: shadows)",
+    "options": [
+      {
+        "id": "opt_1",
+        "text": "Rally the nearby scouts to reinforce the gate. (focus: exploration)",
+        "action_type": "exploration"
+      },
+      {
+        "id": "opt_2",
+        "text": "Signal the keep for additional lantern oil. (focus: defense)",
+        "action_type": "defense"
+      },
+      {
+        "id": "opt_3",
+        "text": "Quietly observe the storm's strange rhythm. (focus: trade)",
+        "action_type": "trade"
+      }
+    ],
+    "major_event": false,
+    "safe_functions": [
+      {
+        "name": "change_weather",
+        "kwargs": {
+          "atmosphere": "electric storm",
+          "sensory_details": "lightning traces the parapets"
+        },
+        "metadata": {
+          "origin": "event_stub"
+        }
+      },
+      {
+        "name": "spawn_item",
+        "args": [],
+        "kwargs": {
+          "item_id": "fire_extinguisher",
+          "target": "nearby"
+        },
+        "metadata": {
+          "source": "event_autoinject"
+        }
+      }
+    ],
+    "motif_injected": "shadows",
+    "creative_persist_for": 4,
+    "recent_motifs": [
+      "shadows"
+    ],
+    "motif_persist_for": 5
+  },
+  "player_choice": {
+    "id": "opt_1",
+    "text": "Rally the nearby scouts to reinforce the gate. (focus: exploration)",
+    "action_type": "exploration"
+  },
+  "character_reactions": [
+    {
+      "name": "Rhea",
+      "intent": "defend",
+      "action": "brace_shield",
+      "speech": "I'll keep the storm off the wall while you plan our next move.",
+      "effects": {
+        "trust_delta": 1,
+        "flag_set": [
+          "storm_vigil"
+        ]
+      },
+      "safe_functions": [
+        {
+          "name": "spawn_item",
+          "args": [],
+          "kwargs": {
+            "item_id": "lantern_oil",
+            "target": "player"
+          },
+          "metadata": {
+            "origin": "character_stub"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rhea",
+      "intent": "observe",
+      "action": "Autonomously performs observe action.",
+      "speech": "Rhea shifts tactics with a observe maneuver.",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Boris",
+      "intent": "assist",
+      "action": "Autonomously performs assist action.",
+      "speech": "Boris shifts tactics with a assist maneuver.",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Rhea",
+      "intent": "command",
+      "action": "Autonomously performs command action.",
+      "speech": "Rhea shifts tactics with a command maneuver.",
+      "effects": {},
+      "safe_functions": []
+    },
+    {
+      "name": "Boris",
+      "intent": "plan",
+      "action": "Autonomously performs plan action.",
+      "speech": "Boris shifts tactics with a plan maneuver.",
+      "effects": {},
+      "safe_functions": []
+    }
+  ],
+  "npcs": [
+    {
+      "name": "Rhea",
+      "trust": 3,
+      "summary": "Rhea is loyal but impulsive"
+    },
+    {
+      "name": "Bor",
+      "trust": 0,
+      "summary": "Boris is cautious and calculating."
+    }
+  ],
+  "safe_function_history": [
+    {
+      "name": "change_weather",
+      "success": true,
+      "timestamp": null,
+      "metadata": {
+        "source": "event_agent",
+        "origin": "event_stub"
+      }
+    },
+    {
+      "name": "spawn_item",
+      "success": true,
+      "timestamp": null,
+      "metadata": {
+        "source": "event_autoinject"
+      }
+    },
+    {
+      "name": "spawn_item",
+      "success": true,
+      "timestamp": null,
+      "metadata": {
+        "source": "character:Rhea",
+        "origin": "character_stub"
+      }
+    }
+  ],
+  "room_history": [
+    {
+      "room": "entrance",
+      "turn": 6,
+      "description": "Currently in entrance"
+    }
+  ],
+  "summary_text": "A routine day settles over Lornhaven.",
+  "telemetry": {
+    "planner_calls_proposed": 0,
+    "planner_calls_executed": 0,
+    "safe_functions_executed": 3,
+    "safe_function_guardrails": {
+      "planner_lowered_wall_integrity": false,
+      "world_wall_integrity_skipped": 0,
+      "objective_urgency_skipped": [],
+      "stockpile_collapsed": []
+    }
+  },
+  "player_view": {
+    "short_scene": "{\"response\": \"offline stub\"} (Motif: shadows)",
+    "short_world": "Turn 6 | Day 2 | Time morning\nLocation: entrance\nObjective: reinforce defenses\nPlayer: The Shieldbearer — A weary defender holding the western wall. Inventory: oil lamp, patched shield\nWorld constraint: {\"atmosphere\": \"Dawn hin mist veils over stone and mortar.\", \"sensory_details\": \"The chill air carries the scent of rain on dry earth, while distant drums echo with a somber rhythm.\"}\nRecent events",
+    "options": [
+      {
+        "id": "opt_1",
+        "text": "Rally the nearby scouts to reinforce the gate. (focus: exploration)"
+      },
+      {
+        "id": "opt_2",
+        "text": "Signal the keep for additional lantern oil. (focus: defense)"
+      },
+      {
+        "id": "opt_3",
+        "text": "Quietly observe the storm's strange rhythm. (focus: trade)"
+      }
+    ],
+    "primary_reaction": "I'll keep the storm off the wall while you plan our next move.",
+    "safe_functions": [],
+    "metrics_panel": {
+      "order": 52,
+      "morale": 51,
+      "resources": 44,
+      "knowledge": 55,
+      "corruption": 10,
+      "glitch": 58
+    },
+    "active_flags": [
+      "low_cloud_presence",
+      "explore",
+      "major_wall_alert",
+      "storm_vigil"
+    ],
+    "npc_trust_overview": [
+      {
+        "name": "Rhea",
+        "trust": 3.0
+      }
+    ],
+    "npc_journal_recent": [
+      {
+        "turn": 6,
+        "name": "Rhea",
+        "intent": "defend",
+        "entry": "I'll keep the storm off the wall while you plan our next move."
+      },
+      {
+        "turn": 6,
+        "name": "Rhea",
+        "intent": "observe",
+        "entry": "Rhea shifts tactics with a observe maneuver."
+      },
+      {
+        "turn": 6,
+        "name": "Boris",
+        "intent": "assist",
+        "entry": "Boris shifts tactics with a assist maneuver."
+      },
+      {
+        "turn": 6,
+        "name": "Rhea",
+        "intent": "command",
+        "entry": "Rhea shifts tactics with a command maneuver."
+      },
+      {
+        "turn": 6,
+        "name": "Boris",
+        "intent": "plan",
+        "entry": "Boris shifts tactics with a plan maneuver."
+      }
+    ]
+  },
+  "effects": [
+    {
+      "trust_delta": 1,
+      "flag_set": [
+        "storm_vigil"
+      ]
+    },
+    {
+      "name": "change_weather",
+      "result": {
+        "atmosphere": "electric storm",
+        "sensory_details": "lightning traces the parapets"
+      },
+      "metadata": {
+        "source": "event_agent",
+        "origin": "event_stub"
+      },
+      "success": true
+    },
+    {
+      "name": "spawn_item",
+      "result": {
+        "target": "nearby",
+        "items": [
+          "fire_extinguisher"
+        ]
+      },
+      "metadata": {
+        "source": "event_autoinject"
+      },
+      "success": true
+    },
+    {
+      "name": "spawn_item",
+      "result": {
+        "target": "player",
+        "inventory": [
+          "oil lamp",
+          "patched shield",
+          "lantern_oil"
+        ]
+      },
+      "metadata": {
+        "source": "character:Rhea",
+        "origin": "character_stub"
+      },
+      "success": true
+    }
+  ],
+  "safe_function_results": [
+    {
+      "name": "change_weather",
+      "result": {
+        "atmosphere": "electric storm",
+        "sensory_details": "lightning traces the parapets"
+      },
+      "metadata": {
+        "source": "event_agent",
+        "origin": "event_stub"
+      },
+      "success": true
+    },
+    {
+      "name": "spawn_item",
+      "result": {
+        "target": "nearby",
+        "items": [
+          "fire_extinguisher"
+        ]
+      },
+      "metadata": {
+        "source": "event_autoinject"
+      },
+      "success": true
+    },
+    {
+      "name": "spawn_item",
+      "result": {
+        "target": "player",
+        "inventory": [
+          "oil lamp",
+          "patched shield",
+          "lantern_oil"
+        ]
+      },
+      "metadata": {
+        "source": "character:Rhea",
+        "origin": "character_stub"
+      },
+      "success": true
+    }
+  ],
+  "metrics_after": {
+    "order": 52,
+    "morale": 51,
+    "resources": 44,
+    "knowledge": 55,
+    "corruption": 10,
+    "glitch": 58,
+    "risk_applied_total": 0,
+    "major_flag_set": false,
+    "major_events_triggered": 0,
+    "major_event_last_turn": null
+  },
+  "glitch": {
+    "roll": 62,
+    "effects": [
+      "Major anomaly distorts the western wall segment."
+    ]
+  },
+  "logs": [
+    {
+      "metric": "resources",
+      "delta": -3,
+      "value": 43,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "knowledge",
+      "delta": -2,
+      "value": 53,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": 3,
+      "value": 59,
+      "cause": "glitch:major_anomaly"
+    },
+    {
+      "metric": "glitch",
+      "delta": -1,
+      "value": 58,
+      "cause": "turn_recovery"
+    },
+    {
+      "metric": "knowledge",
+      "delta": 2,
+      "value": 55,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "resources",
+      "delta": 1,
+      "value": 44,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "morale",
+      "delta": -1,
+      "value": 49,
+      "cause": "action_exploration"
+    },
+    {
+      "metric": "order",
+      "delta": 1,
+      "value": 52,
+      "cause": "autonomous_Rhea"
+    },
+    {
+      "metric": "morale",
+      "delta": 2,
+      "value": 51,
+      "cause": "autonomous_Boris"
+    }
+  ],
+  "win_loss": {
+    "status": "ongoing",
+    "reason": "conditions_not_met",
+    "description": "Oyun devam ediyor..."
+  },
+  "narrative": "Turn 6 | Rally the nearby scouts to reinforce the gate. (focus: exploration) | I'll keep the storm off the wall while you plan our next move. | Major anomaly distorts the western wall segment."
+}
