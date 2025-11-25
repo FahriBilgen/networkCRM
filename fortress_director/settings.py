@@ -4,9 +4,14 @@ from __future__ import annotations
 
 import errno
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Mapping
+from typing import Any, Dict, Mapping
+
+import yaml
+
+LOGGER = logging.getLogger(__name__)
+_MISSING = object()
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -25,6 +30,29 @@ class ModelConfig:
     temperature: float
     top_p: float
     max_tokens: int
+    top_k: int | None = None
+
+
+@dataclass(frozen=True)
+class LLMOptions:
+    """Global default generation options shared by the simplified agents."""
+
+    temperature: float = 0.7
+    top_p: float = 0.9
+    top_k: int | None = 40
+
+
+@dataclass(frozen=True)
+class LLMRuntimeConfig:
+    """Runtime knobs controlling caching/logging/timeout behavior."""
+
+    # Timeout for LLM calls: 60s is reasonable for Ollama on local hw.
+    # Prevents indefinite blocking if Ollama server is unresponsive.
+    timeout_seconds: float = 60.0
+    cache_ttl_seconds: int = 300
+    max_retries: int = 1
+    enable_cache: bool = True
+    log_metrics: bool = True
 
 
 @dataclass(frozen=True)
@@ -42,6 +70,220 @@ class Settings:
     semantic_cache_ttl: int
     models: Mapping[str, ModelConfig]
     safe_function_gas_budget: int = 0
+    default_locale: str = "en"
+    safe_function_max_workers: int = 1
+    llm_options: LLMOptions = field(default_factory=LLMOptions)
+    llm_runtime: LLMRuntimeConfig = field(default_factory=LLMRuntimeConfig)
+    # Timeouts used by lightweight LLM health checks (seconds)
+    # Use large defaults to avoid spuriously marking models offline during
+    # local development (effectively "no timeout").
+    llm_status_list_timeout: float = 1e6
+    llm_status_probe_timeout: float = 1e6
+
+
+def _config_file() -> Path:
+    return PROJECT_ROOT / "config" / "settings.yaml"
+
+
+def _load_settings_overrides() -> Dict[str, Any]:
+    """Load optional overrides from config/settings.yaml."""
+
+    path = _config_file()
+    if not path.exists():
+        return {}
+    try:
+        payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:  # pragma: no cover - defensive
+        LOGGER.warning("Failed to parse %s: %s", path, exc)
+        return {}
+    if not isinstance(payload, dict):
+        LOGGER.warning("settings.yaml must contain a mapping. Ignoring contents.")
+        return {}
+    return payload
+
+
+def _resolve_path(value: Any) -> Path:
+    candidate = Path(value)
+    if not candidate.is_absolute():
+        candidate = (PROJECT_ROOT / candidate).resolve()
+    return candidate
+
+
+def _resolve_float(value: Any, fallback: float) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return fallback
+
+
+def _resolve_int(value: Any, fallback: int) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return fallback
+
+
+def _resolve_optional_int(value: Any, fallback: int | None) -> int | None:
+    if value is _MISSING:
+        return fallback
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return fallback
+
+
+def _merge_model_overrides(
+    base: Mapping[str, ModelConfig], overrides: Mapping[str, Any]
+) -> Dict[str, ModelConfig]:
+    merged: Dict[str, ModelConfig] = dict(base)
+    for key, payload in overrides.items():
+        if isinstance(payload, str):
+            payload_dict: Mapping[str, Any] = {"name": payload}
+        elif isinstance(payload, Mapping):
+            payload_dict = payload
+        else:
+            continue
+        current = merged.get(key)
+        if current is None:
+            name = payload_dict.get("name")
+            if not name:
+                continue
+            merged[key] = ModelConfig(
+                name=str(name),
+                temperature=_resolve_float(payload_dict.get("temperature", 0.7), 0.7),
+                top_p=_resolve_float(payload_dict.get("top_p", 0.9), 0.9),
+                max_tokens=_resolve_int(payload_dict.get("max_tokens", 256), 256),
+                top_k=_resolve_optional_int(payload_dict.get("top_k", _MISSING), None),
+            )
+        else:
+            merged[key] = ModelConfig(
+                name=str(payload_dict.get("name", current.name)),
+                temperature=_resolve_float(
+                    payload_dict.get("temperature", current.temperature),
+                    current.temperature,
+                ),
+                top_p=_resolve_float(
+                    payload_dict.get("top_p", current.top_p), current.top_p
+                ),
+                max_tokens=_resolve_int(
+                    payload_dict.get("max_tokens", current.max_tokens),
+                    current.max_tokens,
+                ),
+                top_k=_resolve_optional_int(
+                    payload_dict.get("top_k", _MISSING),
+                    current.top_k,
+                ),
+            )
+    return merged
+
+
+def _coerce_llm_options(payload: Mapping[str, Any], current: LLMOptions) -> LLMOptions:
+    temperature = _resolve_float(
+        payload.get("temperature", current.temperature), current.temperature
+    )
+    top_p = _resolve_float(payload.get("top_p", current.top_p), current.top_p)
+    top_k = _resolve_optional_int(payload.get("top_k", _MISSING), current.top_k)
+    return LLMOptions(
+        temperature=temperature,
+        top_p=top_p,
+        top_k=top_k,
+    )
+
+
+def _coerce_llm_runtime(
+    payload: Mapping[str, Any],
+    current: LLMRuntimeConfig,
+) -> LLMRuntimeConfig:
+    timeout_seconds = _resolve_float(
+        payload.get("timeout_seconds", current.timeout_seconds),
+        current.timeout_seconds,
+    )
+    cache_ttl = _resolve_int(
+        payload.get("cache_ttl_seconds", current.cache_ttl_seconds),
+        current.cache_ttl_seconds,
+    )
+    max_retries = _resolve_int(
+        payload.get("max_retries", current.max_retries),
+        current.max_retries,
+    )
+    enable_cache = bool(payload.get("enable_cache", current.enable_cache))
+    log_metrics = bool(payload.get("log_metrics", current.log_metrics))
+    return LLMRuntimeConfig(
+        timeout_seconds=timeout_seconds,
+        cache_ttl_seconds=cache_ttl,
+        max_retries=max(0, max_retries),
+        enable_cache=enable_cache,
+        log_metrics=log_metrics,
+    )
+
+
+def _apply_llm_overrides(data: Dict[str, Any], payload: Any) -> None:
+    if not isinstance(payload, Mapping):
+        return
+    ollama_block = payload.get("ollama")
+    if isinstance(ollama_block, Mapping):
+        base_url = ollama_block.get("base_url")
+        if base_url:
+            data["ollama_base_url"] = str(base_url)
+        timeout = ollama_block.get("timeout")
+        if timeout is not None:
+            data["ollama_timeout"] = _resolve_float(timeout, data["ollama_timeout"])
+    models_block = payload.get("models")
+    if isinstance(models_block, Mapping):
+        data["models"] = _merge_model_overrides(data["models"], models_block)
+    options_block = payload.get("options")
+    if isinstance(options_block, Mapping):
+        data["llm_options"] = _coerce_llm_options(options_block, data["llm_options"])
+    runtime_block = payload.get("runtime")
+    if isinstance(runtime_block, Mapping):
+        current_runtime = data.get("llm_runtime", LLMRuntimeConfig())
+        data["llm_runtime"] = _coerce_llm_runtime(runtime_block, current_runtime)
+
+
+def _apply_settings_overrides(settings: Settings) -> Settings:
+    """Return a Settings instance with overrides applied."""
+
+    overrides = _load_settings_overrides()
+    if not overrides:
+        return settings
+    data = settings.__dict__.copy()
+    data["models"] = dict(settings.models)
+    data["llm_options"] = settings.llm_options
+    data["llm_runtime"] = settings.llm_runtime
+    path_fields = {"db_path", "world_state_path", "cache_dir", "log_dir"}
+    float_fields = {"ollama_timeout"}
+    int_fields = {
+        "safe_function_gas_budget",
+        "safe_function_max_workers",
+        "max_active_models",
+        "semantic_cache_ttl",
+    }
+    str_fields = {"ollama_base_url", "default_locale"}
+
+    _apply_llm_overrides(data, overrides.get("llm"))
+
+    for key, value in overrides.items():
+        if key == "llm":
+            continue
+        if key == "models" and isinstance(value, Mapping):
+            data["models"] = _merge_model_overrides(data["models"], value)
+            continue
+        if key not in data:
+            continue
+        if key in path_fields:
+            if value is None:
+                continue
+            data[key] = _resolve_path(value)
+        elif key in float_fields:
+            data[key] = _resolve_float(value, data[key])
+        elif key in int_fields:
+            data[key] = _resolve_int(value, data[key])
+        elif key in str_fields:
+            data[key] = str(value)
+    LOGGER.info("Applied overrides from %s", _config_file())
+    return Settings(**data)
 
 
 DEFAULT_WORLD_STATE = {
@@ -64,6 +306,7 @@ DEFAULT_WORLD_STATE = {
     "turn": 0,
     "day": 1,
     "time": "dawn",
+    "locale": "en",
     "current_room": "entrance",
     "recent_events": [],
     "recent_motifs": [],
@@ -93,6 +336,13 @@ DEFAULT_WORLD_STATE = {
         "major_flag_set": False,
         "major_events_triggered": 0,
         "major_event_last_turn": None,
+        "combat": {
+            "total_skirmishes": 0,
+            "total_casualties_friendly": 0,
+            "total_casualties_enemy": 0,
+            "last_casualties_friendly": 0,
+            "last_casualties_enemy": 0,
+        },
     },
     "npc_trust": {},
     "environment_hazards": [],
@@ -103,26 +353,53 @@ DEFAULT_WORLD_STATE = {
     },
     "structures": {
         "western_wall": {
+            "id": "western_wall",
+            "kind": "wall",
+            "x": 2,
+            "y": 1,
             "durability": 80,
             "max_durability": 100,
             "status": "stable",
+            "fortification": 0,
+            "on_fire": False,
         },
         "inner_gate": {
+            "id": "inner_gate",
+            "kind": "gate",
+            "x": 5,
+            "y": 5,
             "durability": 70,
             "max_durability": 100,
             "status": "stable",
+            "fortification": 0,
+            "on_fire": False,
         },
         "watchtower": {
+            "id": "watchtower",
+            "kind": "tower",
+            "x": 7,
+            "y": 3,
             "durability": 60,
             "max_durability": 80,
             "status": "stable",
+            "fortification": 0,
+            "on_fire": False,
         },
         "granary": {
+            "id": "granary",
+            "kind": "storehouse",
+            "x": 4,
+            "y": 6,
             "durability": 55,
             "max_durability": 70,
             "status": "stable",
+            "fortification": 0,
+            "on_fire": False,
         },
     },
+    "map_layers": {},
+    "map_event_markers": [],
+    "npc_roles": {},
     "npc_schedule": {},
     "patrols": {},
     "combat_log": [],
@@ -166,16 +443,22 @@ SETTINGS = Settings(
     semantic_cache_ttl=86_400,
     models={
         "event": ModelConfig(
-            name="mistral",
-            temperature=0.2,
-            top_p=0.5,
-            max_tokens=512,
+            name="phi3:mini",
+            temperature=0.0,
+            top_p=0.1,
+            max_tokens=768,
         ),
         "world": ModelConfig(
             name="phi3:mini",
             temperature=0.1,
             top_p=0.4,
             max_tokens=384,
+        ),
+        "world_renderer": ModelConfig(
+            name="phi3:mini",
+            temperature=0.9,
+            top_p=0.95,
+            max_tokens=512,
         ),
         "character": ModelConfig(
             name="gemma:2b",
@@ -208,8 +491,17 @@ SETTINGS = Settings(
             max_tokens=256,
         ),
     },
+    llm_options=LLMOptions(
+        temperature=0.7,
+        top_p=0.9,
+        top_k=40,
+    ),
+    llm_runtime=LLMRuntimeConfig(),
     safe_function_gas_budget=6,
+    default_locale="en",
+    safe_function_max_workers=4,
 )
+SETTINGS = _apply_settings_overrides(SETTINGS)
 
 # Runtime tuning knobs for creativity and judge behaviour.
 # These are intentionally module-level constants (simple to tweak during
@@ -279,9 +571,6 @@ RISK_BUDGET_DEFAULT = 3  # structural risk ops allowed per act
 # mode is active.
 GLITCH_VOLATILITY_SCALAR = 3  # 1=default; 3=higher volatility in drama mode
 GLITCH_MIN_FLOOR = 50  # baseline minimum glitch to avoid flat lines
-
-
-LOGGER = logging.getLogger(__name__)
 
 
 def _safe_mkdir(path: Path) -> None:
