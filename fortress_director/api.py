@@ -50,6 +50,10 @@ from fortress_director.themes.schema import ThemeConfig
 from fortress_director.auth.middleware import JWTMiddleware
 from fortress_director.auth.jwt_handler import create_access_token
 from fortress_director.db.session_store import get_session_store
+from fortress_director.utils.file_lock import (
+    FileLock,
+    session_lock_path,
+)
 
 API_VERSION = "0.1.0"
 DEFAULT_THEME_ID = "siege_default"
@@ -339,47 +343,101 @@ def run_turn_endpoint(
 
     requested_session = payload.session_id or session_query
     requested_theme_id = payload.theme_id
-    session_id, session, created = _SESSION_MANAGER.get_or_create(
-        requested_session,
-        theme_id=requested_theme_id,
+
+    # Acquire session-specific lock
+    lock_path = session_lock_path(
+        requested_session or "", SETTINGS.project_root / "locks"
     )
-    if not created and requested_theme_id and requested_theme_id != session.theme_id:
-        raise HTTPException(
-            status_code=400,
-            detail="Session theme mismatch; start a new session for a different theme.",
+    lock = FileLock(lock_path)
+
+    with lock:
+        session_id, session, created = _SESSION_MANAGER.get_or_create(
+            requested_session,
+            theme_id=requested_theme_id,
         )
-    theme_id = session.theme_id
-    theme = _get_theme_config(theme_id)
-    game_state = session.game_state
-    choice_payload = {"id": payload.choice_id} if payload.choice_id else None
-    player_action_context = session.player_action_context
-    try:
-        result = run_turn(
-            game_state,
-            player_choice=choice_payload,
-            player_action_context=player_action_context,
-            theme=theme,
-        )
-    except Exception as exc:  # pragma: no cover - defensive logging surface
-        raise HTTPException(
-            status_code=500, detail=f"Turn execution failed: {exc}"
-        ) from exc
-    projection = game_state.get_projected_state()
-    snapshot = game_state.snapshot()
-    domain_snapshot = game_state.as_domain()
-    npc_stats = _compute_npc_stats(game_state)
-    hud = _build_hud(projection, snapshot, npc_stats)
-    grid = _build_grid(projection)
-    event_log = _build_event_log(projection)
-    session.player_action_context = None
-    threat_snapshot = result.threat_snapshot
-    if threat_snapshot:
-        threat_score = float(threat_snapshot.threat_score)
-        threat_phase = threat_snapshot.phase
-    else:
-        threat_score = 0.0
-        threat_phase = "unknown"
-    combat_summary = _extract_combat_summary(result.executed_actions)
+        if (
+            not created
+            and requested_theme_id
+            and requested_theme_id != session.theme_id
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Session theme mismatch; "
+                    "start a new session for a different theme."
+                ),
+            )
+        theme_id = session.theme_id
+        theme = _get_theme_config(theme_id)
+        game_state = session.game_state
+        choice_payload = {"id": payload.choice_id} if payload.choice_id else None
+        player_action_context = session.player_action_context
+        try:
+            result = run_turn(
+                game_state,
+                player_choice=choice_payload,
+                player_action_context=player_action_context,
+                theme=theme,
+            )
+        except Exception as exc:  # pragma: no cover
+            raise HTTPException(
+                status_code=500, detail=f"Turn execution failed: {exc}"
+            ) from exc
+        projection = game_state.get_projected_state()
+        snapshot = game_state.snapshot()
+        domain_snapshot = game_state.as_domain()
+        npc_stats = _compute_npc_stats(game_state)
+        hud = _build_hud(projection, snapshot, npc_stats)
+        grid = _build_grid(projection)
+        event_log = _build_event_log(projection)
+        session.player_action_context = None
+        threat_snapshot = result.threat_snapshot
+        if threat_snapshot:
+            threat_score = float(threat_snapshot.threat_score)
+            threat_phase = threat_snapshot.phase
+        else:
+            threat_score = 0.0
+            threat_phase = "unknown"
+        combat_summary = _extract_combat_summary(result.executed_actions)
+    return RunTurnResponseModel(
+        narrative=result.narrative,
+        ui_events=result.ui_events,
+        state_delta=result.state_delta,
+        player_options=result.player_options,
+        options=result.player_options,
+        executed_actions=result.executed_actions,
+        atmosphere=result.atmosphere,
+        hud=hud,
+        grid=grid,
+        event_log=event_log,
+        turn_number=result.turn_number,
+        game_over=game_state.game_over,
+        ending_id=game_state.ending_id,
+        trace_file=result.trace_file,
+        session_id=session_id,
+        player_action_context=player_action_context,
+        threat_score=threat_score,
+        threat_phase=threat_phase,
+        event_seed=result.event_seed,
+        event_node_id=result.event_node_id,
+        event_node_description=result.event_node_description,
+        event_node_is_final=result.event_node_is_final,
+        world_tick_delta=result.world_tick_delta,
+        combat_summary=combat_summary,
+        resources=_build_resource_snapshot(snapshot),
+        npc_stats=npc_stats,
+        npc_positions=domain_snapshot.npc_positions(),
+        structures=domain_snapshot.structure_integrities(),
+        event_markers=domain_snapshot.event_list(),
+        event_node=_build_event_node(
+            result.event_node_id,
+            result.event_node_description,
+        ),
+        threat={"score": threat_score, "phase": threat_phase},
+        final_payload=result.final_payload,
+        theme_id=theme_id,
+    )
+
     return RunTurnResponseModel(
         narrative=result.narrative,
         ui_events=result.ui_events,
