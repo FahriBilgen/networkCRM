@@ -398,6 +398,7 @@ def run_turn_endpoint(
                 player_choice=choice_payload,
                 player_action_context=player_action_context,
                 theme=theme,
+                archive=session.archive,
             )
         except Exception as exc:  # pragma: no cover
             raise HTTPException(
