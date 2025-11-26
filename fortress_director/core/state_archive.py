@@ -13,6 +13,8 @@ This allows:
 
 import json
 import logging
+import sqlite3
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 LOGGER = logging.getLogger(__name__)
@@ -265,6 +267,209 @@ class StateArchive:
         archive.npc_status_history = data.get("npc_status_history", {})
         archive.threat_timeline = data.get("threat_timeline", [])
         return archive
+
+    def save_to_db(self, db_path: str, turn_number: int) -> bool:
+        """Save archive to SQLite database.
+
+        Args:
+            db_path: Path to database file
+            turn_number: Current turn (for progress tracking)
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            conn = sqlite3.connect(db_path)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+
+            # Create archive tables if needed
+            archive_schema_path = Path(__file__).parent.parent / "db"
+            archive_schema_path = archive_schema_path / "archive_schema.sql"
+            if archive_schema_path.exists():
+                with open(archive_schema_path, "r") as f:
+                    cursor.executescript(f.read())
+
+            # Save metadata
+            cursor.execute(
+                """
+                INSERT OR REPLACE INTO archive_metadata
+                    (session_id, last_saved_turn, last_saved_at)
+                VALUES (?, ?, CURRENT_TIMESTAMP)
+                """,
+                (self.session_id, turn_number),
+            )
+
+            # Save current states
+            for turn, state in self.current_states.items():
+                cursor.execute(
+                    """
+                    INSERT OR REPLACE INTO archive_turns
+                        (session_id, turn_number, tier, snapshot_type, data)
+                    VALUES (?, ?, 'current', 'full', ?)
+                    """,
+                    (
+                        self.session_id,
+                        turn,
+                        json.dumps(state),
+                    ),
+                )
+
+            # Save recent deltas
+            for turn, delta in self.recent_deltas.items():
+                cursor.execute(
+                    """
+                    INSERT OR REPLACE INTO archive_turns
+                        (session_id, turn_number, tier, snapshot_type, data)
+                    VALUES (?, ?, 'recent', 'delta', ?)
+                    """,
+                    (
+                        self.session_id,
+                        turn,
+                        json.dumps(delta),
+                    ),
+                )
+
+            # Save threat timeline
+            for turn, threat in enumerate(self.threat_timeline, 1):
+                cursor.execute(
+                    """
+                    INSERT OR IGNORE INTO archive_threats
+                        (session_id, turn_number, threat_score)
+                    VALUES (?, ?, ?)
+                    """,
+                    (
+                        self.session_id,
+                        turn,
+                        threat,
+                    ),
+                )
+
+            # Save NPC status history
+            for npc_id, statuses in self.npc_status_history.items():
+                for turn, status in enumerate(statuses, 1):
+                    cursor.execute(
+                        """
+                        INSERT OR IGNORE INTO archive_npcs
+                        (session_id, turn_number, npc_id, status)
+                        VALUES (?, ?, ?, ?)
+                        """,
+                        (
+                            self.session_id,
+                            turn,
+                            npc_id,
+                            status,
+                        ),
+                    )
+
+            conn.commit()
+            conn.close()
+            LOGGER.info(
+                "[%s] Archive saved to DB (turn %d)",
+                self.session_id,
+                turn_number,
+            )
+            return True
+
+        except Exception as e:
+            LOGGER.error(
+                "[%s] Failed to save archive to DB: %s",
+                self.session_id,
+                e,
+            )
+            return False
+
+    @classmethod
+    def load_from_db(cls, db_path: str, session_id: str) -> Optional["StateArchive"]:
+        """Load archive from SQLite database.
+
+        Args:
+            db_path: Path to database file
+            session_id: Session identifier
+
+        Returns:
+            StateArchive instance or None if not found
+        """
+        try:
+            conn = sqlite3.connect(db_path)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+
+            archive = cls(session_id)
+
+            # Load current states
+            cursor.execute(
+                """
+                SELECT turn_number, data FROM archive_turns
+                WHERE session_id = ? AND tier = 'current'
+                ORDER BY turn_number
+                """,
+                (session_id,),
+            )
+            for row in cursor.fetchall():
+                turn = row["turn_number"]
+                data = json.loads(row["data"])
+                archive.current_states[turn] = data
+
+            # Load recent deltas
+            cursor.execute(
+                """
+                SELECT turn_number, data FROM archive_turns
+                WHERE session_id = ? AND tier = 'recent'
+                ORDER BY turn_number
+                """,
+                (session_id,),
+            )
+            for row in cursor.fetchall():
+                turn = row["turn_number"]
+                data = json.loads(row["data"])
+                archive.recent_deltas[turn] = data
+
+            # Load threat timeline
+            cursor.execute(
+                """
+                SELECT threat_score FROM archive_threats
+                WHERE session_id = ?
+                ORDER BY turn_number
+                """,
+                (session_id,),
+            )
+            archive.threat_timeline = [
+                row["threat_score"]
+                for row in cursor.fetchall()
+                if row["threat_score"] is not None
+            ]
+
+            # Load NPC status
+            cursor.execute(
+                """
+                SELECT npc_id, status, turn_number
+                FROM archive_npcs
+                WHERE session_id = ?
+                ORDER BY turn_number
+                """,
+                (session_id,),
+            )
+            for row in cursor.fetchall():
+                npc_id = row["npc_id"]
+                if npc_id not in archive.npc_status_history:
+                    archive.npc_status_history[npc_id] = []
+                archive.npc_status_history[npc_id].append(row["status"])
+
+            conn.close()
+            LOGGER.info(
+                "[%s] Archive loaded from DB",
+                session_id,
+            )
+            return archive
+
+        except Exception as e:
+            LOGGER.error(
+                "[%s] Failed to load archive from DB: %s",
+                session_id,
+                e,
+            )
+            return None
 
 
 def inject_archive_to_prompt(

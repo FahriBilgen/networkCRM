@@ -310,11 +310,32 @@ class SessionManager:
         theme = _get_theme_config(resolved_theme_id)
         new_id = session_id or uuid4().hex
         context = SessionContext(theme)
+
+        # Try to load archive from database if session_id provided
+        if session_id:
+            try:
+                db_path = SETTINGS.db_path
+                loaded = StateArchive.load_from_db(str(db_path), new_id)
+                if loaded:
+                    context.archive = loaded
+                    LOGGER.info(
+                        "[%s] Archive loaded from database",
+                        new_id,
+                    )
+            except Exception as exc:
+                LOGGER.warning(
+                    "[%s] Failed to load archive from DB: %s",
+                    new_id,
+                    exc,
+                )
+
         self._sessions[new_id] = context
         return new_id, context, True
 
     def reset(
-        self, theme_id: Optional[str] = None, session_id: Optional[str] = None
+        self,
+        theme_id: Optional[str] = None,
+        session_id: Optional[str] = None,
     ) -> Tuple[str, SessionContext]:
         """Create a brand new session context for replay runs."""
 
@@ -416,6 +437,9 @@ def run_turn_endpoint(
             session.archive.record_turn(
                 result.turn_number, snapshot, result.state_delta
             )
+            # Persist archive to database
+            db_path = SETTINGS.db_path
+            session.archive.save_to_db(str(db_path), result.turn_number)
         except Exception as exc:
             LOGGER.warning("Failed to record turn to archive: %s", exc)
         domain_snapshot = game_state.as_domain()
