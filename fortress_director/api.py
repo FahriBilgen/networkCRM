@@ -502,6 +502,11 @@ def reset_for_new_run(
 
     theme_id = payload.theme_id if payload else None
     session_id, session = _SESSION_MANAGER.reset(theme_id=theme_id)
+
+    # Record session in database
+    session_store = get_session_store()
+    session_store.record_session(session_id, theme_id or DEFAULT_THEME_ID)
+
     game_state = session.game_state
     projection = game_state.get_projected_state()
     snapshot = game_state.snapshot()
