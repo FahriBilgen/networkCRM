@@ -1,0 +1,190 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fortress-director
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fortress-config
+  namespace: fortress-director
+data:
+  PYTHONUNBUFFERED: "1"
+  LOG_LEVEL: "INFO"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fortress-data-pvc
+  namespace: fortress-director
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fortress-db-pvc
+  namespace: fortress-director
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fortress-director
+  namespace: fortress-director
+spec:
+  serviceName: fortress-director
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fortress-director
+  template:
+    metadata:
+      labels:
+        app: fortress-director
+    spec:
+      containers:
+      - name: fortress-director
+        image: fortress-director:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: PYTHONUNBUFFERED
+          valueFrom:
+            configMapKeyRef:
+              name: fortress-config
+              key: PYTHONUNBUFFERED
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: fortress-config
+              key: LOG_LEVEL
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+        - name: db
+          mountPath: /app/db
+        - name: logs
+          mountPath: /app/logs
+        - name: cache
+          mountPath: /app/cache
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumeClaimTemplates:
+      - metadata:
+          name: logs
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 2Gi
+  volumeClaimTemplates:
+  - metadata:
+      name: cache
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fortress-director
+  namespace: fortress-director
+spec:
+  type: ClusterIP
+  selector:
+    app: fortress-director
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8000
+    name: http
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: fortress-director-hpa
+  namespace: fortress-director
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: fortress-director
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: fortress-director-netpol
+  namespace: fortress-director
+spec:
+  podSelector:
+    matchLabels:
+      app: fortress-director
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8000
+  egress:
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53

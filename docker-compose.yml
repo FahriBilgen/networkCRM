@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  fortress-director:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fortress-director
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./data:/app/data
+      - ./db:/app/db
+      - ./logs:/app/logs
+      - ./cache:/app/cache
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - fortress-network
+
+networks:
+  fortress-network:
+    driver: bridge
