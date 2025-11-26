@@ -790,6 +790,19 @@ def health_check() -> Dict[str, Any]:
     return asdict(health_status)
 
 
+@app.get("/metrics")
+def metrics_endpoint() -> str:
+    """Prometheus metrics endpoint.
+
+    Returns metrics in Prometheus format compatible with Grafana
+    and other monitoring systems.
+    """
+    from fortress_director.core.metrics import get_metrics_collector
+
+    collector = get_metrics_collector()
+    return collector.export_prometheus()
+
+
 @app.get("/api/status")
 def get_status() -> Dict[str, Any]:
     """Return system health including LLM availability."""
