@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
@@ -57,6 +58,7 @@ from fortress_director.utils.file_lock import (
 )
 from fortress_director.rate_limiter import get_limiter
 
+LOGGER = logging.getLogger(__name__)
 API_VERSION = "0.1.0"
 DEFAULT_THEME_ID = "siege_default"
 app = FastAPI(title="Fortress Director UI API", version=API_VERSION)
@@ -398,6 +400,11 @@ def run_turn_endpoint(
             ) from exc
         projection = game_state.get_projected_state()
         snapshot = game_state.snapshot()
+        # Persist state after turn execution
+        try:
+            game_state.persist()
+        except Exception as exc:
+            LOGGER.warning("Failed to persist game state: %s", exc)
         domain_snapshot = game_state.as_domain()
         npc_stats = _compute_npc_stats(game_state)
         hud = _build_hud(projection, snapshot, npc_stats)
