@@ -34,6 +34,7 @@ from fortress_director.core import (
     player_action_router,
     player_action_validator,
 )
+from fortress_director.core.health_check import get_health_status
 from fortress_director.core.state_store import GameState
 from fortress_director.llm.model_registry import get_registry
 from fortress_director.llm.ollama_client import (
@@ -768,6 +769,25 @@ def _build_status_payload(
         "mode": get_mode(),
         "use_llm": is_llm_enabled(),
     }
+
+
+@app.get("/health")
+def health_check() -> Dict[str, Any]:
+    """Health check endpoint for load balancers and monitoring.
+
+    Returns: {
+        "status": "ok|degraded|error",
+        "version": "0.3.0",
+        "uptime_seconds": 123.45,
+        "timestamp": "2025-11-26T...",
+        "checks": {...},
+        "errors": [...]
+    }
+    """
+    from dataclasses import asdict
+
+    health_status = get_health_status()
+    return asdict(health_status)
 
 
 @app.get("/api/status")
