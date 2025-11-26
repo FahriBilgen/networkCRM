@@ -49,6 +49,7 @@ from fortress_director.themes.loader import BUILTIN_THEMES, load_theme_from_file
 from fortress_director.themes.schema import ThemeConfig
 from fortress_director.auth.middleware import JWTMiddleware
 from fortress_director.auth.jwt_handler import create_access_token
+from fortress_director.db.session_store import get_session_store
 
 API_VERSION = "0.1.0"
 DEFAULT_THEME_ID = "siege_default"
@@ -260,8 +261,9 @@ class TraceSummaryModel(BaseModel):
 
 
 class SessionContext:
-    def __init__(self, theme: ThemeConfig) -> None:
-        self.game_state = GameState.from_theme_config(theme)
+    def __init__(self, theme: ThemeConfig, session_id: Optional[str] = None) -> None:
+        self.session_id = session_id
+        self.game_state = GameState.from_theme_config(theme, session_id=session_id)
         self.player_action_context: Optional[Dict[str, Any]] = None
         self.theme_id: str = theme.id
 
@@ -287,13 +289,15 @@ class SessionManager:
         self._sessions[new_id] = context
         return new_id, context, True
 
-    def reset(self, theme_id: Optional[str] = None) -> Tuple[str, SessionContext]:
+    def reset(
+        self, theme_id: Optional[str] = None, session_id: Optional[str] = None
+    ) -> Tuple[str, SessionContext]:
         """Create a brand new session context for replay runs."""
 
         resolved_theme_id = theme_id or DEFAULT_THEME_ID
         theme = _get_theme_config(resolved_theme_id)
-        new_id = uuid4().hex
-        context = SessionContext(theme)
+        new_id = session_id or uuid4().hex
+        context = SessionContext(theme, session_id=new_id)
         self._sessions[new_id] = context
         return new_id, context
 
@@ -304,8 +308,20 @@ _SESSION_MANAGER = SessionManager()
 @app.post("/auth/login", response_model=AuthTokenResponse)
 def login(request: LoginRequest) -> AuthTokenResponse:
     """Create a new session and issue an authentication token."""
-    session_id, _context = _SESSION_MANAGER.reset(theme_id=request.theme_id)
+    # Generate unique session ID for this login
+    session_id = uuid4().hex
+    session_id, _context = _SESSION_MANAGER.reset(
+        theme_id=request.theme_id, session_id=session_id
+    )
     token = create_access_token(session_id)
+
+    # Record session in database
+    session_store = get_session_store()
+    session_store.record_session(
+        session_id,
+        request.theme_id or DEFAULT_THEME_ID,
+    )
+
     return AuthTokenResponse(
         session_id=session_id,
         token=token,
