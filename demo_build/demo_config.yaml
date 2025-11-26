@@ -1,0 +1,12 @@
+mode: "demo"
+llm:
+  timeout_seconds: 10
+  cache_ttl_seconds: 0
+  enable_cache: false
+  max_retries: 0
+runtime:
+  log_level: "INFO"
+  allow_reset: true
+  demo_scripted_fallbacks: true
+ui:
+  auto_open_browser: true

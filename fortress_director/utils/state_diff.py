@@ -33,7 +33,7 @@ def compute_state_diff(
         ignored.update(ignore_keys)
     diff: List[DiffEntry] = []
 
-    def _walk(prev: Any, curr: Any, path: Sequence[str]) -> None:
+    def _walk(prev: Any, curr: Any, path: tuple[str, ...]) -> None:
         if prev is curr:
             return
         if _values_equal(prev, curr):
@@ -43,7 +43,7 @@ def compute_state_diff(
             for key in sorted(keys):
                 if key in ignored:
                     continue
-                sub_path = path + [str(key)]
+                sub_path = path + (str(key),)
                 if key not in prev:
                     diff.append(
                         {
@@ -84,7 +84,7 @@ def compute_state_diff(
             }
         )
 
-    _walk(previous, current, [])
+    _walk(previous, current, tuple())
     return diff
 
 

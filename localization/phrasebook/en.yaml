@@ -1,0 +1,20 @@
+locale: en
+fallbacks: []
+strings:
+  hud:
+    turn_label: "Turn"
+    turns_remaining:
+      one: "{count} turn remaining"
+      other: "{count} turns remaining"
+    win_conditions: "Win conditions"
+    loss_conditions: "Loss conditions"
+    risk_indicators: "Risk indicators"
+    judge_tips: "Judge suggestions"
+  notifications:
+    survivors_remaining:
+      one: "{count} survivor remains on the field."
+      other: "{count} survivors remain on the field."
+  share_card:
+    ready_status:
+      true: "Share card ready"
+      false: "Share card not ready yet"

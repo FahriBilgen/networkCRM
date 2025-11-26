@@ -1,0 +1,56 @@
+{
+  "id": "siege_demo_v1",
+  "turn_count": 12,
+  "map": {
+    "width": 12,
+    "height": 12
+  },
+  "initial_state": {
+    "wall_integrity": 100,
+    "food": 40,
+    "morale": 50,
+    "threat": 20,
+    "npc_count": 8
+  },
+  "npc_roles": [
+    "guard",
+    "guard",
+    "captain",
+    "engineer",
+    "civilian",
+    "civilian",
+    "civilian",
+    "civilian"
+  ],
+  "demo_highlights": [
+    "npc_movement",
+    "wall_damage",
+    "wall_repair",
+    "event_markers",
+    "atmosphere_changes",
+    "resource_changes"
+  ],
+  "endings": {
+    "good": {
+      "conditions": {
+        "wall_integrity_min": 40,
+        "morale_min": 50,
+        "threat_max": 40
+      }
+    },
+    "neutral": {
+      "conditions": {
+        "wall_integrity_min": 20,
+        "morale_min": 30,
+        "threat_max": 60
+      }
+    },
+    "bad": {
+      "conditions": {
+        "wall_integrity_min": 0,
+        "morale_min": 0,
+        "threat_max": 999
+      }
+    }
+  }
+}

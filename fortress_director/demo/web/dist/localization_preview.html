@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Localization Preview · Fortress Director</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0f172a;
+        --card: #111827;
+        --border: #1f2937;
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --accent: #38bdf8;
+        --danger: #f87171;
+      }
+      body {
+        margin: 0;
+        padding: 32px;
+        font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
+          "Helvetica Neue", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        transition: all 0.2s ease;
+      }
+      body.low-bandwidth {
+        background: #050915;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 24px;
+      }
+      p {
+        margin: 0;
+        color: var(--muted);
+      }
+      .controls,
+      .grid {
+        margin-top: 24px;
+      }
+      .controls {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
+      }
+      label {
+        font-size: 13px;
+        display: block;
+        margin-bottom: 6px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      input[type="text"],
+      textarea {
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        padding: 10px;
+        background: rgba(15, 23, 42, 0.7);
+        color: var(--text);
+        font-family: inherit;
+      }
+      textarea {
+        min-height: 120px;
+        resize: vertical;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+      button {
+        border: 0;
+        border-radius: 8px;
+        padding: 10px 16px;
+        background: var(--accent);
+        color: black;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button.secondary {
+        background: rgba(148, 163, 184, 0.2);
+        color: var(--text);
+      }
+      button.danger {
+        background: rgba(248, 113, 113, 0.2);
+        color: var(--danger);
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      }
+      .hud-label {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        font-size: 15px;
+      }
+      .hud-label span:last-child {
+        font-weight: 600;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        background: rgba(56, 189, 248, 0.12);
+        color: var(--accent);
+        margin-right: 6px;
+      }
+      .status {
+        margin-top: 12px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      body.rtl {
+        direction: rtl;
+      }
+      body.low-bandwidth .screenshot-placeholder {
+        display: none;
+      }
+      .screenshot-placeholder {
+        height: 120px;
+        border-radius: 10px;
+        border: 1px dashed rgba(148, 163, 184, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 12px;
+      }
+      .notice {
+        margin-top: 16px;
+        font-size: 14px;
+        color: var(--danger);
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Localization Preview</h1>
+      <p>Drop in a <code>player_view.json</code> to verify HUD text, share cards, RTL, and low-bandwidth modes.</p>
+    </header>
+
+    <section class="controls">
+      <div class="card">
+        <label for="jsonText">Player View JSON</label>
+        <textarea id="jsonText" placeholder="Paste player_view JSON here..."></textarea>
+        <div class="actions">
+          <button id="loadJson">Render pasted JSON</button>
+          <input type="file" id="fileInput" accept="application/json" />
+          <button class="secondary" id="loadLatest">Fetch runs/latest/player_view.json</button>
+        </div>
+        <div class="status" id="statusText">Awaiting data…</div>
+      </div>
+
+      <div class="card">
+        <label>View options</label>
+        <div class="actions">
+          <button class="secondary" id="rtlToggle">Toggle RTL</button>
+          <button class="secondary" id="bandwidthToggle">Toggle Low Bandwidth</button>
+          <button class="secondary" id="resetToggles">Reset</button>
+        </div>
+        <div class="status">
+          Locale: <span id="localeLabel">-</span><br />
+          Fallbacks: <span id="fallbackLabel">-</span>
+        </div>
+        <div class="notice hidden" id="missingLocalization">
+          Warning: player_view.localization missing. Ensure the orchestrator is on the latest build.
+        </div>
+      </div>
+    </section>
+
+    <section class="grid" style="margin-top: 32px;">
+      <div class="card">
+        <h2>HUD Labels</h2>
+        <div class="hud-label"><span>Turn</span><span id="hud-turn">—</span></div>
+        <div class="hud-label"><span>Turns Remaining</span><span id="hud-remaining">—</span></div>
+        <div class="hud-label"><span>Win Conditions</span><span id="hud-win">—</span></div>
+        <div class="hud-label"><span>Loss Conditions</span><span id="hud-loss">—</span></div>
+        <div class="hud-label"><span>Risk Indicators</span><span id="hud-risk">—</span></div>
+        <div class="hud-label"><span>Judge Tips</span><span id="hud-judge">—</span></div>
+        <div class="hud-label"><span>Campaign Banner</span><span id="hud-banner">—</span></div>
+      </div>
+
+      <div class="card">
+        <h2>Share Card</h2>
+        <div class="hud-label">
+          <span>Status</span>
+          <span id="share-status" class="pill">—</span>
+        </div>
+        <div class="hud-label"><span>Summary</span><span id="share-summary">—</span></div>
+        <div class="hud-label"><span>Metrics</span><span id="share-metrics">—</span></div>
+        <div class="screenshot-placeholder">Screenshot placeholder (hidden in low-bandwidth mode)</div>
+      </div>
+
+      <div class="card">
+        <h2>Raw Data</h2>
+        <pre id="rawMeta" style="max-height: 280px; overflow: auto;"></pre>
+      </div>
+    </section>
+
+    <script>
+      const state = {
+        lastData: null,
+      };
+
+      const $ = (id) => document.getElementById(id);
+      const getString = (strings, path, fallback = "—") => {
+        const segments = path.split(".");
+        let node = strings;
+        for (const segment of segments) {
+          if (!node || typeof node !== "object") {
+            return fallback;
+          }
+          node = node[segment];
+        }
+        if (typeof node === "string") {
+          return node;
+        }
+        return fallback;
+      };
+
+      function renderPlayerView(data) {
+        state.lastData = data;
+        const localization = (data && data.localization) || {};
+        const strings = localization.strings || {};
+        $("localeLabel").textContent = localization.locale || "n/a";
+        $("fallbackLabel").textContent = (localization.fallbacks || []).join(", ") || "—";
+        const missingNotice = $("missingLocalization");
+        missingNotice.classList.toggle("hidden", Boolean(localization.locale));
+
+        $("hud-turn").textContent = getString(strings, "hud.turn_label");
+        $("hud-remaining").textContent = getString(strings, "hud.turns_remaining");
+        $("hud-win").textContent = getString(strings, "hud.win_conditions");
+        $("hud-loss").textContent = getString(strings, "hud.loss_conditions");
+        $("hud-risk").textContent = getString(strings, "hud.risk_indicators");
+        $("hud-judge").textContent = getString(strings, "hud.judge_tips");
+        $("hud-banner").textContent = getString(strings, "hud.campaign_banner", "—");
+
+        const shareCard = (data.meta_progression && data.meta_progression.share_card) || {};
+        const statusKey = shareCard.ready ? "true" : "false";
+        $("share-status").textContent = getString(strings, `share_card.ready_status.${statusKey}`, shareCard.ready ? "Ready" : "Pending");
+        $("share-summary").textContent = shareCard.summary || "—";
+        const metrics = shareCard.metrics || {};
+        const metricText = Object.entries(metrics)
+          .map(([key, value]) => `${key}: ${value}`)
+          .join(" · ");
+        $("share-metrics").textContent = metricText || "—";
+
+        $("rawMeta").textContent = JSON.stringify(
+          {
+            locale: localization.locale,
+            fallbacks: localization.fallbacks,
+            hudLabels: strings.hud,
+            shareCardStrings: strings.share_card,
+          },
+          null,
+          2,
+        );
+        $("statusText").textContent = `Loaded player_view snapshot (turn ${data?.turn_hud?.turn ?? "?"})`;
+      }
+
+      function parseAndRender(str) {
+        try {
+          const parsed = JSON.parse(str);
+          if (parsed.player_view) {
+            renderPlayerView(parsed.player_view);
+          } else {
+            renderPlayerView(parsed);
+          }
+        } catch (err) {
+          $("statusText").textContent = `Parse error: ${err.message}`;
+        }
+      }
+
+      $("loadJson").addEventListener("click", () => {
+        const text = $("jsonText").value.trim();
+        if (!text) {
+          $("statusText").textContent = "Nothing to parse.";
+          return;
+        }
+        parseAndRender(text);
+      });
+
+      $("fileInput").addEventListener("change", (event) => {
+        const file = event.target.files?.[0];
+        if (!file) {
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          $("jsonText").value = e.target?.result;
+          parseAndRender(e.target?.result || "");
+        };
+        reader.readAsText(file);
+      });
+
+      $("loadLatest").addEventListener("click", async () => {
+        try {
+          const response = await fetch("../../runs/latest/player_view.json", { cache: "no-cache" });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          const payload = await response.text();
+          $("jsonText").value = payload;
+          parseAndRender(payload);
+        } catch (err) {
+          $("statusText").textContent = `Failed to fetch latest player_view.json (${err.message}).`;
+        }
+      });
+
+      $("rtlToggle").addEventListener("click", () => {
+        document.body.classList.toggle("rtl");
+      });
+      $("bandwidthToggle").addEventListener("click", () => {
+        document.body.classList.toggle("low-bandwidth");
+      });
+      $("resetToggles").addEventListener("click", () => {
+        document.body.classList.remove("rtl", "low-bandwidth");
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,24 @@
+{WORLD_CONTEXT}
+Role: World Describer
+Current Room: {room}
+
+
+Task:
+Describe the current environment's atmosphere and sensory details.
+Focus on mood, texture, sound, light, and ambient feeling — not story progression.
+
+### It is currently {time}. Do not use words like {forbidden_times}.
+
+Output (JSON only):
+{{
+  "atmosphere": "string",
+  "sensory_details": "string"
+}}
+
+Rules:
+- "atmosphere" must be under 12 words.
+- "sensory_details" should evoke vivid sensory impressions (smell, texture, sound, light, temperature).
+- Use immersive but simple language.
+- Vary sensory details across turns even if the location stays the same.
+- Output must be pure JSON (no markdown or code fences).
+- Do not advance story or generate choices.

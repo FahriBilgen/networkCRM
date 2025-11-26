@@ -1,0 +1,257 @@
+{
+  "final_path": {
+    "id": "evacuation_success",
+    "title": "Convoy in the Storm",
+    "tone": "hopeful",
+    "summary": "Civilians slip away under heavy escort while commanders stay behind.",
+    "schema": {
+      "type": "object",
+      "required": [
+        "convoy_manifest",
+        "escort_status"
+      ],
+      "properties": {
+        "convoy_manifest": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "escort_status": {
+          "type": "string"
+        },
+        "after_action_notes": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "npc_outcomes": [
+    {
+      "id": "npc_1",
+      "name": "Guard 1",
+      "fate": "alive",
+      "color": "green"
+    },
+    {
+      "id": "npc_2",
+      "name": "Guard 2",
+      "fate": "alive",
+      "color": "green"
+    },
+    {
+      "id": "npc_3",
+      "name": "Captain 3",
+      "fate": "alive",
+      "color": "green"
+    },
+    {
+      "id": "npc_4",
+      "name": "Engineer 4",
+      "fate": "alive",
+      "color": "green"
+    },
+    {
+      "id": "npc_5",
+      "name": "Civilian 5",
+      "fate": "alive",
+      "color": "green"
+    },
+    {
+      "id": "npc_6",
+      "name": "Civilian 6",
+      "fate": "alive",
+      "color": "green"
+    },
+    {
+      "id": "npc_7",
+      "name": "Civilian 7",
+      "fate": "alive",
+      "color": "green"
+    },
+    {
+      "id": "npc_8",
+      "name": "Civilian 8",
+      "fate": "alive",
+      "color": "green"
+    }
+  ],
+  "structure_outcomes": [
+    {
+      "id": "fortress_wall",
+      "status": "unknown",
+      "integrity": 100
+    }
+  ],
+  "resource_summary": {
+    "morale": 60,
+    "resources": 40,
+    "stockpiles": {
+      "food": 0,
+      "wood": 0,
+      "ore": 0
+    }
+  },
+  "threat_summary": {
+    "phase": "peak",
+    "score": 61.64
+  },
+  "final_actions": [
+    {
+      "function": "trigger_mass_evacuate",
+      "args": {},
+      "status": "applied",
+      "log": "Emergency convoys escort 96 civilians out of the fortress.",
+      "metrics": {
+        "morale": 2
+      },
+      "effects": {
+        "civilians_evacuated": 96
+      }
+    },
+    {
+      "function": "boost_allied_morale",
+      "args": {
+        "delta": 8
+      },
+      "status": "applied",
+      "log": "Allied morale surges by 8 during the finale.",
+      "metrics": {
+        "morale": 8
+      },
+      "effects": {
+        "morale": 60
+      }
+    },
+    {
+      "function": "spawn_smoke_effect",
+      "args": {
+        "x": 6,
+        "y": 6
+      },
+      "status": "applied",
+      "log": "Smoke effect spreads across the map.",
+      "metrics": {},
+      "effects": {
+        "marker_id": "event_001",
+        "position": {
+          "x": 6,
+          "y": 6
+        }
+      }
+    }
+  ],
+  "final_narrative": {
+    "title": "Convoy in the Storm",
+    "subtitle": "Civilians slip away under heavy escort while commanders stay behind.",
+    "final_path": {
+      "id": "evacuation_success",
+      "title": "Convoy in the Storm",
+      "tone": "hopeful",
+      "summary": "Civilians slip away under heavy escort while commanders stay behind.",
+      "schema": {
+        "type": "object",
+        "required": [
+          "convoy_manifest",
+          "escort_status"
+        ],
+        "properties": {
+          "convoy_manifest": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "escort_status": {
+            "type": "string"
+          },
+          "after_action_notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "decision_summary": "Flag 'planner_lock_option_1' enabled. / knowledge adjusted by 1. Cause: planner:escalate. / Flag 'planner_lock_option_1' enabled.",
+    "npc_fates": [
+      {
+        "id": "npc_1",
+        "name": "Guard 1",
+        "fate": "alive",
+        "color": "green"
+      },
+      {
+        "id": "npc_2",
+        "name": "Guard 2",
+        "fate": "alive",
+        "color": "green"
+      },
+      {
+        "id": "npc_3",
+        "name": "Captain 3",
+        "fate": "alive",
+        "color": "green"
+      },
+      {
+        "id": "npc_4",
+        "name": "Engineer 4",
+        "fate": "alive",
+        "color": "green"
+      },
+      {
+        "id": "npc_5",
+        "name": "Civilian 5",
+        "fate": "alive",
+        "color": "green"
+      },
+      {
+        "id": "npc_6",
+        "name": "Civilian 6",
+        "fate": "alive",
+        "color": "green"
+      },
+      {
+        "id": "npc_7",
+        "name": "Civilian 7",
+        "fate": "alive",
+        "color": "green"
+      },
+      {
+        "id": "npc_8",
+        "name": "Civilian 8",
+        "fate": "alive",
+        "color": "green"
+      }
+    ],
+    "structure_report": [
+      {
+        "id": "fortress_wall",
+        "status": "unknown",
+        "integrity": 100
+      }
+    ],
+    "resource_summary": {
+      "morale": 60,
+      "resources": 40,
+      "stockpiles": {
+        "food": 0,
+        "wood": 0,
+        "ore": 0
+      }
+    },
+    "threat": {
+      "phase": "peak",
+      "score": 61.64
+    },
+    "leadership_note": "Leaders promise a brief respite before the next mobilization.",
+    "closing_paragraphs": [
+      "Civilians slip away under heavy escort while commanders stay behind.",
+      "The last turns: Flag 'planner_lock_option_1' enabled. / knowledge adjusted by 1. Cause: planner:escalate. / Flag 'planner_lock_option_1' enabled..",
+      "Morale 60, resources 40, threat phase peak."
+    ],
+    "atmosphere": {
+      "mood": "resolute",
+      "visuals": "Armor gleams beside field fires while smoke thins toward dawn.",
+      "audio": "Measured drums steady breathing as horns fade."
+    }
+  }
+}

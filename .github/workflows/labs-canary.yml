@@ -1,0 +1,50 @@
+name: Labs Canary Validation
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+          pip install pytest
+      - name: Validate theme packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          for path in themes/*.json; do
+            if [[ "$path" == *schema* ]]; then
+              continue
+            fi
+            echo "::group::Validating $path"
+            python fortress_director/cli.py theme validate "$path"
+            echo "::endgroup::"
+          done
+      - name: Simulate siege_default theme (canary)
+        run: |
+          mkdir -p runs/canary
+          python fortress_director/cli.py theme simulate themes/siege_default.json \
+            --turns 2 \
+            --random-choices \
+            --offline \
+            --output runs/canary/siege_default_report.json
+      - name: Run safe function regression suite
+        run: |
+          pytest tests/test_safe_functions.py tests/test_safe_function_validation.py -q
+      - name: Upload canary artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: labs-canary-theme-report
+          path: runs/canary

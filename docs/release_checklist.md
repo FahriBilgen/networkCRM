@@ -1,4 +1,4 @@
-# Release Checklist
+﻿# Release Checklist
 
 This checklist extends the roadmap "Sonraki Adimlar" requirements so that every sprint ships with traceable telemetry, dependency/log audits, and doc validations.
 
@@ -8,9 +8,23 @@ This checklist extends the roadmap "Sonraki Adimlar" requirements so that every 
 2. Manually spot-check KPI output:
    ```bash
    python tools/perf_watchdog.py --turns 3 --random-choice --reset-state --report-dir runs/perf_reports/manual
+   python tools/perf_watchdog.py --turns 3 --random-choice --reset-state --live-models --tag live_pilot --report-dir runs/perf_reports/manual
    python tools/kpi_digest.py --report-dir runs/perf_reports/manual --summary-path runs/perf_reports/manual/kpi_summary.md
    ```
    Upload the markdown to the sprint ticket so product/design can see turn durations and storage KPIs.
+
+## 1b. Labs Canary Validation (T-4 days)
+
+1. Check `.github/workflows/labs-canary.yml` in GitHub Actions. The cron (`0 3 * * *`) must be green for the current week; if it failed, trigger `workflow_dispatch` with the "Run workflow" button or via `gh workflow run labs-canary`.
+2. Review the generated artifacts:
+   - `labs-canary-theme-report` (theme simulate output under `runs/canary`).
+   - Pytest summary for `tests/test_safe_functions.py` + `tests/test_safe_function_validation.py`.
+3. If the workflow flagged a regression (non-zero exit), re-run locally:
+   ```bash
+   python fortress_director/scripts/cli.py theme simulate themes/siege_default.json --turns 2 --random-choices --offline --output runs/canary/manual_report.json
+   pytest tests/test_safe_functions.py tests/test_safe_function_validation.py -q
+   ```
+   Attach the rerun artifacts to the release issue and note whether the failure reproduces.
 
 ## 2. Dependency & Log Audit (T-3 days)
 
@@ -38,3 +52,4 @@ This checklist extends the roadmap "Sonraki Adimlar" requirements so that every 
 1. Ensure all artifacts cited above are linked inside the release issue.
 2. Validate that `docs/release_checklist.md` has no unchecked steps; if any were skipped, note the reason in the issue before tagging.
 3. Tag the release and trigger the deployment pipeline per ops SOP.
+

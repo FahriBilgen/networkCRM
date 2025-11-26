@@ -41,7 +41,7 @@ Every turn ends with one atomic state transaction.
 
 ## 🧩 Code-Aware Layer
 
-`codeaware/registry.py` defines a **SafeFunctionRegistry** — functions the AI can safely call (e.g. `move_npc`, `add_rock_to_map`, `change_weather`, `spawn_item`).  
+`fortress_director/codeaware/function_registry.py` defines a **SafeFunctionRegistry** - functions the AI can safely call (e.g. `move_npc`, `add_rock_to_map`, `change_weather`, `spawn_item`).  
 Each function has a validator and rollback mechanism.
 
 ---

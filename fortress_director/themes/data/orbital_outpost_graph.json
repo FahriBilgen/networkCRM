@@ -1,0 +1,29 @@
+{
+  "entry_id": "uplink_init",
+  "nodes": [
+    {
+      "id": "uplink_init",
+      "description": "Solar arrays realign as the uplink wardens sense intrusions.",
+      "tags": ["signal", "calm"],
+      "next": {
+        "default": "breach_alert"
+      }
+    },
+    {
+      "id": "breach_alert",
+      "description": "Hull sirens wail as kinetic pods hammer the shield lattice.",
+      "tags": ["threat", "battle"],
+      "next": {
+        "default": "core_choice",
+        "systems_green": "uplink_init"
+      }
+    },
+    {
+      "id": "core_choice",
+      "description": "Command decides between holding the uplink or venting the docks.",
+      "tags": ["decision"],
+      "next": {},
+      "is_final": true
+    }
+  ]
+}

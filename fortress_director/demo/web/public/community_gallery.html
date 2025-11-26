@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Community Gallery · Fortress Director</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #050914;
+        --panel: #0f172a;
+        --border: #1e293b;
+        --accent: #38bdf8;
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+      }
+      body {
+        margin: 0;
+        padding: 32px;
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      h1 {
+        margin: 0 0 8px;
+      }
+      p {
+        margin: 0 0 16px;
+        color: var(--muted);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+      }
+      .card {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px;
+        background: var(--panel);
+        box-shadow: 0 20px 35px rgba(0, 0, 0, 0.35);
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(56, 189, 248, 0.15);
+        color: var(--accent);
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .filters {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
+      .filters button {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--muted);
+        padding: 6px 12px;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+      }
+      .filters button.active {
+        background: var(--accent);
+        color: #020617;
+        border-color: transparent;
+      }
+      .tag {
+        display: inline-block;
+        background: rgba(148, 163, 184, 0.2);
+        color: var(--muted);
+        border-radius: 8px;
+        padding: 2px 8px;
+        margin-right: 4px;
+        font-size: 12px;
+      }
+      a {
+        color: var(--accent);
+      }
+      section {
+        margin-top: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Community Gallery (Mock)</h1>
+      <p>
+        Preview how story packs, NPC kits, and map layers surface to designers before publishing.
+        Data is pulled from <code>/creator/v1/manifest</code> and the curated gallery catalog.
+      </p>
+    </header>
+
+    <section>
+      <h2>Theme Catalog</h2>
+      <div id="themeGrid" class="grid"></div>
+    </section>
+
+    <section>
+      <div class="filters" id="galleryFilters"></div>
+      <div id="galleryGrid" class="grid"></div>
+    </section>
+
+    <script>
+      const galleryState = {
+        filter: "all",
+        projects: [],
+      };
+
+      function renderThemes(themes) {
+        const grid = document.getElementById("themeGrid");
+        if (!grid) return;
+        if (!themes || !themes.length) {
+          grid.innerHTML = "<p>No themes discovered.</p>";
+          return;
+        }
+        grid.innerHTML = themes
+          .map(
+            (theme) => `
+            <article class="card">
+              <div class="badge">Theme</div>
+              <h3>${theme.label}</h3>
+              <p>${theme.description || "No description provided."}</p>
+              <p class="small">Version ${theme.version} · ID: ${theme.id}</p>
+              <div>${(theme.tags || [])
+                .map((tag) => `<span class="tag">${tag}</span>`)
+                .join("")}</div>
+            </article>
+          `
+          )
+          .join("");
+      }
+
+      function renderFilters(filters) {
+        const container = document.getElementById("galleryFilters");
+        if (!container) return;
+        const allFilters = ["all", ...(filters || [])];
+        container.innerHTML = allFilters
+          .map(
+            (filter) => `
+          <button data-filter="${filter}" class="${galleryState.filter === filter ? "active" : ""}">
+            ${filter.replace("_", " ").toUpperCase()}
+          </button>`
+          )
+          .join("");
+        container.querySelectorAll("button").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            galleryState.filter = btn.dataset.filter;
+            container.querySelectorAll("button").forEach((el) => el.classList.remove("active"));
+            btn.classList.add("active");
+            renderProjects();
+          });
+        });
+      }
+
+      function renderProjects() {
+        const grid = document.getElementById("galleryGrid");
+        if (!grid) return;
+        const active = galleryState.filter;
+        const entries =
+          active === "all"
+            ? galleryState.projects
+            : galleryState.projects.filter((proj) => proj.type === active);
+        if (!entries.length) {
+          grid.innerHTML = "<p>No projects match the selected filter.</p>";
+          return;
+        }
+        grid.innerHTML = entries
+          .map(
+            (proj) => `
+          <article class="card">
+            <div class="badge">${proj.type.replace("_", " ")}</div>
+            <h3>${proj.title}</h3>
+            <p>${proj.summary}</p>
+            <p class="small">Creator: ${proj.creator}</p>
+            <p class="small">Status: ${proj.status}</p>
+            <div>${(proj.tags || [])
+              .map((tag) => `<span class="tag">${tag}</span>`)
+              .join("")}</div>
+            <p class="small">
+              Safety: ${proj.review?.safety || "n/a"} · IP: ${proj.review?.copyright || "n/a"}
+            </p>
+            <p class="small">Updated: ${proj.review?.timestamp || "n/a"}</p>
+            <p class="small">
+              <a href="${proj.links?.repo || "#"}" target="_blank" rel="noopener">Repository</a>
+            </p>
+          </article>
+        `
+          )
+          .join("");
+      }
+
+      async function bootstrap() {
+        try {
+          const [manifestResp, galleryResp] = await Promise.all([
+            fetch("/creator/v1/manifest"),
+            fetch("/creator/v1/gallery"),
+          ]);
+          const manifest = await manifestResp.json();
+          const gallery = await galleryResp.json();
+          renderThemes(manifest.themes || []);
+          galleryState.projects = gallery.projects || [];
+          galleryState.filter = "all";
+          renderFilters(gallery.filters || []);
+          renderProjects();
+        } catch (err) {
+          console.error("Failed to load gallery", err);
+          document.getElementById("galleryGrid").innerHTML =
+            "<p>Failed to load community catalog.</p>";
+        }
+      }
+
+      bootstrap();
+    </script>
+  </body>
+</html>

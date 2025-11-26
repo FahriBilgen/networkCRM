@@ -1,0 +1,90 @@
+{
+  "turn": 0,
+  "diff": [
+    {
+      "path": "npc_journal",
+      "kind": "removed",
+      "previous": [
+        {
+          "turn": 0,
+          "name": "Rhea",
+          "intent": "observe",
+          "entry": "I scan the horizon, searching for any signs of movement. The air is cool and damp, the wind carrying grit across the battlements."
+        },
+        {
+          "turn": 0,
+          "name": "Rhea",
+          "intent": "assist",
+          "entry": "Rhea shifts tactics with a assist maneuver."
+        },
+        {
+          "turn": 0,
+          "name": "Boris",
+          "intent": "command",
+          "entry": "Boris shifts tactics with a command maneuver."
+        },
+        {
+          "turn": 0,
+          "name": "Rhea",
+          "intent": "plan",
+          "entry": "Rhea shifts tactics with a plan maneuver."
+        },
+        {
+          "turn": 0,
+          "name": "Boris",
+          "intent": "inquire",
+          "entry": "Boris shifts tactics with a inquire maneuver."
+        },
+        {
+          "turn": 1,
+          "name": "Rhea",
+          "intent": "observe",
+          "entry": "The eerie melody echoes through the vast desert, whispering secrets that I must decipher."
+        },
+        {
+          "turn": 1,
+          "name": "Rhea",
+          "intent": "assist",
+          "entry": "Rhea shifts tactics with a assist maneuver."
+        },
+        {
+          "turn": 1,
+          "name": "Boris",
+          "intent": "command",
+          "entry": "Boris shifts tactics with a command maneuver."
+        },
+        {
+          "turn": 1,
+          "name": "Rhea",
+          "intent": "plan",
+          "entry": "Rhea shifts tactics with a plan maneuver."
+        },
+        {
+          "turn": 1,
+          "name": "Boris",
+          "intent": "inquire",
+          "entry": "Boris shifts tactics with a inquire maneuver."
+        }
+      ]
+    },
+    {
+      "path": "recent_events",
+      "kind": "changed",
+      "previous": [
+        "Shadows whisper secrets from the past.",
+        "' the rewritten prompt: The eerie melody echoing through the desolate desert landscape is revealed to be a symphony orchestrated by the whispers of the wind itself."
+      ],
+      "current": []
+    },
+    {
+      "path": "recent_motifs",
+      "kind": "changed",
+      "previous": [
+        "ion",
+        "static",
+        "trade"
+      ],
+      "current": []
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-# Theme Packages
+﻿# Theme Packages
 
 Faz 4 hedefi dogrultusunda tema paketleri ayni motoru farkli konseptlere (siege, sci-fi, vb.) tasimak icin gerekli prompt yollarini, world-state override'larini ve safe-function politikalarini tek bir JSON dosyasinda toplar.
 
@@ -6,13 +6,13 @@ Faz 4 hedefi dogrultusunda tema paketleri ayni motoru farkli konseptlere (siege,
 
 ```
 themes/
-├── theme_schema.json      # JSON Schema, otomatik validasyon icin
-├── siege_default.json     # Varsayilan kale savunmasi temasi
-├── orbital_frontier.json  # Ornek retro-future istasyon temasi
-└── scifi/
-    └── prompts/
-        ├── event_prompt.txt
-        └── world_prompt.txt
+â”œâ”€â”€ theme_schema.json      # JSON Schema, otomatik validasyon icin
+â”œâ”€â”€ siege_default.json     # Varsayilan kale savunmasi temasi
+â”œâ”€â”€ orbital_frontier.json  # Ornek retro-future istasyon temasi
+â””â”€â”€ scifi/
+    â””â”€â”€ prompts/
+        â”œâ”€â”€ event_prompt.txt
+        â””â”€â”€ world_prompt.txt
 ```
 
 ## Schema Ozet
@@ -53,7 +53,7 @@ themes/
 ### CLI Ornekleri
 
 ```bash
-py fortress_director/cli.py --theme siege_default run_turn --turns 2 --reset-before
+py fortress_director/scripts/cli.py --theme siege_default run_turn --turns 2 --reset-before
 ```
 
 Bu komut once `themes/siege_default.json` dosyasini yukler, world_state'i tema override'lariyla sifirlar ve ardindan iki tur calistirir. Farkli tema secmek icin `--theme orbital_frontier` gibi baska bir kimlik ya da dogrudan JSON yolu verilebilir.
@@ -62,13 +62,17 @@ Tema calismalari icin yeni CLI komutlari:
 
 ```bash
 # Paketi dogrula ve ozetini gor
-py fortress_director/cli.py theme validate siege_default  # Theme validate
+py fortress_director/scripts/cli.py theme validate siege_default  # Theme validate
 
 # Temayi sandbox'ta simule et
-py fortress_director/cli.py theme simulate orbital_frontier --turns 2 --random-choices --keep-state  # Theme Simulate
+py fortress_director/scripts/cli.py theme simulate orbital_frontier --turns 2 --random-choices --keep-state  # Theme Simulate
 ```
 
 `theme validate` prompt/world/safe-function override anahtarlarini raporlar. `theme simulate` secilen temayi yukler, belirtilen sayida tur calistirir ve varsayilan olarak state'i basa dondurur (`--keep-state` ile kalici yapabilirsin). Komut varsayilan olarak OfflineOllamaClient stub'lari ile calisir; gercek Ollama modellerini kullanmak icin `--live-models` ekle. `--output report.json` cikti kaydeder, `--include-raw` ise her turun tam JSON'unu ekler.
+
+### Creator Manifest
+
+Tema ve safe function paketlerini paylaşmak için artık `fortress_director/demo` içindeki yeni manifest araçlarını kullanacağız. Eski `creator_portal/manifest.schema.json` ve ilişkili kod kaldırıldı; güncel manifest şeması ve CLI entegrasyonu bu doküman güncellenirken eklenecek.
 
 ## Yeni Tema Olusturma Adimlari
 
@@ -83,3 +87,4 @@ py fortress_director/cli.py theme simulate orbital_frontier --turns 2 --random-c
 - Loader implementasyonu: CLI'ye `--theme` bayragi eklenmesi ve `SETTINGS` yapisinin tema dosyasina gore guncellenmesi.
 - Testler: Parametrik pytest senaryosu ile farkli temalarin world-state ve prompt yollarini dogrulamak.
 - UI/Grafik: Tema metadata'sindaki renk/motif bilgilerini oyuncu paneline yansitmak.
+

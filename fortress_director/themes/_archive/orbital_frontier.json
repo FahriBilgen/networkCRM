@@ -1,0 +1,115 @@
+{
+  "$schema": "./theme_schema.json",
+  "id": "orbital_frontier",
+  "label": "Orbital Frontier",
+  "description": "Retro-future station under siege by rogue AIs and resource droughts.",
+  "version": 1,
+  "inherits": "siege_default",
+  "tags": ["scifi", "retro", "anomaly"],
+  "prompt_overrides": {
+    "event": "themes/scifi/prompts/event_prompt.txt",
+    "world": "themes/scifi/prompts/world_prompt.txt"
+  },
+  "world_state_overrides": {
+    "campaign_id": "orbital_frontier",
+    "current_room": "command_spoke",
+    "player": {
+      "name": "Station Warden",
+      "inventory": ["arc baton", "diagnostic slate"],
+      "summary": "Sleepless warden coordinating drones from Observation Deck Six."
+    },
+    "weather_pattern": {
+      "pattern": "aurora_storm",
+      "remaining": 2
+    },
+    "recent_motifs": ["ion", "static"],
+    "structures": {
+      "western_wall": null,
+      "inner_gate": null,
+      "outer_ring": {
+        "durability": 55,
+        "status": "depressurized"
+      },
+      "fusion_spine": {
+        "durability": 70,
+        "status": "unstable"
+      }
+    }
+  },
+  "safe_function_overrides": {
+    "enable": [
+      "trigger_environment_hazard",
+      "set_time_of_day",
+      "open_trade_route",
+      "lock_player_option"
+    ],
+    "disable": [
+      "repair_breach"
+    ],
+    "gas_budget_overrides": {
+      "max_total_calls": 25,
+      "max_calls_per_function": 6
+    }
+  },
+  "assets": {
+    "motifs": ["ion", "static", "signals", "glitchlight"],
+    "npc_roster": [
+      {
+        "id": "omega_dtn",
+        "name": "Omega-Deten",
+        "summary": "Repurposed diplomacy android obsessed with zoological trivia.",
+        "role": "liaison"
+      },
+      {
+        "id": "sashi",
+        "name": "Sashi Quill",
+        "summary": "Zero-g engineer patching hull breaches with recycled nanopolymer.",
+        "role": "engineer"
+      }
+    ],
+    "scene_overlays": [
+      {
+        "id": "orbital_airlock_quarantine",
+        "bounds": [4, 2, 3, 2],
+        "color": "#60A5FA",
+        "alpha": 0.26,
+        "pattern": "outline",
+        "detail": "Quarantined airlock grid awaiting repressurisation"
+      },
+      {
+        "id": "orbital_thruster_contrail",
+        "bounds": [1, 7, 4, 2],
+        "color": "#4ADE80",
+        "alpha": 0.2,
+        "pattern": "chevron",
+        "detail": "Residual thruster plumes along the outer ring"
+      }
+    ]
+  },
+  "notes": {
+    "ui_palette": {
+      "background": "#05091A",
+      "panel": "#0B142B",
+      "accent": "#4ADE80",
+      "warning": "#F97316",
+      "info": "#60A5FA"
+    },
+    "effects": [
+      {
+        "id": "orbital_ion_rain",
+        "effect_type": "glitch",
+        "intensity": "high",
+        "color": "#60A5FA",
+        "tile": [3, 2],
+        "spread": 4
+      },
+      {
+        "id": "orbital_thruster_plume",
+        "effect_type": "storm",
+        "intensity": "medium",
+        "color": "#4ADE80",
+        "room": "command_spoke"
+      }
+    ]
+  }
+}

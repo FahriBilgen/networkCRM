@@ -1,4 +1,4 @@
-Yol Haritasi (Guncel)
+﻿Yol Haritasi (Guncel)
 
 Faz 0 - Durum Analizi
 
@@ -43,7 +43,7 @@ Faz 6 - UI Hazirligi ve Safe Function Etkilesimi
 
 - [x] API sozlesmesini versionla; player_view/options/safe_function_results JSON semasini yayinlayip FastAPI uzerinden valide et.
 - [x] npc_locations, map_state ve guardrail anlatimini standartla; safe function sonuclarini bu canonical formatlara yaz ki UI ayni veriyi kullansin.
-- [x] fortress_director/ui altinda metrik barlari, NPC kartlari, guardrail feed ve safe function gecmisi gosteren basit prototip calistir.
+- [x] fortress_director/demo altinda metrik barlari, NPC kartlari, guardrail feed ve safe function gecmisi gosteren basit prototip calistir.
 - [x] Planlayici ve safe function telemetrisini SSE/polling endpoint olarak sun; veto/fallback anlatimini oyuncuya gorunur kil.
 
 Faz 7 - Teknik Mimari Refaktor
@@ -60,7 +60,7 @@ Faz 8 - Gozlemlenebilirlik ve Operasyon
 
 Faz 9 - Tema ve Tasarimci Araclari
 
-- [x] fortress_director/cli.py'ya 'theme validate' ve 'theme simulate' komutlarini ekle; themes/theme_schema.json uzerinden veri dogrulamasi yap ve diff cikart.
+- [x] fortress_director/scripts/cli.py'ya 'theme validate' ve 'theme simulate' komutlarini ekle; themes/theme_schema.json uzerinden veri dogrulamasi yap ve diff cikart.
 - [x] Tema/prompt sandbox'i kur: tasarimcilar JSON + prompt duzenleyip 2-3 tur simulasyonu kod yazmadan calistirsin.
 - [x] Yeni story pack'ler icin depo ve dokumantasyon olustur; hangi safe function setlerinin acik oldugunu ve gerekli asset'leri listele.
 
@@ -82,30 +82,61 @@ Yeni Yol Haritasi - Dinamik Oyun Hedefi
 
 Faz A - Oyuncu Deneyimi Temeli
 
-- Turn HUD'una kazanma/kaybetme kosullari, kalan tur sayisi ve kaynak barlarini ekle; risk gostergeleri ve Judge vetolari icin aksiyon onerileri uret.
-- Ilk 3 turu kapsayan tutorial senaryosu yaz; Character/Judge ajan promptlarina onboarding ornekleri ekle.
-- UI prototipini oyuncu testiyle dogrula, erisilebilirlik (kontrast, font, renk) hedeflerini belirle.
+- [x] Turn HUD'una kazanma/kaybetme kosullari, kalan tur sayisi ve kaynak barlarini ekle; risk gostergeleri ve Judge vetolari icin aksiyon onerileri uret. (HUD karti + risk panosu fortress_director/demo/web/index.html altinda yayinda)
+- [x] Ilk 3 turu kapsayan tutorial senaryosu yaz; Character/Judge ajan promptlarina onboarding ornekleri ekle. (tutorial_overlay + prompt brief'leri aktif)
+- [x] UI prototipini oyuncu testiyle dogrula, erisilebilirlik (kontrast, font, renk) hedeflerini belirle. (docs/ui_accessibility_targets.md + history/ui_playtests.md ilk dry run)
 
 Faz B - Dinamik Dunya Katmani
 
-- FunctionRegistry'ye map ve NPC odakli yeni safe function'lar (`update_map_layer`, `adjust_npc_role`, `spawn_event_marker`) ekle; JSON schema + limitleri tanimla.
-- Safe function ciktilarini isleyip SSE/WebSocket ile UI'ya aktaran map diff adapter'i yaz; client tarafinda animasyonlu guncelleme uygula.
-- NPC davranis sablonlarini tanimla; LLM yalnizca hedef/niyet cikarirken pathfinding ve tepki suresi deterministik motor tarafindan yonetilsin.
+- [x] FunctionRegistry'ye map ve NPC odakli yeni safe function'lar (`update_map_layer`, `adjust_npc_role`, `spawn_event_marker`) ekle; JSON schema + limitleri tanimla. (validators + `safe-functions/schema` endpoint tamam)
+- [x] Safe function ciktilarini isleyip SSE/WebSocket ile UI'ya aktaran map diff adapter'i yaz; client tarafinda animasyonlu guncelleme uygula. (map_diff_adapter + ui/index.html map activity/pulse kartlari)
+- [x] NPC davranis sablonlarini tanimla; LLM yalnizca hedef/niyet cikarirken pathfinding ve tepki suresi deterministik motor tarafindan yonetilsin. (fortress_director/utils/npc_behavior.py + tests/test_npc_behavior.py)
 
 Faz C - Performans ve Guardrail
 
-- Map/NPC fonksiyonlari icin cagri limitleri ve batching uygula; profile_turn/perf_watchdog raporlarina `map_fn_latency`, `snapshot_batch_ms` gibi yeni metrikler ekle.
-- Validator kurallarini genislet; map diff'lerini schema + is kuralina gore dogrula, hatada otomatik rollback + oyuncu-facing fallback metni yaz.
-- Siklikla kullanilan fonksiyonlarin ozetini ana prompt'a ekleyip nadir fonksiyonlar icin lookup tablo kullan; token maliyetini dusur.
+- [x] Map/NPC fonksiyonlari icin cagri limitleri ve batching uygula; profile_turn/perf_watchdog raporlarina `map_fn_latency`, `snapshot_batch_ms` gibi yeni metrikler ekle. (SafeFunctionExecutor metrikleri + telemetry_aggregate/perf_watchdog gunceli)
+- [x] Validator kurallarini genislet; map diff'lerini schema + is kuralina gore dogrula, hatada otomatik rollback + oyuncu-facing fallback metni yaz. (map_diff_validator + guardrail notlari ve fallback mesaji)
+- [x] Siklikla kullanilan fonksiyonlarin ozetini ana prompt'a ekleyip nadir fonksiyonlar icin lookup tablo kullan; token maliyetini dusur.
 
 Faz D - Icerik, Replay ve Sosyal Katman
 
-- `docs/theme_prompt_backlog.md` u oyuncu perspektifiyle tekrar yaz; map/NPC fonksiyonlarini kullanan yeni senaryolar planla.
-- NPC loyalty, kaynak baskisi ve event zincirlerini UI'da gorunur kilarak karar-sonuc bagini guclendir.
-- Meta progression (kilit acma, basari, paylasilabilir hikaye ozetleri) icin taslak hazirla ve telemetri raporlarini buna gore duzenle.
+- [x] `docs/theme_prompt_backlog.md` u oyuncu perspektifiyle tekrar yaz; map/NPC fonksiyonlarini kullanan yeni senaryolar planla. (oyuncu hedefleri + safe function kancalari tablo halinde)
+- [x] NPC loyalty, kaynak baskisi ve event zincirlerini UI'da gorunur kilarak karar-sonuc bagini guclendir. (fortress_director/demo/web/index.html loyalty/resource/event + meta panelleri)
+- [x] Meta progression (kilit acma, basari, paylasilabilir hikaye ozetleri) icin taslak hazirla ve telemetri raporlarini buna gore duzenle. (docs/meta_progression_plan.md + player_view/telemetry meta fields)
 
 Faz E - Gercek Modellerle Oynanabilir Pilot
 
-- LLM cikti planlarini mikroadim event queue'suna dokun; oyuncu aksiyonlariyla carpisma durumlari icin lock/priority sistemi yaz.
-- Dusek gecikmeli modeller (quantized/adapter) ve cache stratejileri sec; canli modellerle tur surelerini <=3 saniye hedefle.
+- [x] LLM cikti planlarini mikroadim event queue'suna dokun; oyuncu aksiyonlariyla carpisma durumlari icin lock/priority sistemi yaz.
+- [x] Dusek gecikmeli modeller (quantized/adapter) ve cache stratejileri sec; canli modellerle tur surelerini <=3 saniye hedefle.
 - Web/desktop pilot istemcisi baglayip oyuncu oynarken LLM'in map/NPC degisikliklerini gosteren entegrasyonu tamamla; KPI'lar icin go/no-go kriterleri belirle.
+
+Faz F - Canli Opsiyonlar ve Ekonomi
+
+- [x] fortress_director/live_ops/ altindaki planlayici tamamen kaldirildi; live ops tetikleyicileri ve JSON planlari artik desteklenmiyor.
+- [x] tools/resource_balancer.py ile kaynak ekonomisi sim araci yaz; player_view metric'lerinden veri cekip riskli delta'lari raporla, balance tablosunu docs/economy_tuning.md'de tut. (CLI `resource_balance` + JSON rapor opsiyonu + docs notlari)
+- [x] Sosyal paylasim pipeline'ini (docs/meta_progression_plan.md) otomatik screenshot + hikaye ozetleri ile genislet; Discord/webhook entegrasyonunu ops checklist'ine ekle. (tools/share_card_pipeline.py + ops/social_share_checklist.md + telemetry/perf_watchdog baglantilari)
+
+Faz G - Platform ve Operasyon
+
+- [x] Gercek zamanli modeller icin autoscaling ve GPU havuz ayarlarini Cloud/infra.md altinda runbook olarak yaz; perf_watchdog ciktilarini alarm esiklerine bagla. (Cloud/infra runbook + `tools/publish_autoscale_metrics.py`)
+- [x] Data privacy/compliance checklist'ini hazirla; player_view ve logs icin maskleme/regulation notlarini docs/compliance.md dosyasina bagla. (mask_player_identifiers util + docs/compliance.md + telemetry wiring)
+- [x] Release candidate pipeline'ini nightly ve canary olarak ayir; .github/workflows/labs-canary.yml ile theme paketleri + safe function setlerini otomatik olarak test et. (scheduled workflow + release checklist adimlari)
+
+Faz H - Global Lansman ve Lokalizasyon
+
+- [x] `localization/phrasebook/*.yaml` yapisini kurup themes paketlerinin `strings.json` dosyalariyla build sirasinda birlestir; fortress_director/prompt_runtime icinde dil fallback zincirini ve pluralization kurallarini uygulamaya al.
+- [x] UI asset'leri ve player_view metinlerini i18n pipeline'ina bagla; RTL ve dusuk bant genisligi modlari icin `ui/localization_preview.html` prototipini calistirip docs/localization_guide.md altinda QA checklist'i olustur.
+- [x] Region bazli event/gateway ayarlarini Cloud/region_matrix.md dokumaninda topla; telemetry_etl'yi locale filtreleriyle genisletip CDN/infra secimlerine veri sagla.
+
+Faz I - Model Adaptasyonu ve Deney Platformu
+
+- [x] tools/experiment_hub.py ile prompt/model/config kombinasyonlarini YAML bazli tarif edip CI uzerinden A/B ve canary testlerine dagit; sonuc raporlarini runs/experiments/ altinda sakla.
+- [x] fortress_director/model_registry/ paketine quantized + adapter model metadata'si ekle; cache stratejileri icin benchmark scriptleri (tools/model_cache_probe.py) yaz ve perf_watchdog'a bagla.
+- [x] Judge/safe function ajanlari icin otomatik regression veri setleri olustur; acceptance_tests/model_guardrail.jsonl dosyasina yeni vaka turlerini ekleyip nightly pipeline'da takip et.
+
+Faz J - Creator Ekosistemi ve Studio Entegrasyonu
+
+- [x] fortress_director/sdk/cli.py altinda paketlenecek "creator kit" komutlarini (theme init, prompt lint, safe function mock) yaz; docs/sdk_getting_started.md ile destekle.
+- [x] Theme/safe function paketleri icin versiyonlu API yayinla; repository'ye `docs/demo_overview.md` ekleyip CI'da dogrula. (Creator manifest API + schema + tests)
+- [x] Topluluk yapimlarini (story pack, NPC kit, map layer) kataloglayacak web tabanli gallery mock'u hazirla; ops tarafinda guvenlik taramalari ve telif incelemeleri icin checklist olustur. (`ui/community_gallery.html` + `/creator/v1/gallery` + `ops/community_gallery_checklist.md`)
+

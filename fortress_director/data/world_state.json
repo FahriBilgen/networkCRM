@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "campaign_id": "default_campaign",
+  "campaign_id": "orbital_frontier",
   "turn_limit": 30,
-  "current_turn": 8,
+  "current_turn": 2,
   "rng_seed": 12345,
   "scores": {
     "logic_score": 0,
@@ -10,77 +10,62 @@
     "corruption": 0
   },
   "flags": [
-    "low_cloud_presence",
-    "explore",
-    "major_wall_alert",
-    "stage_escalation",
-    "force_major_event",
-    "major_starvation_hint"
+    "atmosphere",
+    "sensory_details",
+    "major_wall_alert"
   ],
   "memory_layers": [],
   "active_layer": null,
   "npc_fragments": {},
   "inventory": [],
   "lore": {},
-  "turn": 8,
-  "day": 2,
-  "time": "evening",
-  "current_room": "courtyard",
-  "recent_events": [
-    "The Shieldbearer' eyes narrowed as the shimmering light pulsed with an unsettling energy. The shadowed gateway, once steadfast, hung precariously over the chasm, its hinges twisted and distorted. A si...",
-    "The shimmering tendrils of the corrupted gate writhed and strained, their hinges groaning like an ancient beast. A sudden cascade of supplies tumbled down the chasm, the metal glinting with an unsettl...",
-    "The Shieldbearer' heart hammered against their ribs like a frantic bird trapped in a cage. The writhing gate, their once pristine obsidian expanse now coated in a sickly green, churned and groaned wit..."
-  ],
-  "recent_motifs": [
-    "loss",
-    "unknown_action",
-    "memory",
-    "memory",
-    "memory",
-    "unknown_action",
-    "unknown_action",
-    "mystery",
-    "mystery",
-    "mystery"
-  ],
-  "recent_world_atmospheres": [],
+  "turn": 2,
+  "day": 1,
+  "time": "afternoon",
+  "locale": "en",
+  "current_room": "command_spoke",
   "world_constraint_from_prev_turn": {
-    "atmosphere": "Dawn hin mist veils over stone and mortar.",
-    "sensory_details": "The chill air carries the scent of rain on dry earth, while distant drums echo with a somber rhythm."
+    "atmosphere": "Hazy clouds hover low, battlements shrouded in mist.",
+    "sensory_details": "The air is cool and damp the distant sound of drums echoes faintly."
   },
   "player": {
-    "name": "The Shieldbearer",
+    "name": "Station Warden",
     "inventory": [
-      "oil lamp",
-      "patched shield"
+      "arc baton",
+      "diagnostic slate",
+      "health_potion"
     ],
     "stats": {
       "resolve": 3,
       "empathy": 2
     },
-    "summary": "A weary defender holding the western wall."
+    "summary": "Sleepless warden coordinating drones from Observation Deck Six.",
+    "position": {
+      "x": 4,
+      "y": 5
+    }
   },
   "character_summary": "Rhea is loyal but impulsive; Boris is cautious and calculating.",
-  "relationship_summary": "Rhea is neutral toward the player",
+  "relationship_summary": "Rhea trusts the player deeply",
   "metrics": {
-    "order": 55,
-    "morale": 47,
-    "resources": 36,
-    "knowledge": 51,
+    "order": 48,
+    "morale": 48,
+    "resources": 44,
+    "knowledge": 47,
     "corruption": 10,
-    "glitch": 61,
+    "glitch": 51,
     "risk_applied_total": 0,
     "major_flag_set": false,
     "major_events_triggered": 0,
     "major_event_last_turn": null
   },
   "npc_trust": {
-    "Rhea": 0
+    "Rhea": 2
   },
   "environment_hazards": [],
   "weather_pattern": {
-    "pattern": "overcast",
-    "remaining": 0,
+    "pattern": "aurora_storm",
+    "remaining": 2,
     "lock_until": 0
   },
   "structures": {
@@ -103,8 +88,32 @@
       "durability": 55,
       "max_durability": 70,
       "status": "stable"
+    },
+    "outer_ring": {
+      "durability": 55,
+      "status": "depressurized"
+    },
+    "fusion_spine": {
+      "durability": 70,
+      "status": "unstable"
     }
   },
+  "map_layers": {
+    "main_gate": {
+      "id": "main_gate",
+      "label": "Main Gate",
+      "status": "active",
+      "summary": null,
+      "color": null,
+      "opacity": null,
+      "threat_level": "medium",
+      "data": {},
+      "metadata": {},
+      "updated_turn": 2
+    }
+  },
+  "map_event_markers": [],
+  "npc_roles": {},
   "npc_schedule": {},
   "patrols": {},
   "combat_log": [],
@@ -123,32 +132,6 @@
     "progress": 0.0,
     "act_history": []
   },
-  "timeline": [
-    {
-      "turn": 6,
-      "scene": "The Shieldbearer' eyes narrowed as the shimmering light pulsed with an unsettling energy. The shadowed gateway, once steadfast, hung precariously over the chasm, its hinges twisted and distorted. A si...",
-      "choice_id": "option3",
-      "action_type": "trade",
-      "motif": "memory",
-      "major_event": true
-    },
-    {
-      "turn": 7,
-      "scene": "The shimmering tendrils of the corrupted gate writhed and strained, their hinges groaning like an ancient beast. A sudden cascade of supplies tumbled down the chasm, the metal glinting with an unsettl...",
-      "choice_id": "option2",
-      "action_type": "defense",
-      "motif": "unknown_action",
-      "major_event": true
-    },
-    {
-      "turn": 8,
-      "scene": "The Shieldbearer' heart hammered against their ribs like a frantic bird trapped in a cage. The writhing gate, their once pristine obsidian expanse now coated in a sickly green, churned and groaned wit...",
-      "choice_id": "option3",
-      "action_type": "trade",
-      "motif": "mystery",
-      "major_event": false
-    }
-  ],
   "hazard_cooldowns": {},
   "schema_notes": {},
   "locked_options": {},
@@ -161,59 +144,156 @@
       50
     ],
     [
+      48,
       49,
-      51,
-      41,
-      47,
-      51
-    ],
-    [
-      50,
-      52,
-      42,
-      49,
-      53
-    ],
-    [
-      51,
-      53,
       43,
-      51,
-      55
-    ],
-    [
-      50,
-      51,
       45,
-      53,
-      56
-    ],
-    [
-      51,
-      50,
-      43,
-      53,
-      58
-    ],
-    [
-      50,
-      50,
-      47,
-      53,
-      59
-    ],
-    [
-      54,
-      51,
-      43,
-      51,
-      61
+      51
     ]
   ],
-  "_anomaly_active_until": 11,
-  "_world_lock_until": 10,
-  "_high_volatility_mode": true,
+  "_anomaly_active_until": 5,
+  "_world_lock_until": 4,
+  "_high_volatility_mode": false,
   "last_weather_change_turn": null,
+  "npc_locations": [
+    {
+      "id": "Rhea",
+      "name": "Rhea",
+      "room": "command_spoke",
+      "x": 2,
+      "y": 5,
+      "role": "scout",
+      "stance": "tense_watch"
+    },
+    {
+      "id": "Boris",
+      "name": "Boris",
+      "room": "entrance",
+      "x": 9,
+      "y": 8,
+      "role": "merchant",
+      "stance": "cautious"
+    },
+    {
+      "id": "test_npc",
+      "name": "test_npc",
+      "room": "courtyard",
+      "x": 5,
+      "y": 7
+    }
+  ],
+  "theme_id": "orbital_frontier",
+  "theme_label": "Orbital Frontier",
+  "theme_title": "Orbital Frontier",
+  "theme_assets": {
+    "motifs": [
+      "ion",
+      "static",
+      "signals",
+      "glitchlight"
+    ],
+    "npc_roster": [
+      {
+        "id": "omega_dtn",
+        "name": "Omega-Deten",
+        "summary": "Repurposed diplomacy android obsessed with zoological trivia.",
+        "role": "liaison"
+      },
+      {
+        "id": "sashi",
+        "name": "Sashi Quill",
+        "summary": "Zero-g engineer patching hull breaches with recycled nanopolymer.",
+        "role": "engineer"
+      }
+    ],
+    "scene_overlays": [
+      {
+        "id": "orbital_airlock_quarantine",
+        "bounds": [
+          4,
+          2,
+          3,
+          2
+        ],
+        "color": "#60A5FA",
+        "alpha": 0.26,
+        "pattern": "outline",
+        "detail": "Quarantined airlock grid awaiting repressurisation"
+      },
+      {
+        "id": "orbital_thruster_contrail",
+        "bounds": [
+          1,
+          7,
+          4,
+          2
+        ],
+        "color": "#4ADE80",
+        "alpha": 0.2,
+        "pattern": "chevron",
+        "detail": "Residual thruster plumes along the outer ring"
+      }
+    ]
+  },
+  "theme_notes": {
+    "recommended_objective": "Hold until turn 10 and trigger the crisis finale.",
+    "ui_palette": {
+      "primary": "#654321",
+      "accent": "#4ADE80",
+      "background": "#05091A",
+      "panel": "#0B142B",
+      "warning": "#F97316",
+      "info": "#60A5FA"
+    },
+    "effects": [
+      {
+        "id": "orbital_ion_rain",
+        "effect_type": "glitch",
+        "intensity": "high",
+        "color": "#60A5FA",
+        "tile": [
+          3,
+          2
+        ],
+        "spread": 4
+      },
+      {
+        "id": "orbital_thruster_plume",
+        "effect_type": "storm",
+        "intensity": "medium",
+        "color": "#4ADE80",
+        "room": "command_spoke"
+      }
+    ]
+  },
+  "theme_palette": {
+    "primary": "#654321",
+    "accent": "#4ADE80",
+    "background": "#05091A",
+    "panel": "#0B142B",
+    "warning": "#F97316",
+    "info": "#60A5FA"
+  },
+  "theme_effects": [
+    {
+      "id": "orbital_ion_rain",
+      "effect_type": "glitch",
+      "intensity": "high",
+      "color": "#60A5FA",
+      "tile": [
+        3,
+        2
+      ],
+      "spread": 4
+    },
+    {
+      "id": "orbital_thruster_plume",
+      "effect_type": "storm",
+      "intensity": "medium",
+      "color": "#4ADE80",
+      "room": "command_spoke"
+    }
+  ],
   "_glitch_buffer": 0,
   "_director_pacing": "steady",
   "_director_notes": [
@@ -223,459 +303,330 @@
     },
     {
       "turn": 1,
-      "note": "The campaign is moving at a steady pace. No major events are needed for this turn."
-    },
-    {
-      "turn": 2,
       "note": "The campaign is progressing at a steady pace. No major events are needed for this turn."
-    },
-    {
-      "turn": 3,
-      "note": "The campaign is progressing at a steady pace. No major events are needed for this turn."
-    },
-    {
-      "turn": 4,
-      "note": "The campaign is progressing at a steady pace. No major events are needed for this turn."
-    },
-    {
-      "turn": 5,
-      "note": "The campaign is progressing at a steady pace. No major events are needed for this turn."
-    },
-    {
-      "turn": 6,
-      "note": "The campaign is progressing at a steady pace. No major events are needed for this turn."
-    },
-    {
-      "turn": 7,
-      "note": "The campaign is moving at a steady pace. No major events are needed for this turn."
     }
   ],
   "_director_guidance": {
     "pacing": "steady",
     "risk_budget": 3,
     "major_event": "force",
-    "notes": "The campaign is moving at a steady pace. No major events are needed for this turn.",
+    "notes": "The campaign is progressing at a steady pace. No major events are needed for this turn.",
     "flags_to_add": [],
     "flags_to_remove": []
   },
   "previous_judge_verdict": {
     "consistent": true,
-    "coherence": 95,
-    "integrity": 87,
-    "tone_alignment": 90,
-    "penalty": "none",
-    "reason": "The content follows established world physics, character logic, and narrative consistency. The scene is coherent with the previous events and motifs. The tone matches the established atmosphere and emotional register.",
-    "suggested_safe_functions": [],
+    "reason": "The content is consistent with the established world, lore, and character logic. There are no inconsistencies in terms of atmospheric variations or sensory details.",
     "soft_edit_policy": {
       "max_correction_per_turn": 0.15,
       "persist_window": 4
     },
     "penalty_applied": "none"
   },
-  "player_choice_history": [
-    "dialogue",
-    "dialogue",
-    "dialogue",
-    "exploration",
-    "trade",
-    "trade"
+  "last_major_event_turn": 1,
+  "status_effects": [
+    {
+      "target": "Rhea",
+      "status": "tense_watch",
+      "duration": 1
+    },
+    {
+      "target": "Rhea",
+      "status": "tense_watch",
+      "duration": 2
+    }
   ],
-  "summary_text": "Whispers fade and the walls hold steady.",
+  "player_choice_history": [
+    "trade",
+    "exploration"
+  ],
+  "summary_text": "A major event shakes the village. Glitch level rises.",
   "emotional_memory": [
     {
       "turn": 0,
       "name": "Rhea",
       "intent": "observe",
-      "speech": "I stand vigilant, my senses alert for any sign of danger."
+      "speech": "I scan the horizon, searching for any signs of movement. The air is cool and damp, the wind carrying grit across the battlements."
     },
     {
       "turn": 0,
       "name": "Rhea",
       "intent": "assist",
-      "speech": "(assist autonomous)"
+      "speech": "Rhea shifts tactics with a assist maneuver."
     },
     {
       "turn": 0,
       "name": "Boris",
       "intent": "command",
-      "speech": "(command autonomous)"
+      "speech": "Boris shifts tactics with a command maneuver."
     },
     {
       "turn": 0,
       "name": "Rhea",
       "intent": "plan",
-      "speech": "(plan autonomous)"
+      "speech": "Rhea shifts tactics with a plan maneuver."
     },
     {
       "turn": 0,
       "name": "Boris",
       "intent": "inquire",
-      "speech": "(inquire autonomous)"
+      "speech": "Boris shifts tactics with a inquire maneuver."
     },
     {
       "turn": 1,
       "name": "Rhea",
       "intent": "observe",
-      "speech": "I stand vigilant, my senses alert for any sign of danger. The storm rages on, a symphony of wind and rain."
+      "speech": "The eerie melody echoes through the vast desert, whispering secrets that I must decipher."
     },
     {
       "turn": 1,
       "name": "Rhea",
       "intent": "assist",
-      "speech": "(assist autonomous)"
+      "speech": "Rhea shifts tactics with a assist maneuver."
     },
     {
       "turn": 1,
       "name": "Boris",
       "intent": "command",
-      "speech": "(command autonomous)"
+      "speech": "Boris shifts tactics with a command maneuver."
     },
     {
       "turn": 1,
       "name": "Rhea",
       "intent": "plan",
-      "speech": "(plan autonomous)"
+      "speech": "Rhea shifts tactics with a plan maneuver."
     },
     {
       "turn": 1,
       "name": "Boris",
       "intent": "inquire",
-      "speech": "(inquire autonomous)"
-    },
-    {
-      "turn": 2,
-      "name": "Rhea",
-      "intent": "observe",
-      "speech": "The shadows lengthen, whispering secrets I can barely decipher. I stand guard, waiting for any sign of movement."
-    },
-    {
-      "turn": 2,
-      "name": "Rhea",
-      "intent": "assist",
-      "speech": "(assist autonomous)"
-    },
-    {
-      "turn": 2,
-      "name": "Boris",
-      "intent": "command",
-      "speech": "(command autonomous)"
-    },
-    {
-      "turn": 2,
-      "name": "Rhea",
-      "intent": "plan",
-      "speech": "(plan autonomous)"
-    },
-    {
-      "turn": 2,
-      "name": "Boris",
-      "intent": "inquire",
-      "speech": "(inquire autonomous)"
-    },
-    {
-      "turn": 3,
-      "name": "Rhea",
-      "intent": "defend",
-      "speech": "Approach the glowing light and investigate its source."
-    },
-    {
-      "turn": 4,
-      "name": "Rhea",
-      "intent": "observe",
-      "speech": "I notice a faint glow emanating from the distant light source. It's as if something is hidden there, waiting to be discovered."
-    },
-    {
-      "turn": 4,
-      "name": "Rhea",
-      "intent": "assist",
-      "speech": "(assist autonomous)"
-    },
-    {
-      "turn": 4,
-      "name": "Boris",
-      "intent": "command",
-      "speech": "(command autonomous)"
-    },
-    {
-      "turn": 4,
-      "name": "Rhea",
-      "intent": "plan",
-      "speech": "(plan autonomous)"
-    },
-    {
-      "turn": 4,
-      "name": "Boris",
-      "intent": "inquire",
-      "speech": "(inquire autonomous)"
-    },
-    {
-      "turn": 5,
-      "name": "Rhea",
-      "intent": "single_word_motivation",
-      "speech": "I stand watch, my vigilance heightened. The air is thick with the scent of danger, a stark contrast to the usual morning freshness."
-    },
-    {
-      "turn": 5,
-      "name": "Rhea",
-      "intent": "observe",
-      "speech": "Rhea shifts tactics with a observe maneuver."
-    },
-    {
-      "turn": 5,
-      "name": "Boris",
-      "intent": "assist",
-      "speech": "Boris shifts tactics with a assist maneuver."
-    },
-    {
-      "turn": 5,
-      "name": "Rhea",
-      "intent": "command",
-      "speech": "Rhea shifts tactics with a command maneuver."
-    },
-    {
-      "turn": 5,
-      "name": "Boris",
-      "intent": "plan",
-      "speech": "Boris shifts tactics with a plan maneuver."
-    },
-    {
-      "turn": 6,
-      "name": "Rhea",
-      "intent": "defend",
-      "speech": "Call out to Boris, requesting his assistance in assessing the situation and devising a plan to secure the gateway. (focu"
-    },
-    {
-      "turn": 7,
-      "name": "Rhea",
-      "intent": "single_word_motivation",
-      "speech": "I stand watch, my vigilance never falters. Keep your distance, for the shadows are my only allies."
-    },
-    {
-      "turn": 7,
-      "name": "Rhea",
-      "intent": "observe",
-      "speech": "Rhea shifts tactics with a observe maneuver."
-    },
-    {
-      "turn": 7,
-      "name": "Boris",
-      "intent": "assist",
-      "speech": "Boris shifts tactics with a assist maneuver."
-    },
-    {
-      "turn": 7,
-      "name": "Rhea",
-      "intent": "command",
-      "speech": "Rhea shifts tactics with a command maneuver."
-    },
-    {
-      "turn": 7,
-      "name": "Boris",
-      "intent": "plan",
-      "speech": "Boris shifts tactics with a plan maneuver."
+      "speech": "Boris shifts tactics with a inquire maneuver."
     }
   ],
   "memory_short": [
-    "Turn 1: Ask the Shieldbearer about any recent threats to Lornhaven. -> ' the rewritten prompt: I find myself trapped within a labyrinthine mansion, its walls adorned with ...",
-    "Turn 2: Ask the Shieldbearer about any recent threats to Lornhaven. -> (Motif: storm)...",
-    "Turn 3: Ask the Shieldbearer about any recent threats to Lornhaven. -> The Shieldbearer stands guard at the entrance, his eyes scanning the horizon for any signs of danger...",
-    "Memory summary: Turn 1: Ask the Shieldbearer about any recent threats to Lornhaven. -> ' the rewritten prompt: I find myself trapped within a labyrinthine mansion, its walls adorned with ... | Turn 2: Ask the Shieldb...",
-    "Turn 4: Approach the glowing light and investigate its source. -> The Shieldbearer stands guard at the entrance, his eyes scanning the horizon for any signs of danger...",
-    "Turn 5: Approach the glowing light and investigate its source. -> The Shieldbearer, standing guard at the entrance, notices a faint glow in the distance. As he squint...",
-    "Turn 6: Ignite your patched shield with the remaining oil from your lamp, creating a makeshift torch to better illuminate the entrance. (focus: trade) -> The Shieldbearer' eyes narrowed as the shimmering light pulsed with an unsettling energy. The shadow...",
-    "Memory summary: Turn 4: Approach the glowing light and investigate its source. -> The Shieldbearer stands guard at the entrance, his eyes scanning the horizon for any signs of danger... | Turn 5: Approach the glowing...",
-    "Turn 7: Call out to Boris, requesting his assistance in assessing the situation and devising a plan to secure the gateway. (focus: defense) -> The shimmering tendrils of the corrupted gate writhed and strained, their hinges groaning like an an...",
-    "Turn 8: Light your oil lamp and signal for help, hoping that someone from the village below might have supplies or knowledge to aid in this crisis. (focus: trade) -> The Shieldbearer' heart hammered against their ribs like a frantic bird trapped in a cage. The writh..."
+    "Turn 1: Unclear option -> Shadows whisper secrets from the past....",
+    "Turn 2: Explore the surroundings -> ' the rewritten prompt: The eerie melody echoing through the desolate desert landscape is revealed t..."
   ],
   "memory_long": [
-    "Turn 5: Major event triggered (major_wall_alert)",
-    "Turn 6: Major event triggered (major_wall_alert)",
-    "Turn 7: Major event triggered (major_wall_alert)",
-    "Turn 8: Major event triggered (major_wall_alert, major_starvation_hint)"
+    "Turn 1: Major event triggered (major_wall_alert)",
+    "Turn 2: Major event triggered (major_wall_alert)"
   ],
-  "status_effects": [],
-  "persistent_motif": {
-    "motif": "mystery",
-    "remaining": 4
+  "major_events_triggered": 2,
+  "major_event_last_turn": 2,
+  "_meta_progress": {
+    "map_mastery_streak": 0,
+    "loyal_pair_streak": 0
   },
-  "last_major_event_turn": 6,
-  "world_constraint": {
-    "atmosphere": "Dawn hin mist veils over stone and mortar.",
-    "sensory_details": "The chill air carries the scent of rain on dry earth, while distant drums echo with a somber rhythm."
-  },
-  "major_events_triggered": 3,
-  "major_event_last_turn": 7,
-  "_dramaturgy_state": {
-    "stage": "escalation",
-    "history": [
-      {
-        "stage": "build_up",
-        "turn": 5
+  "meta_unlocks": [],
+  "achievements": [],
+  "_telemetry_digest": {
+    "turn": 2,
+    "agents": {
+      "World": {
+        "agent_name": "World",
+        "response_times": [
+          6.974398399994243,
+          3.9446599999791943,
+          23.91218679997837,
+          15.531659899977967,
+          6.784654000017326,
+          6.141812899964862,
+          33.014625300012995
+        ],
+        "success_count": 7,
+        "failure_count": 0,
+        "consistency_violations": 0,
+        "quality_issues": 0,
+        "average_response_time": 13.75771389998928,
+        "success_rate": 100.0,
+        "last_response_time": 33.014625300012995
       },
-      {
-        "stage": "escalation",
-        "turn": 6
-      }
-    ],
-    "last_turn": 7,
-    "major_events": 0,
-    "last_major_turn": 7,
-    "risk_delta": 1,
-    "allow_major": true,
-    "force_major": false,
-    "directives": [
-      "stage_major_event",
-      "pressure_player_choices"
-    ],
-    "finale_hint": null
-  },
-  "_dramaturgy_directives": [
-    "stage_major_event",
-    "pressure_player_choices"
-  ],
-  "npc_journal": [
-    {
-      "turn": 6,
-      "name": "Rhea",
-      "intent": "single_word_motivation",
-      "entry": "I stand watch, my vigilance heightened. The air is thick with the scent of danger, a stark contrast to the usual morning freshness."
-    },
-    {
-      "turn": 6,
-      "name": "Rhea",
-      "intent": "observe",
-      "entry": "Rhea shifts tactics with a observe maneuver."
-    },
-    {
-      "turn": 6,
-      "name": "Boris",
-      "intent": "assist",
-      "entry": "Boris shifts tactics with a assist maneuver."
-    },
-    {
-      "turn": 6,
-      "name": "Rhea",
-      "intent": "command",
-      "entry": "Rhea shifts tactics with a command maneuver."
-    },
-    {
-      "turn": 6,
-      "name": "Boris",
-      "intent": "plan",
-      "entry": "Boris shifts tactics with a plan maneuver."
-    },
-    {
-      "turn": 7,
-      "name": "Rhea",
-      "intent": "defend",
-      "entry": "Call out to Boris, requesting his assistance in assessing the situation and devising a plan to secure the gateway. (focu"
-    },
-    {
-      "turn": 8,
-      "name": "Rhea",
-      "intent": "single_word_motivation",
-      "entry": "I stand watch, my vigilance never falters. Keep your distance, for the shadows are my only allies."
-    },
-    {
-      "turn": 8,
-      "name": "Rhea",
-      "intent": "observe",
-      "entry": "Rhea shifts tactics with a observe maneuver."
-    },
-    {
-      "turn": 8,
-      "name": "Boris",
-      "intent": "assist",
-      "entry": "Boris shifts tactics with a assist maneuver."
-    },
-    {
-      "turn": 8,
-      "name": "Rhea",
-      "intent": "command",
-      "entry": "Rhea shifts tactics with a command maneuver."
-    },
-    {
-      "turn": 8,
-      "name": "Boris",
-      "intent": "plan",
-      "entry": "Boris shifts tactics with a plan maneuver."
-    }
-  ],
-  "_last_journal_entries": [
-    {
-      "turn": 8,
-      "name": "Rhea",
-      "intent": "single_word_motivation",
-      "entry": "I stand watch, my vigilance never falters. Keep your distance, for the shadows are my only allies."
-    },
-    {
-      "turn": 8,
-      "name": "Rhea",
-      "intent": "observe",
-      "entry": "Rhea shifts tactics with a observe maneuver."
-    },
-    {
-      "turn": 8,
-      "name": "Boris",
-      "intent": "assist",
-      "entry": "Boris shifts tactics with a assist maneuver."
-    },
-    {
-      "turn": 8,
-      "name": "Rhea",
-      "intent": "command",
-      "entry": "Rhea shifts tactics with a command maneuver."
-    },
-    {
-      "turn": 8,
-      "name": "Boris",
-      "intent": "plan",
-      "entry": "Boris shifts tactics with a plan maneuver."
-    }
-  ],
-  "_fallback_strategy_index": 1,
-  "_turn_history": [
-    {
-      "turn": 7,
-      "choice": {
-        "id": "option2",
-        "text": "Call out to Boris, requesting his assistance in assessing the situation and devising a plan to secure the gateway. (focus: defense)",
-        "action_type": "defense"
+      "Director": {
+        "agent_name": "Director",
+        "response_times": [
+          6.0709947000141256,
+          4.7829325000057,
+          9.628135500010103,
+          8.568892600014806,
+          4.298395599995274,
+          3.158980900014285,
+          2.7905169999576174,
+          3.2453491000342183,
+          3.0261304000159726
+        ],
+        "success_count": 9,
+        "failure_count": 0,
+        "consistency_violations": 0,
+        "quality_issues": 0,
+        "average_response_time": 5.063369811118012,
+        "success_rate": 100.0,
+        "last_response_time": 3.0261304000159726
       },
-      "options": [
-        {
-          "id": "option1",
-          "text": "Approach cautiously, scanning for any signs of danger as you move towards the mysterious light.",
-          "action_type": "exploration"
-        },
-        {
-          "id": "option2",
-          "text": "Call out to Boris, requesting his assistance in assessing the situation and devising a plan to secure the gateway. (focus: defense)",
-          "action_type": "defense"
-        },
-        {
-          "id": "option3",
-          "text": "Ignite your oil lamp, using its light to signal for help from any nearby allies who might be able to reinforce the defenses. (focus: trade)",
-          "action_type": "trade"
-        }
-      ],
-      "safe_functions": [
-        {
-          "name": "change_weather",
-          "source": "event_agent",
-          "success": true
-        },
-        {
-          "name": "move_npc",
-          "source": "orchestrator:fallback",
-          "success": true
-        }
-      ],
-      "judge": {
-        "consistent": true,
-        "penalty": "none",
-        "reason": "The content follows established world physics, character logic, and narrative consistency. The scene is coherent with the previous events and motifs. The tone matches the established atmosphere and emotional register."
+      "Event": {
+        "agent_name": "Event",
+        "response_times": [
+          14.979830999975093,
+          31.55266719998326,
+          30.746440799965058,
+          40.258885799965356,
+          32.43381830002181,
+          33.4623252999736,
+          59.020685700001195,
+          92.56748689996311,
+          126.41214760002913
+        ],
+        "success_count": 3,
+        "failure_count": 6,
+        "consistency_violations": 0,
+        "quality_issues": 0,
+        "average_response_time": 51.27047651109751,
+        "success_rate": 33.33333333333333,
+        "last_response_time": 126.41214760002913,
+        "issues": [
+          "High response time: 51.3s",
+          "Low success rate: 33.3%"
+        ]
+      },
+      "Creativity": {
+        "agent_name": "Creativity",
+        "response_times": [
+          24.459260799980257,
+          8.111367500037886,
+          17.26186049997341,
+          7.697692800022196,
+          5.128399899986107,
+          102.82838110002922,
+          77.60857049998594,
+          9.795749799988698,
+          45.350199999986216
+        ],
+        "success_count": 9,
+        "failure_count": 0,
+        "consistency_violations": 0,
+        "quality_issues": 0,
+        "average_response_time": 33.13794254444333,
+        "success_rate": 100.0,
+        "last_response_time": 45.350199999986216,
+        "issues": [
+          "High response time: 33.1s"
+        ]
+      },
+      "Judge": {
+        "agent_name": "Judge",
+        "response_times": [
+          5.521384699968621,
+          5.25321370002348,
+          42.710675000038464,
+          42.75441300001694,
+          8.311409100017045,
+          8.239361900021322,
+          6.714672899979632,
+          5.090365899959579,
+          2.805710100044962,
+          2.774526600027457,
+          2.7809859000262804,
+          2.7851109000039287,
+          11.326734200003557,
+          11.284659299999475,
+          5.836266500002239,
+          4.772068299993407,
+          2.7826935999910347,
+          2.7882976999972016,
+          2.7749883999931626,
+          2.898452900000848,
+          9.250090699992143,
+          9.247465200023726,
+          9.282854600052815,
+          8.727457600005437,
+          8.540100799989887,
+          2.7511999999987893,
+          2.7626779000274837,
+          5.540685500018299,
+          5.110080600017682,
+          2.7876664000214078,
+          2.799348300031852,
+          2.9999624000047334,
+          3.010439000034239,
+          10.892952399968635,
+          10.411828999989666,
+          10.77498889999697,
+          14.673253899964038,
+          12.947344499989413,
+          11.629886499955319,
+          9.65116459998535,
+          3.8085317999939434,
+          3.7989765999955125,
+          3.9922107000020333,
+          4.1088824000325985,
+          4.137363599962555,
+          4.337214799947105,
+          4.263613999995869,
+          4.360265100025572,
+          4.346507699985523,
+          4.294528400001582,
+          4.3443580999737605,
+          4.245731900038663,
+          4.243972000025678,
+          4.096224200038705,
+          4.095129600027576,
+          4.1939805000438355
+        ],
+        "success_count": 56,
+        "failure_count": 0,
+        "consistency_violations": 0,
+        "quality_issues": 0,
+        "average_response_time": 7.154730907147625,
+        "success_rate": 100.0,
+        "last_response_time": 4.1939805000438355
+      },
+      "Character": {
+        "agent_name": "Character",
+        "response_times": [
+          6.983935400028713,
+          8.620943400019314,
+          8.132920800009742,
+          9.203321600041818,
+          7.0114110999857076,
+          17.219462700013537,
+          12.332798399962485,
+          13.658935200015549,
+          15.26032399997348
+        ],
+        "success_count": 9,
+        "failure_count": 0,
+        "consistency_violations": 0,
+        "quality_issues": 0,
+        "average_response_time": 10.936005844450039,
+        "success_rate": 100.0,
+        "last_response_time": 15.26032399997348
+      },
+      "safe_function_validator": {
+        "agent_name": "safe_function_validator",
+        "response_times": [],
+        "success_count": 71,
+        "failure_count": 27,
+        "consistency_violations": 0,
+        "quality_issues": 0,
+        "average_response_time": 0.0,
+        "success_rate": 72.44897959183673,
+        "last_response_time": null,
+        "issues": [
+          "Low success rate: 72.4%"
+        ]
       }
+    },
+    "judge": {},
+    "glitch": {
+      "roll": 54,
+      "effects": [
+        "Pathfinding errors unsettle the patrol routes."
+      ],
+      "triggered_loss": false
     }
-  ]
+  },
+  "_cold_refs": {
+    "history_dir": "history",
+    "latest_turn": 2,
+    "snapshot": "cold_latest.json"
+  }
 }

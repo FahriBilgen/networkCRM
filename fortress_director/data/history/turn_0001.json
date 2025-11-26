@@ -1,0 +1,128 @@
+{
+  "turn": 1,
+  "diff": [
+    {
+      "path": "npc_journal",
+      "kind": "changed",
+      "previous": [
+        {
+          "turn": 0,
+          "name": "Rhea",
+          "intent": "observe",
+          "entry": "I scan the horizon, searching for any signs of movement. The air is cool and damp, the wind carrying grit across the battlements."
+        },
+        {
+          "turn": 0,
+          "name": "Rhea",
+          "intent": "assist",
+          "entry": "Rhea shifts tactics with a assist maneuver."
+        },
+        {
+          "turn": 0,
+          "name": "Boris",
+          "intent": "command",
+          "entry": "Boris shifts tactics with a command maneuver."
+        },
+        {
+          "turn": 0,
+          "name": "Rhea",
+          "intent": "plan",
+          "entry": "Rhea shifts tactics with a plan maneuver."
+        },
+        {
+          "turn": 0,
+          "name": "Boris",
+          "intent": "inquire",
+          "entry": "Boris shifts tactics with a inquire maneuver."
+        },
+        {
+          "turn": 1,
+          "name": "Rhea",
+          "intent": "observe",
+          "entry": "I stand vigilant, scanning the horizon for any sign of movement. Shadows whisper secrets from the past, and I sense a lurking threat."
+        },
+        {
+          "turn": 1,
+          "name": "Rhea",
+          "intent": "assist",
+          "entry": "Rhea shifts tactics with a assist maneuver."
+        },
+        {
+          "turn": 1,
+          "name": "Boris",
+          "intent": "command",
+          "entry": "Boris shifts tactics with a command maneuver."
+        },
+        {
+          "turn": 1,
+          "name": "Rhea",
+          "intent": "plan",
+          "entry": "Rhea shifts tactics with a plan maneuver."
+        },
+        {
+          "turn": 1,
+          "name": "Boris",
+          "intent": "inquire",
+          "entry": "Boris shifts tactics with a inquire maneuver."
+        }
+      ],
+      "current": [
+        {
+          "turn": 0,
+          "name": "Rhea",
+          "intent": "observe",
+          "entry": "I scan the horizon, searching for any signs of movement. The air is cool and damp, the wind carrying grit across the battlements."
+        },
+        {
+          "turn": 0,
+          "name": "Rhea",
+          "intent": "assist",
+          "entry": "Rhea shifts tactics with a assist maneuver."
+        },
+        {
+          "turn": 0,
+          "name": "Boris",
+          "intent": "command",
+          "entry": "Boris shifts tactics with a command maneuver."
+        },
+        {
+          "turn": 0,
+          "name": "Rhea",
+          "intent": "plan",
+          "entry": "Rhea shifts tactics with a plan maneuver."
+        },
+        {
+          "turn": 0,
+          "name": "Boris",
+          "intent": "inquire",
+          "entry": "Boris shifts tactics with a inquire maneuver."
+        }
+      ]
+    },
+    {
+      "path": "recent_events",
+      "kind": "changed",
+      "previous": [
+        "Shadows whisper secrets from the past.",
+        "Echoes of forgotten melodies fill the air."
+      ],
+      "current": [
+        "Shadows whisper secrets from the past."
+      ]
+    },
+    {
+      "path": "recent_motifs",
+      "kind": "changed",
+      "previous": [
+        "static",
+        "trade",
+        "communication"
+      ],
+      "current": [
+        "ion",
+        "static",
+        "trade"
+      ]
+    }
+  ]
+}

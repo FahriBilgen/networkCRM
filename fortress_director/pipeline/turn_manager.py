@@ -192,6 +192,8 @@ class TurnManager:
                 scene_intent,
                 player_action_context=player_action_context,
                 max_calls=max_calls,
+                archive=archive,
+                turn_number=game_state.turn,
             )
             planned_actions = planner_output.get("planned_actions", [])
             LOGGER.debug("Planner produced %d actions", len(planned_actions))
@@ -210,6 +212,8 @@ class TurnManager:
                 event_seed=event_seed,
                 event_node=current_event_node,
                 world_tick_delta=world_tick_summary,
+                archive=archive,
+                turn_number=game_state.turn,
             )
             LOGGER.info(
                 "Turn completed with narrative: %s", render_payload["narrative_block"]
@@ -338,12 +342,16 @@ class TurnManager:
         *,
         player_action_context: Dict[str, Any] | None = None,
         max_calls: int | None = None,
+        archive: StateArchive | None = None,
+        turn_number: int = 0,
     ) -> Dict[str, Any]:
         return self.planner_agent.plan_actions(
             projected_state,
             scene_intent,
             player_action_context=player_action_context,
             max_calls=max_calls,
+            archive=archive,
+            turn_number=turn_number,
         )
 
     async def run_planner_async(
@@ -353,6 +361,8 @@ class TurnManager:
         *,
         player_action_context: Dict[str, Any] | None = None,
         max_calls: int | None = None,
+        archive: StateArchive | None = None,
+        turn_number: int = 0,
     ) -> Dict[str, Any]:
         return await asyncio.to_thread(
             self.run_planner_sync,
@@ -360,6 +370,8 @@ class TurnManager:
             scene_intent,
             player_action_context=player_action_context,
             max_calls=max_calls,
+            archive=archive,
+            turn_number=turn_number,
         )
 
     def run_renderer_sync(
@@ -371,6 +383,8 @@ class TurnManager:
         event_seed: str | None = None,
         event_node: "EventNode" | None = None,
         world_tick_delta: Dict[str, Any] | None = None,
+        archive: StateArchive | None = None,
+        turn_number: int = 0,
     ) -> Dict[str, Any]:
         return self.world_renderer_agent.render(
             world_state,
@@ -379,6 +393,8 @@ class TurnManager:
             event_seed=event_seed,
             event_node=event_node,
             world_tick_delta=world_tick_delta,
+            archive=archive,
+            turn_number=turn_number,
         )
 
     async def run_renderer_async(
@@ -390,6 +406,8 @@ class TurnManager:
         event_seed: str | None = None,
         event_node: "EventNode" | None = None,
         world_tick_delta: Dict[str, Any] | None = None,
+        archive: StateArchive | None = None,
+        turn_number: int = 0,
     ) -> Dict[str, Any]:
         return await asyncio.to_thread(
             self.run_renderer_sync,
@@ -399,6 +417,8 @@ class TurnManager:
             event_seed=event_seed,
             event_node=event_node,
             world_tick_delta=world_tick_delta,
+            archive=archive,
+            turn_number=turn_number,
         )
 
     def _ensure_theme_state(self, game_state: GameState, theme: ThemeConfig) -> None:

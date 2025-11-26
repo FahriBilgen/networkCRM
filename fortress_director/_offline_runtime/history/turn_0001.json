@@ -2,49 +2,12 @@
   "turn": 1,
   "diff": [
     {
-      "path": "npc_journal",
-      "kind": "added",
-      "current": [
-        {
-          "turn": 1,
-          "name": "Rhea",
-          "intent": "defend",
-          "entry": "I'll keep the storm off the wall while you plan our next move."
-        },
-        {
-          "turn": 1,
-          "name": "Rhea",
-          "intent": "observe",
-          "entry": "Rhea shifts tactics with a observe maneuver."
-        },
-        {
-          "turn": 1,
-          "name": "Boris",
-          "intent": "assist",
-          "entry": "Boris shifts tactics with a assist maneuver."
-        },
-        {
-          "turn": 1,
-          "name": "Rhea",
-          "intent": "command",
-          "entry": "Rhea shifts tactics with a command maneuver."
-        },
-        {
-          "turn": 1,
-          "name": "Boris",
-          "intent": "plan",
-          "entry": "Boris shifts tactics with a plan maneuver."
-        }
-      ]
-    },
-    {
-      "path": "recent_events",
+      "path": "recent_world_atmospheres",
       "kind": "changed",
-      "previous": [],
-      "current": [
-        "Storm clouds gather over the western wall as watch fires hiss."
-      ]
+      "previous": [
+        "electric storm"
+      ],
+      "current": []
     }
-  ],
-  "timestamp": 1762534670.031589
+  ]
 }

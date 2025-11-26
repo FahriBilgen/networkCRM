@@ -6,7 +6,8 @@ import json
 import logging
 import sqlite3
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple
+from typing import (Any, Dict, Iterable, List, Literal, Optional, Sequence,
+                    Set, Tuple, overload)
 
 from fortress_director.settings import SETTINGS
 
@@ -51,19 +52,27 @@ class SQLiteStateSync:
             cursor.execute("BEGIN IMMEDIATE")
             try:
                 self._sync_metadata(cursor, state)
-                if self._should_sync(changed_keys, {"npc_trust", "npc_schedule", "npc_locations", "npc_fragments"}):
+                if self._should_sync(
+                    changed_keys,
+                    {"npc_trust", "npc_schedule", "npc_locations", "npc_fragments"},
+                ):
                     self._sync_npc_state(cursor, state)
                 if self._should_sync(changed_keys, {"structures"}):
                     self._sync_structure_state(cursor, state)
                 if self._should_sync(changed_keys, {"stockpiles", "stockpile_log"}):
                     self._sync_stockpiles(cursor, state)
-                if self._should_sync(changed_keys, {"trade_routes", "trade_route_history"}):
+                if self._should_sync(
+                    changed_keys, {"trade_routes", "trade_route_history"}
+                ):
                     self._sync_trade_routes(cursor, state)
                 if self._should_sync(changed_keys, {"scheduled_events"}):
                     self._sync_scheduled_events(cursor, state)
                 if self._should_sync(changed_keys, {"timeline"}):
                     self._sync_timeline(cursor, state)
-                if self._should_sync(changed_keys, {"environment_hazards", "weather_pattern", "hazard_cooldowns"}):
+                if self._should_sync(
+                    changed_keys,
+                    {"environment_hazards", "weather_pattern", "hazard_cooldowns"},
+                ):
                     self._sync_hazards(cursor, state)
                 if self._should_sync(changed_keys, {"combat_log"}):
                     self._sync_combat_log(cursor, state)
@@ -161,10 +170,27 @@ class SQLiteStateSync:
         cursor: sqlite3.Cursor,
         state: Dict[str, Any],
     ) -> None:
-        locations = state.get("npc_locations", {})
+        raw_locations = state.get("npc_locations", {})
+
+        # Convert list format to dict format for backward compatibility
+        if isinstance(raw_locations, list):
+            locations = {}
+            for npc in raw_locations:
+                if isinstance(npc, dict):
+                    npc_id = npc.get("id") or npc.get("name")
+                    if npc_id:
+                        # Store room/location as string
+                        room = npc.get("room") or npc.get("location")
+                        locations[npc_id] = room
+        else:
+            locations = raw_locations
+
         trust_map = state.get("npc_trust", {})
         schedules = state.get("npc_schedule", {})
-        actors = set(locations) | set(trust_map) | set(schedules)
+        actor_keys = (
+            set(locations.keys()) | set(trust_map.keys()) | set(schedules.keys())
+        )
+        actors = actor_keys
         rows: List[Tuple[Any, ...]] = []
         for npc_id in sorted(actors):
             location = locations.get(npc_id)
@@ -456,10 +482,28 @@ def _replace_table(
     )
 
 
+@overload
 def _safe_int(
     value: Any,
     *,
     default: int = 0,
+    allow_none: Literal[False] = False,
+) -> int: ...
+
+
+@overload
+def _safe_int(
+    value: Any,
+    *,
+    default: int | None = 0,
+    allow_none: Literal[True],
+) -> int | None: ...
+
+
+def _safe_int(
+    value: Any,
+    *,
+    default: int | None = 0,
     allow_none: bool = False,
 ) -> int | None:
     if value is None:

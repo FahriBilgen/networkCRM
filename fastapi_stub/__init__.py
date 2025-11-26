@@ -1,5 +1,7 @@
 """A lightweight stub implementation of key FastAPI features used in tests."""
+
 from __future__ import annotations
+
 from typing import Any, Callable, Dict, Tuple
 
 RouteKey = Tuple[str, str]
