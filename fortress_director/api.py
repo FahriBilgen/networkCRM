@@ -54,10 +54,22 @@ from fortress_director.utils.file_lock import (
     FileLock,
     session_lock_path,
 )
+from fortress_director.rate_limiter import get_limiter
 
 API_VERSION = "0.1.0"
 DEFAULT_THEME_ID = "siege_default"
 app = FastAPI(title="Fortress Director UI API", version=API_VERSION)
+
+# Add rate limiting
+limiter = get_limiter()
+app.state.limiter = limiter
+app.add_exception_handler(
+    __import__("slowapi").errors.RateLimitExceeded,
+    lambda request, exc: __import__("fastapi").responses.JSONResponse(
+        status_code=429,
+        content={"detail": "Rate limit exceeded"},
+    ),
+)
 
 # Add JWT middleware for authentication
 app.add_middleware(JWTMiddleware)
