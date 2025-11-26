@@ -37,6 +37,10 @@ from fortress_director.core import (
 )
 from fortress_director.core.health_check import get_health_status
 from fortress_director.core.state_store import GameState
+from fortress_director.core.state_archive import (
+    StateArchive,
+    inject_archive_to_prompt,
+)
 from fortress_director.llm.model_registry import get_registry
 from fortress_director.llm.ollama_client import (
     OllamaClient,
@@ -283,6 +287,7 @@ class SessionContext:
     def __init__(self, theme: ThemeConfig, session_id: Optional[str] = None) -> None:
         self.session_id = session_id
         self.game_state = GameState.from_theme_config(theme, session_id=session_id)
+        self.archive = StateArchive(session_id or "unknown")
         self.player_action_context: Optional[Dict[str, Any]] = None
         self.theme_id: str = theme.id
 
@@ -405,6 +410,13 @@ def run_turn_endpoint(
             game_state.persist()
         except Exception as exc:
             LOGGER.warning("Failed to persist game state: %s", exc)
+        # Record turn to archive for state management
+        try:
+            session.archive.record_turn(
+                result.turn_number, snapshot, result.state_delta
+            )
+        except Exception as exc:
+            LOGGER.warning("Failed to record turn to archive: %s", exc)
         domain_snapshot = game_state.as_domain()
         npc_stats = _compute_npc_stats(game_state)
         hud = _build_hud(projection, snapshot, npc_stats)
