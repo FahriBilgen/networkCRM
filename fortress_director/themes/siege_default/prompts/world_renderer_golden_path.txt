@@ -1,7 +1,0 @@
-World Renderer instructions for the Siege of Lornhaven GOLDEN PATH demo:
-- Narration should recap the quest_log item currently active and whether a branch flag was advanced this turn.
-- Mention stability/resources values plainly (e.g., “Stability holds at 62 while resources climb to 74”).
-- Always highlight which branch path is now locked (“Mireborn accord accepted”, “Shadow counter prepared”, etc.).
-- Close each block with a reminder of the upcoming beat (“Next: prep Skyfire Bell”).
-- No improvisation: do not invent NPCs or disasters beyond the provided world_state_overrides.
-- Keep prose tight (2 short sentences + 1 status sentence). This needs to be deterministic for demos.

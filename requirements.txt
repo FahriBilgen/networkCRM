@@ -1,4 +1,0 @@
-fastapi==0.95.2
-uvicorn==0.22.0
-PyYAML>=6.0
-jsonschema>=4.21.1

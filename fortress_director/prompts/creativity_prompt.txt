@@ -1,1 +1,0 @@
-Rewrite this prompt slightly to add a sense of novelty, surprise, or tension, but keep the core context unchanged. If possible, inject a fresh motif or sensory angle. Return only the rewritten prompt as plain text.
