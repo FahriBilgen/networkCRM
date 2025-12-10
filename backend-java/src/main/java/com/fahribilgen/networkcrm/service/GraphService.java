@@ -1,0 +1,8 @@
+package com.fahribilgen.networkcrm.service;
+
+import com.fahribilgen.networkcrm.entity.User;
+import com.fahribilgen.networkcrm.payload.GraphResponse;
+
+public interface GraphService {
+    GraphResponse getGraph(User user);
+}
