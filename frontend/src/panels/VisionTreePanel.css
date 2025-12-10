@@ -1,0 +1,118 @@
+.vision-tree-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.vision-tree-panel header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #cbd5f5;
+}
+
+.vision-tree-scroll {
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.vision-tree-scroll .error {
+  color: #f87171;
+  font-size: 0.8rem;
+}
+
+.vision-block {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 0.6rem;
+  padding: 0.5rem;
+}
+
+.goal-list {
+  margin-left: 0.75rem;
+  border-left: 1px dashed #1f2937;
+  padding-left: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.goal-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  border-left: 1px dashed #1f2937;
+  margin-left: 0.65rem;
+  padding-left: 0.65rem;
+}
+
+.vision-node,
+.goal-node,
+.project-node {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  color: #e2e8f0;
+  cursor: pointer;
+  padding: 0.35rem 0.25rem;
+  border-radius: 0.5rem;
+  transition: background 0.2s;
+}
+
+.vision-node:hover,
+.goal-node:hover,
+.project-node:hover {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.node-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  margin-top: 0.3rem;
+}
+
+.node-dot.vision {
+  background: #38bdf8;
+}
+
+.node-dot.goal {
+  background: #facc15;
+}
+
+.node-dot.project {
+  background: #a78bfa;
+}
+
+.vision-tree-footer {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  border-top: 1px solid #1f2937;
+  padding-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.legend {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.legend-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}

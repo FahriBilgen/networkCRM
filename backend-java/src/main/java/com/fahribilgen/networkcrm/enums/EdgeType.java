@@ -1,7 +1,7 @@
 package com.fahribilgen.networkcrm.enums;
 
 public enum EdgeType {
-    RELATED_TO,
+    KNOWS,
     SUPPORTS,
-    BLOCKS
+    BELONGS_TO
 }

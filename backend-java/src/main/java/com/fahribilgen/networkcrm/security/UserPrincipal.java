@@ -2,6 +2,10 @@ package com.fahribilgen.networkcrm.security;
 
 import com.fahribilgen.networkcrm.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,19 +16,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserPrincipal implements UserDetails {
     private UUID id;
     private String email;
     @JsonIgnore
     private String password;
     private Collection<? extends GrantedAuthority> authorities;
-
-    public UserPrincipal(UUID id, String email, String password, Collection<? extends GrantedAuthority> authorities) {
-        this.id = id;
-        this.email = email;
-        this.password = password;
-        this.authorities = authorities;
-    }
 
     public static UserPrincipal create(User user) {
         List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));

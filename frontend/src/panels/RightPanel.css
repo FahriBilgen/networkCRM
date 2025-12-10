@@ -1,0 +1,36 @@
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 0.5rem;
+}
+
+.panel-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.25rem;
+  background: #0f172a;
+  border-radius: 0.75rem;
+  padding: 0.25rem;
+  border: 1px solid #1f2937;
+}
+
+.panel-tabs button {
+  border: none;
+  border-radius: 0.6rem;
+  background: transparent;
+  color: #94a3b8;
+  padding: 0.4rem 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.panel-tabs button.active {
+  background: #1d2539;
+  color: #f8fafc;
+}
+
+.panel-body {
+  flex: 1;
+  min-height: 0;
+}

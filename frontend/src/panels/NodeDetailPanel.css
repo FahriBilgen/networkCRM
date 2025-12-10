@@ -1,0 +1,82 @@
+.node-detail-panel header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.node-detail-panel h3 {
+  margin: 0;
+}
+
+.node-detail-panel .muted {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.node-detail-panel section {
+  margin-top: 0.75rem;
+}
+
+.node-detail-panel dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.3rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.node-detail-panel dt {
+  color: #94a3b8;
+}
+
+.node-detail-panel dd {
+  margin: 0;
+}
+
+.node-detail-panel .tags {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.node-detail-panel .tags span {
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.2);
+  font-size: 0.75rem;
+}
+
+.node-detail-panel.empty {
+  justify-content: center;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.badge {
+  width: fit-content;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.7rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-vision {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+}
+
+.badge-goal {
+  background: rgba(250, 204, 21, 0.2);
+  color: #facc15;
+}
+
+.badge-project {
+  background: rgba(167, 139, 250, 0.2);
+  color: #a78bfa;
+}
+
+.badge-person {
+  background: rgba(34, 211, 238, 0.2);
+  color: #22d3ee;
+}

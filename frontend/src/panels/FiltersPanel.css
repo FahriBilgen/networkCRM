@@ -1,0 +1,65 @@
+.filters-panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.filters-panel h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.filter-group label {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.filters-panel select,
+.filters-panel input[type='number'] {
+  border-radius: 0.4rem;
+  border: 1px solid #1f2937;
+  background: #0f172a;
+  color: #f1f5f9;
+  padding: 0.45rem 0.5rem;
+}
+
+.range-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.range-group input {
+  width: 70px;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  color: #cbd5f5;
+}
+
+.filters-panel footer {
+  margin-top: auto;
+}
+
+.block {
+  width: 100%;
+  justify-content: center;
+}
+
+.filter-message {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}

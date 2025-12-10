@@ -1,6 +1,7 @@
 package com.fahribilgen.networkcrm.entity;
 
 import com.fahribilgen.networkcrm.enums.NodeType;
+import com.fahribilgen.networkcrm.enums.ProjectStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -39,15 +41,43 @@ public class Node {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    private String sector;
+
+    @ElementCollection
+    @CollectionTable(name = "node_tags", joinColumns = @JoinColumn(name = "node_id"))
+    @Column(name = "tag")
+    private List<String> tags;
+
+    @Column(name = "relationship_strength")
+    private Integer relationshipStrength;
+
+    private String company;
+
+    private String role;
+
+    @Column(name = "linkedin_url")
+    private String linkedinUrl;
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+
+    private Integer priority;
+
+    private LocalDate dueDate;
+
+    private LocalDate startDate;
+
+    private LocalDate endDate;
+
+    @Enumerated(EnumType.STRING)
+    private ProjectStatus status;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private Map<String, Object> properties;
 
-    // Using List<Double> for pgvector embedding, mapped as a simple list for now.
-    // In a real pgvector implementation, we might need a custom converter or specific type.
-    @JdbcTypeCode(SqlTypes.JSON) 
-    // Note: For actual pgvector, we usually use a specific library or native queries.
-    // Storing as JSON for MVP simplicity until pgvector-java is fully integrated.
-    @Column(columnDefinition = "vector") 
+    // For now, skip embedding during INSERT. Generate async after node creation.
+    // pgvector support requires custom type handler - MVP focuses on core functionality
+    @Transient
     private List<Double> embedding;
 }

@@ -1,0 +1,64 @@
+.ai-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ai-panel header h3 {
+  margin: 0;
+}
+
+.ai-panel header .muted {
+  margin: 0;
+  color: #94a3b8;
+}
+
+.ai-panel header .error {
+  color: #f87171;
+}
+
+.ai-panel section h4 {
+  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+  color: #cbd5f5;
+}
+
+.suggestion-list,
+.insight-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.suggestion-list li,
+.insight-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0f172a;
+  border: 1px solid #1f2937;
+  border-radius: 0.6rem;
+  padding: 0.4rem 0.6rem;
+}
+
+.suggestion-list li small {
+  color: #94a3b8;
+}
+
+.suggestion-list .score {
+  font-weight: 600;
+  color: #10b981;
+}
+
+.insight-list strong {
+  color: #facc15;
+}
+
+.ai-panel.empty {
+  text-align: center;
+  color: #94a3b8;
+  justify-content: center;
+}

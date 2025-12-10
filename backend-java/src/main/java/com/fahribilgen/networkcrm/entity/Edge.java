@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -35,4 +36,21 @@ public class Edge {
 
     @Column(nullable = false)
     private Integer weight; // 0-5
+
+    @Column(name = "relationship_strength")
+    private Integer relationshipStrength;
+
+    private String relationshipType;
+
+    private LocalDate lastInteractionDate;
+
+    private Double relevanceScore;
+
+    private Boolean addedByUser;
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+
+    @Column(name = "sort_order")
+    private Integer sortOrder;
 }
