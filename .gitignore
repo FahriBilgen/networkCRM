@@ -1,4 +1,33 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Environment & secrets
+.env
+.env.local
+*.iml
+
+# Backend (Maven / Spring Boot)
+backend-java/target/
+backend-java/.mvn/
+backend-java/mvnw
+backend-java/mvnw.cmd
+backend-java/.gradle/
+
+# Logs
+*.log
+*.tmp
+tmp_state.sqlite
+
+# Frontend (Node / Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.turbo/
+
+# Python leftovers (from previous tooling)
 __pycache__/
 *.py[cod]
 .pytest_cache/
-profile_output.json
