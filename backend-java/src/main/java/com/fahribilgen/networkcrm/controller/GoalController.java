@@ -2,6 +2,7 @@ package com.fahribilgen.networkcrm.controller;
 
 import com.fahribilgen.networkcrm.entity.User;
 import com.fahribilgen.networkcrm.enums.NodeType;
+import com.fahribilgen.networkcrm.payload.GoalPathSuggestionResponse;
 import com.fahribilgen.networkcrm.payload.HierarchyMoveRequest;
 import com.fahribilgen.networkcrm.payload.NodeRequest;
 import com.fahribilgen.networkcrm.payload.NodeResponse;
@@ -56,6 +57,14 @@ public class GoalController {
     @GetMapping("/{id}")
     public ResponseEntity<NodeResponse> getGoal(@PathVariable UUID id, @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(nodeService.getNode(id, getUser(currentUser)));
+    }
+
+    @GetMapping("/{id}/path-suggestions")
+    public ResponseEntity<GoalPathSuggestionResponse> getGoalPathSuggestions(@PathVariable UUID id,
+                                                                             @RequestParam(name = "maxDepth", required = false) Integer maxDepth,
+                                                                             @RequestParam(name = "limit", required = false) Integer limit,
+                                                                             @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(nodeService.getGoalPathSuggestions(id, getUser(currentUser), maxDepth, limit));
     }
 
     @PostMapping("/{id}/move")

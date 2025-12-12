@@ -2,6 +2,8 @@ package com.fahribilgen.networkcrm.payload;
 
 import com.fahribilgen.networkcrm.enums.NodeType;
 import com.fahribilgen.networkcrm.enums.ProjectStatus;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,8 +18,13 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NodeRequest {
+
+    @NotNull(message = "Node type is required")
     private NodeType type;
+
+    @NotBlank(message = "Name is required")
     private String name;
+
     private String description;
     private String sector;
     private List<String> tags;

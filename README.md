@@ -8,35 +8,36 @@ Network CRM is a graph-first CRM that lets you map people, goals, visions and pr
 
 | Layer      | Stack / Tools                                                                                                 |
 | ---------- | ------------------------------------------------------------------------------------------------------------- |
-| Backend    | Java 21 · Spring Boot 3.5 · PostgreSQL 16 (pgvector) · LangChain4j + Ollama · Spring Security (JWT auth)      |
-| Frontend   | React 19 · TypeScript · Vite · React Flow · Zustand · Axios                                                   |
-| Operations | Docker / Docker Compose                                                                                       |
+| Backend    | Java 21 → Spring Boot 3.5 → PostgreSQL 16 (pgvector) → LangChain4j + Ollama → Spring Security (JWT auth)      |
+| Frontend   | React 19 → TypeScript → Vite → React Flow → Zustand → Axios                                                   |
+| Operations | Docker / Docker Compose (db + backend + frontend + Ollama)                                                    |
 
 ```
 .
-├── backend-java/         # Spring Boot service
-├── frontend/             # React SPA
-├── docker-compose.yml    # API + PostgreSQL stack
-├── proje.md              # Original product specification
-├── test_api_comprehensive.ps1   # Live backend smoke test
-└── README.md
+��� backend-java/         # Spring Boot service
+��� frontend/             # React SPA
+��� docker-compose.yml    # db + backend + frontend + Ollama stack
+��� proje.md              # Original product specification
+��� test_api_comprehensive.ps1   # Live backend smoke test
+��� README.md
 ```
 
 ---
 
 ## 1. Quick Start (Docker Compose)
 
-> Requires Docker Desktop (or compatible environment).
+> Requires Docker Desktop (or compatible environment). The stack now starts PostgreSQL, Ollama, the Spring Boot API and the production frontend build together.
 
-```
-docker-compose up -d --build
-```
-
-- Backend API → `http://localhost:8080`
-- PostgreSQL   → `localhost:5432` (`networkcrm` DB, credentials in `docker-compose.yml`)
+1. Start everything (first run will automatically download the `all-minilm` embedding model, so give it a minute):
+   ```
+   docker-compose up -d --build
+   ```
+2. Visit the services:
+   - Backend API → `http://localhost:8080`
+   - Frontend SPA → `http://localhost:5173`
+   - PostgreSQL   → `localhost:5432` (`networkcrm` DB, credentials in `docker-compose.yml`)
 
 The backend runs with the `default` Spring profile. To point it to a different DB/AI provider, edit `backend-java/src/main/resources/application.properties` or mount a custom `application-dev.properties`.
-
 ---
 
 ## 2. Running the Backend Locally
@@ -57,6 +58,7 @@ spring.datasource.username=postgres
 spring.datasource.password=postgres
 langchain4j.ollama.base-url=http://localhost:11434
 langchain4j.ollama.embedding-model.model-name=all-minilm
+app.jwtSecret=please-change-this-secret-and-keep-at-least-64-characters
 ```
 
 ### Build & run
@@ -69,6 +71,19 @@ mvn spring-boot:run   # or java -jar target/network-crm-0.0.1-SNAPSHOT.jar
 
 The API listens on `http://localhost:8080/api`.
 
+### Database update for embeddings
+
+The latest backend stores LangChain embedding vektörlerini `nodes.embedding` kolonu içinde tutuyor. PostgreSQL tarafında bir defaya mahsus aşağıdaki komutu çalıştırarak `jsonb` kolonu ekleyin (pgvector kullanıyorsanız buna denk gelen `vector` tipini tercih edebilirsiniz):
+
+```sql
+ALTER TABLE nodes ADD COLUMN IF NOT EXISTS embedding jsonb;
+```
+
+Hibernate zaten `spring.jpa.hibernate.ddl-auto=update` ile aynı kolonu yaratabiliyor, ancak üretim/veri dolu ortamlarda manuel `ALTER TABLE` ile ilerlemeniz önerilir.
+
+### Ollama bağlantısı
+
+Docker Compose senaryosunda `ollama/ollama` servisi network içinde yer alır, `all-minilm` modelini ilk açılışta kendisi indirir ve backend `LANGCHAIN4J_OLLAMA_BASE_URL=http://ollama:11434` değeriyle konuşur. Uygulamayı doğrudan host makinede çalıştırıyorsanız `application.properties` içindeki varsayılan `http://localhost:11434` adresi yeterli; farklı bir makine/port kullanıyorsanız bu değişkeni güncelleyip backend’i yeniden başlatmanız yeterlidir.
 ---
 
 ## 3. Running the Frontend Locally
@@ -152,7 +167,8 @@ Authentication: `Authorization: Bearer <token>`.
 
 - Uses mock data as a fallback when the backend is unreachable.
 - Vision tree, graph canvas and AI panels automatically switch to live data once the API responds.
-- Drag & drop, node edit, and “link person to goal” actions are wired to backend endpoints and respect authorization.
+- Drag & drop, node edit, and link person to goal actions are wired to backend endpoints and respect authorization.
+- Graph canvas now includes an Auto Layout button (ELK layered algorithm) to reflow nodes quickly.
 
 ---
 

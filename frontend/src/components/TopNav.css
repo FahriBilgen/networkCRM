@@ -103,3 +103,45 @@
 .user-meta small {
   color: #94a3b8;
 }
+
+.logout {
+  margin-left: 0.5rem;
+  padding: 0.35rem 0.7rem;
+}
+
+.nav-search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: min(520px, 100%);
+}
+
+.search-feedback {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.search-feedback.error {
+  color: #f87171;
+}
+
+.search-feedback.empty {
+  color: #fbbf24;
+}
+
+.search-result-chip {
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border: none;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.search-result-chip:hover {
+  background: rgba(56, 189, 248, 0.35);
+}

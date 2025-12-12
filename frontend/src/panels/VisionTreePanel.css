@@ -96,6 +96,10 @@
   background: #a78bfa;
 }
 
+.vision-tree-panel .dimmed {
+  opacity: 0.25;
+}
+
 .vision-tree-footer {
   font-size: 0.75rem;
   color: #94a3b8;
@@ -115,4 +119,15 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+}
+
+.vision-tree-footer .status {
+  color: #22c55e;
+  font-size: 0.75rem;
+}
+
+.vision-filter-summary {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  color: #cbd5f5;
 }

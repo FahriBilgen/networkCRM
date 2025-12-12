@@ -7,10 +7,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -72,12 +75,19 @@ public class Node {
     @Enumerated(EnumType.STRING)
     private ProjectStatus status;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(columnDefinition = "TEXT")
+    @Convert(converter = JsonAttributeConverter.class)
     private Map<String, Object> properties;
 
-    // For now, skip embedding during INSERT. Generate async after node creation.
-    // pgvector support requires custom type handler - MVP focuses on core functionality
-    @Transient
+    @Column(columnDefinition = "TEXT")
+    @Convert(converter = JsonAttributeConverter.class)
     private List<Double> embedding;
 }

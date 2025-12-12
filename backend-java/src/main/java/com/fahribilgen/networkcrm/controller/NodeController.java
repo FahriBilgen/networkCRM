@@ -3,15 +3,19 @@ package com.fahribilgen.networkcrm.controller;
 import com.fahribilgen.networkcrm.entity.User;
 import com.fahribilgen.networkcrm.enums.NodeType;
 import com.fahribilgen.networkcrm.payload.NodeFilterRequest;
+import com.fahribilgen.networkcrm.payload.NodeImportResponse;
+import com.fahribilgen.networkcrm.payload.NodeProximityResponse;
 import com.fahribilgen.networkcrm.payload.NodeRequest;
 import com.fahribilgen.networkcrm.payload.NodeResponse;
 import com.fahribilgen.networkcrm.repository.UserRepository;
 import com.fahribilgen.networkcrm.security.UserPrincipal;
 import com.fahribilgen.networkcrm.service.NodeService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,12 +33,12 @@ public class NodeController {
     private UserRepository userRepository;
 
     @PostMapping
-    public ResponseEntity<NodeResponse> createNode(@RequestBody NodeRequest nodeRequest, @AuthenticationPrincipal UserPrincipal currentUser) {
+    public ResponseEntity<NodeResponse> createNode(@Valid @RequestBody NodeRequest nodeRequest, @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(nodeService.createNode(nodeRequest, getUser(currentUser)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<NodeResponse> updateNode(@PathVariable UUID id, @RequestBody NodeRequest nodeRequest, @AuthenticationPrincipal UserPrincipal currentUser) {
+    public ResponseEntity<NodeResponse> updateNode(@PathVariable UUID id, @Valid @RequestBody NodeRequest nodeRequest, @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(nodeService.updateNode(id, nodeRequest, getUser(currentUser)));
     }
 
@@ -56,13 +60,13 @@ public class NodeController {
 
     @GetMapping("/filter")
     public ResponseEntity<List<NodeResponse>> filterNodes(@RequestParam(required = false) NodeType type,
-                                                          @RequestParam(required = false, name = "types") List<String> typesParam,
-                                                          @RequestParam(required = false) String sector,
-                                                          @RequestParam(required = false) List<String> tags,
-                                                          @RequestParam(required = false, name = "minRelationshipStrength") Integer minStrength,
-                                                          @RequestParam(required = false, name = "maxRelationshipStrength") Integer maxStrength,
-                                                          @RequestParam(required = false, name = "q") String searchTerm,
-                                                          @AuthenticationPrincipal UserPrincipal currentUser) {
+            @RequestParam(required = false, name = "types") List<String> typesParam,
+            @RequestParam(required = false) String sector,
+            @RequestParam(required = false) List<String> tags,
+            @RequestParam(required = false, name = "minRelationshipStrength") Integer minStrength,
+            @RequestParam(required = false, name = "maxRelationshipStrength") Integer maxStrength,
+            @RequestParam(required = false, name = "q") String searchTerm,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
         List<NodeType> types = convertToNodeTypes(typesParam);
         List<String> normalizedTags = normalizeStringList(tags);
 
@@ -79,9 +83,21 @@ public class NodeController {
         return ResponseEntity.ok(nodeService.filterNodes(filter, getUser(currentUser)));
     }
 
+    @GetMapping("/{id}/proximity")
+    public ResponseEntity<NodeProximityResponse> getProximity(@PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(nodeService.getNodeProximity(id, getUser(currentUser)));
+    }
+
     @GetMapping("/search")
     public ResponseEntity<List<NodeResponse>> searchNodes(@RequestParam String query, @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(nodeService.findSimilarNodes(query, getUser(currentUser)));
+    }
+
+    @PostMapping("/import/csv")
+    public ResponseEntity<NodeImportResponse> importFromCsv(@RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(nodeService.importPersonsFromCsv(file, getUser(currentUser)));
     }
 
     private User getUser(UserPrincipal userPrincipal) {

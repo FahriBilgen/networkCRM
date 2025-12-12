@@ -2,11 +2,13 @@ package com.fahribilgen.networkcrm.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.security.Key;
 import java.util.Date;
@@ -17,11 +19,21 @@ public class JwtTokenProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
-    @Value("${app.jwtSecret:9a4f2c8d3b7a1e6f4c8d3b7a1e6f4c8d3b7a1e6f4c8d3b7a1e6f4c8d3b7a1e6f}")
+    @Value("${app.jwtSecret}")
     private String jwtSecret;
 
     @Value("${app.jwtExpirationInMs:604800000}")
     private int jwtExpirationInMs;
+
+    @PostConstruct
+    public void validateJwtSecret() {
+        if (!StringUtils.hasText(jwtSecret)) {
+            throw new IllegalStateException("app.jwtSecret must be configured");
+        }
+        if (jwtSecret.length() < 64) {
+            throw new IllegalStateException("app.jwtSecret must be at least 64 characters for HS512");
+        }
+    }
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());

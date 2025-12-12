@@ -73,7 +73,7 @@ public class HierarchyServiceImpl implements HierarchyService {
         request.setSourceNodeId(sourceNodeId);
         request.setTargetNodeId(targetNodeId);
         request.setType(EdgeType.BELONGS_TO);
-        request.setSortOrder(sortOrder);
+        request.setSortOrder(sortOrder == null ? 0 : sortOrder);
         request.setWeight(0);
         request.setAddedByUser(true);
 

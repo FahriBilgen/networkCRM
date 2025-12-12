@@ -13,6 +13,27 @@ o	Not
 5.	Node tiplerinin ayrımı (kişi, hedef, vizyon, proje)
 6.	Sürükle-bırak ile graph düzenleme
 7.	Filtreleme: sektör, ilişki gücü, etiket
+
+### MUST Gereksinimleri Durum Tablosu
+
+| Gereksinim | Durum | Backend | Frontend |
+| --- | --- | --- | --- |
+| Kullanıcı girişi ve temel hesap sistemi | ✅ JWT tabanlı AuthController (backend-java/src/main/java/com/fahribilgen/networkcrm/controller/AuthController.java) | ✅ LoginOverlay + authStore (frontend/src/components/LoginOverlay.tsx, frontend/src/store/authStore.ts) |
+| Kişi kartı oluşturma / minimum alanlar | ✅ NodeService + NodeController (backend-java/src/main/java/com/fahribilgen/networkcrm/controller/NodeController.java) | ✅ NodeModal ve NodeDetailPanel (frontend/src/components/NodeModal.tsx, frontend/src/panels/NodeDetailPanel.tsx) |
+| Node tipleri (Person/Goal/Vision/Project) | ✅ NodeType enum + doğrulamalar (backend-java/src/main/java/com/fahribilgen/networkcrm/enums/NodeType.java) | ✅ VisionTreePanel, GraphCanvas görünümleri (frontend/src/panels/VisionTreePanel.tsx, frontend/src/panels/GraphCanvas.tsx) |
+| Graph üzerinde node gösterimi | ✅ GraphService / /api/graph (backend-java/src/main/java/com/fahribilgen/networkcrm/service/impl/GraphServiceImpl.java) | ✅ React Flow tabanlı GraphCanvas (frontend/src/panels/GraphCanvas.tsx) |
+| Sürükle-bırak düzenleme | ✅ Pozisyon güncellemeleri için NodeService.updateNode (backend-java/src/main/java/com/fahribilgen/networkcrm/service/impl/NodeServiceImpl.java) | ✅ Drag event’lerinde updateNode çağrısı (frontend/src/panels/GraphCanvas.tsx) |
+| Filtreleme: sektör/ilişki gücü/etiket | ✅ FilterNodes uç noktası (backend-java/src/main/java/com/fahribilgen/networkcrm/service/impl/NodeServiceImpl.java#L163) | ✅ FiltersPanel bileşeni (frontend/src/panels/FiltersPanel.tsx) |
+| Graph üzerinde yakınlık hesaplama | ✅ NodeProximityResponse servisi (backend-java/src/main/java/com/fahribilgen/networkcrm/service/impl/NodeServiceImpl.java#L201) | ✅ NodeDetailPanel’de yakınlık isteği (frontend/src/panels/NodeDetailPanel.tsx) |
+| Basit arama | ✅ filterNodes(searchTerm) desteği (backend-java/src/main/java/com/fahribilgen/networkcrm/service/impl/NodeServiceImpl.java#L187) | ✅ TopNav arama bileşeni + searchStore (frontend/src/components/TopNav.tsx, frontend/src/store/searchStore.ts) |
+### Web Kokpit + Mobil Hafif Sosyal Vizyonu
+
+Yu anki mimari iki katmanlŽñ bir deneyime evriliyor: web tarafŽñnda tÇ¬m graph, filtreler, AI ÇôngÇôrüleri ve karmaYŽñ timeline akƒõYŽñnŽñ yÇ«neten zengin bir ƒ?okokpitƒ??, mobilde ise daha hafif ama sosyal aŽY odaklŽñ bir eYlik uygulamasŽñ. Mobil uygulamanŽñ ana amacŽñ, sahada yeni tanŽYŽñlan kiYileri saniyeler iÇinde kayda almak, kart gÇ«rünümünde bilgilerini gÇ«rmek ve graphƒ?ta ilgili sektÇ«r katmanŽna otomatik yerletirmek.
+
+- **Web (masaÇ«stÇ«) tarafŽñ**: Graph dÇ«zenleme, hedef/vizyon/proje hiyerarisi, gelişmiş filtreler, timeline yorumlama, AI ƒ?ogoal suggestionƒ??, export ve raporlama gibi gÇ«rev yoŽlunluklu yetenekler burada kalŽ«r. KullanŽcŽlar networklerini analiz eder, graphƒ?ta katmanlŽñ gÇ«rünümü yönetir ve AIÇõn Ç«nerdiŽYi baŽlantŽlarƒ? sÇ«rÇ«kle bŽ«rak ile harekete geçirir.
+- **Mobil sosyal uygulama**: KullanŽcŽlar LinkedIn yerine bu uygulamada birbiriyle elenir, herkesin profil kartŽñ bulunur, grafikten daha sade bir katman gÇ«rünümü (sektÇ«r bazlŽñ listeler veya ƒ?odeğerƒ?? odaklŽñ sıralama) sunulur. Grafhƒ?daki en kritik kiYiler tikla seÇïilir, diŽer katmanlar ƒ?odaha az kritikƒ?? kuralŽyla açŽlŽr; yeni bir kişi eklendiğinde kart anŽnda backend ile senkron olur.
+- **Veri senkronizasyonu**: Spring Boot + PostgreSQL tabanlŽñ mevcut backend, hem web SPA hem mobil istemcinin tek kaynaŽğ olmaya devam eder. Graph nodeƒ?larŽñ, timeline JSONƒ?larŽñ ve AI embeddingƒ?lerindeki her güncelleme, JWT tabanlŽñ API aracŽlŽğŽyla anŽnda iki yÇ«ne de yansŽ«r; ekstra servis ayrŽmŽñ gerekmiyor.
+
 B. Veri Modeli (MUST)
 1.	Person node
 2.	Vision node
@@ -23,6 +44,9 @@ o	Person–Goal (destek ilişkisi)
 o	Goal–Vision (hiyerarşi)
 5.	Node metadata: renk, tip, sektör, etiketler
 6.	Graph DB veya graph benzeri yapı (Neo4j veya Postgres + adjacency)
+
+> **Gerçekleştirme Notu:** Kod tabanı Spring Boot 3.5 + Java 21 + PostgreSQL 16 (pgvector) + React 19 stack’i ile çalışır. Aşağıdaki kavramsal açıklamalarda geçen FastAPI/Neo4j önerileri, canlı projede Spring Boot servisleri ve JPA tabanlı PostgreSQL şemasıyla uygulanmaktadır.
+
 C. Fonksiyonel (MUST)
 1.	Kişi ekleme, düzenleme, silme
 2.	Vision → Goal → Project hiyerarşisi ekleme
@@ -235,37 +259,42 @@ BELONGS_TO edge
   "order": 1
 }
 ________________________________________
-2.2 Neo4j Şema Tasarımı
-Node Labels
-:Person
-:Vision
-:Goal
-:Project
-Properties
-Person
-name, sector, tags, relationship_strength, notes, company, role, linkedin_url, embeddings
-Goal
-title, description, due_date, priority
-Vision
-title, description, priority
-Project
-title, description, status, priority, start_date, end_date
-Relationship Types
-1.	(:Person)-[:KNOWS {relationship_strength, relationship_type, last_interaction_date}]->(:Person)
-2.	(:Person)-[:SUPPORTS {relevance_score, added_by_user, notes}]->(:Goal|:Project)
-3.	(:Goal)-[:BELONGS_TO {order}]->(:Vision)
-4.	(:Project)-[:BELONGS_TO {order}]->(:Goal)
-Birkaç query örneği
-Bir hedef için en uygun kişileri bul:
-MATCH (p:Person)-[s:SUPPORTS]->(g:Goal {id: "goal_1"})
-RETURN p, s.relevance_score
-ORDER BY s.relevance_score DESC
-Bir kişinin tüm networkü:
-MATCH (p:Person {id: "person_123"})-[:KNOWS*1..2]-(others)
-RETURN others
-Bir vizyonun tüm alt hedef ve projeleri:
-MATCH (v:Vision {id:"vision_1"})<-[:BELONGS_TO*]-(n)
-RETURN n
+2.2 PostgreSQL (pgvector) Şema Tasarımı
+Tablolar
+- `nodes` (Person/Vision/Goal/Project tipleri `type` kolonunda tutulur)
+- `edges` (KNOWS/SUPPORTS/BELONGS_TO tipleri)
+- `node_tags` (çoktan çoğa etiketler)
+
+Örnek Node kolonları
+- `id` (UUID)
+- `user_id` (tenant)
+- `type` (enum)
+- `name`, `description`, `sector`, `notes`
+- `relationship_strength`, `priority`, `due_date`, `status`
+- `embedding` (pgvector veya JSONB olarak saklanan embedding listesi)
+
+Örnek Edge kolonları
+- `id`, `source_node_id`, `target_node_id`, `type`
+- `weight`, `relationship_strength`, `relationship_type`
+- `last_interaction_date`, `relevance_score`, `sort_order`
+
+Sorgu örnekleri (SQL)
+Bir hedef için en yüksek relevanslı kişileri:
+```sql
+SELECT p.id, p.name, e.relevance_score
+FROM edges e
+JOIN nodes p ON p.id = e.source_node_id
+WHERE e.type = 'SUPPORTS' AND e.target_node_id = :goal_id
+ORDER BY e.relevance_score DESC
+LIMIT 5;
+```
+Bir vizyonun ağaç yapısı:
+```sql
+SELECT n.*
+FROM nodes n
+JOIN edges e ON e.source_node_id = n.id
+WHERE e.type = 'BELONGS_TO' AND e.target_node_id = :vision_id;
+```
 ________________________________________
 2.3 API Endpoint Taslakları
 Backend için restful taslak:
@@ -611,47 +640,17 @@ Bu yapı hem okunaklı hem de büyümeye uygun.
 ________________________________________
 3. Backend: teknoloji ve servis mimarisi
 3.1 Teknoloji seçimi
-Backend için net bir tercih yapıyorum:
-•	Python + FastAPI
-o	AI ve embedding işleri için Python ekosistemi rahat
-o	Async IO destekli, performansı yeterli
-o	Tip desteği ile orta-uzun vadede kod kalitesi korunur
-Diğer seçenek Node/NestJS de olur ama AI tarafıyla çok uğraşacağın için Python daha doğal.
+Mevcut backend Spring Boot 3.5 + Java 21 + Maven tabanlı; Spring Boot Web/Data JPA/Security starter'ları, PostgreSQL 16 + pgvector, LangChain4j + Ollama entegrasyonu ve test tarafında JUnit/Mockito/Testcontainers kullanılıyor.
+
 3.2 Modüler yapı
-Backend’i modüllere böl:
-•	auth
-•	person
-•	vision_goal_project
-•	graph
-•	ai
-Örnek dosya yapısı:
-app/
-  main.py
-  api/
-    v1/
-      person.py
-      vision.py
-      goal.py
-      project.py
-      graph.py
-      ai.py
-  core/
-    config.py
-    security.py
-  services/
-    neo4j_client.py
-    ai_client.py
-    graph_service.py
-    recommendation_service.py
-  models/
-    person.py
-    vision.py
-    goal.py
-    project.py
-  schemas/
-    person.py
-    ...
+`backend-java/src/main/java/com/fahribilgen/networkcrm` altında aşağıdaki paketler bulunuyor:
+- `controller` (Auth, Node, Graph, Ai vb.)
+- `service` + `service.impl` (NodeService, RecommendationService, GraphService...)
+- `entity`, `repository`, `payload`, `security`, `config`
+- `config/AiConfig` LangChain4j bağlayıcısı, `security` JWT filtreleri
+
 3.3 API endpoint’leri (netleştirme)
+Spring Boot RestController yapısıyla `/api/auth`, `/api/nodes`, `/api/graph`, `/api/ai`, `/api/visions`, `/api/goals`, `/api/projects` patikleri hazır; README'deki "Useful APIs" tablosu güncel referanstır.
 Önceden taslağını yaptık, şimdi bir tık daha konkretize ediyorum.
 Person:
 •	POST /api/v1/person
@@ -707,23 +706,16 @@ o	Kullanıcı isterse “Bu kişiyi hedefe bağla” butonuna basar
 Bu pipeline hem basit hem de genişlemeye açık.
 ________________________________________
 5. Deployment ve altyapı
-Başlangıç için mantıklı bir setup:
-•	Frontend:
-o	Static build (React) → Vercel / Netlify / S3 + CloudFront
-•	Backend (FastAPI):
-o	Docker image
-o	Fly.io, Render, Railway, DigitalOcean, vs.
-o	Küçük bir instance ile başlar
-•	Neo4j:
-o	Neo4j Aura (managed service)
-veya
-o	Kendi Docker container’ında Neo4j
-Config:
-•	.env:
-o	DB_URI, DB_USER, DB_PASS
-o	OPENAI_API_KEY
-o	CORS origins
-o	JWT secret (eğer auth ekleyeceksen)
-MVP’de auth çok basit tutulabilir (tek kullanıcı / basic token) ama ürünleşecekse JWT/OAuth düşünülmeli.
+Başlangıç için önerilen kurulum:
+- Frontend: React build çıktısını Vercel/Netlify/S3+CloudFront üzerinde servis etmek.
+- Backend (Spring Boot): Docker imajı olarak Fly.io, Render, Railway veya herhangi bir JVM destekli PaaS; PostgreSQL erişimi olan küçük bir instance yeterli.
+- PostgreSQL 16 + pgvector: Docker Compose ile yerel, üretimde ise managed Postgres veya RDS + pgvector uzantısı.
+- Opsiyonel olarak Ollama/LLM servisleri için ayrı host.
 
+Konfigürasyon:
+- `SPRING_DATASOURCE_URL/USERNAME/PASSWORD`
+- `APP_JWTSECRET`
+- `LANGCHAIN4J_OLLAMA_BASE_URL`
+- `VITE_API_BASE_URL`
 
+JWT zorunlu olduğu için üretimde güçlü secret/rotate politikası ve HTTPS reverse proxy önerilir.

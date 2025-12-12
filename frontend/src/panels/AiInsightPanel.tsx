@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { fetchGoalSuggestions } from '../api/client';
-import { mockGraphResponse } from '../mock/data';
+import { fetchGoalDiagnostics, fetchGoalSuggestions, fetchRelationshipNudges } from '../api/client';
 import { useSelectionStore } from '../store/selectionStore';
-import { NODE_TYPES } from '../types';
-import type { GoalSuggestionResponse } from '../types';
+import { NODE_TYPES, EDGE_TYPES } from '../types';
+import type { GoalSuggestionResponse, GoalNetworkDiagnostics, RelationshipNudge } from '../types';
+import { useGraphStore } from '../store/graphStore';
 import './AiInsightPanel.css';
+import { buildGoalNetworkDiagnostics } from '../utils/goalDiagnostics';
 
 type SuggestionDisplay = {
   id: string;
@@ -18,15 +19,28 @@ export function AiInsightPanel() {
   const [suggestions, setSuggestions] = useState<GoalSuggestionResponse['suggestions']>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [diagnostics, setDiagnostics] = useState<GoalNetworkDiagnostics | null>(null);
+  const [diagnosticsSource, setDiagnosticsSource] = useState<'server' | 'local' | null>(null);
+  const [diagnosticsError, setDiagnosticsError] = useState<string | null>(null);
+  const [nudges, setNudges] = useState<RelationshipNudge[]>([]);
+  const [nudgesError, setNudgesError] = useState<string | null>(null);
+  const graph = useGraphStore((state) => state.graph);
 
   const supportsEdges = useMemo(() => {
-    if (!selectedNode) {
+    if (!selectedNode || !graph) {
       return [];
     }
-    return mockGraphResponse.links.filter(
-      (edge) => edge.type === 'SUPPORTS' && edge.targetNodeId === selectedNode.id,
+    return graph.links.filter(
+      (edge) => edge.type === EDGE_TYPES.SUPPORTS && edge.targetNodeId === selectedNode.id,
     );
-  }, [selectedNode]);
+  }, [graph, selectedNode]);
+
+  const localDiagnostics = useMemo(() => {
+    if (!graph || !selectedNode || selectedNode.type !== NODE_TYPES.GOAL) {
+      return null;
+    }
+    return buildGoalNetworkDiagnostics(graph.nodes, supportsEdges);
+  }, [graph, selectedNode, supportsEdges]);
 
   useEffect(() => {
     let mounted = true;
@@ -62,10 +76,83 @@ export function AiInsightPanel() {
     };
   }, [selectedNode]);
 
+  useEffect(() => {
+    let mounted = true;
+    if (!selectedNode || selectedNode.type !== NODE_TYPES.GOAL) {
+      setDiagnostics(null);
+      setDiagnosticsSource(null);
+      setDiagnosticsError(null);
+      return;
+    }
+    const goalId = selectedNode.id;
+    setDiagnostics(null);
+    setDiagnosticsSource(null);
+    setDiagnosticsError(null);
+
+    fetchGoalDiagnostics(goalId)
+      .then((response) => {
+        if (!mounted) {
+          return;
+        }
+        setDiagnostics({
+          readiness: response.readiness,
+          sectorHighlights: response.sectorHighlights,
+          riskAlerts: response.riskAlerts,
+        });
+        setDiagnosticsSource('server');
+      })
+      .catch((err) => {
+        console.warn('Goal diagnostics request failed', err);
+        if (!mounted) {
+          return;
+        }
+        if (localDiagnostics) {
+          setDiagnostics(localDiagnostics);
+          setDiagnosticsSource('local');
+          setDiagnosticsError('Sunucu analizi alinamadi; yerel graph verisi kullaniliyor.');
+        } else {
+          setDiagnostics(null);
+          setDiagnosticsSource(null);
+          setDiagnosticsError('Analiz icin yeterli veri yok.');
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [selectedNode?.id, selectedNode?.type, localDiagnostics]);
+
+  useEffect(() => {
+    let mounted = true;
+    if (!selectedNode || selectedNode.type !== NODE_TYPES.GOAL) {
+      setNudges([]);
+      setNudgesError(null);
+      return;
+    }
+    setNudgesError(null);
+    fetchRelationshipNudges(5)
+      .then((response) => {
+        if (!mounted) {
+          return;
+        }
+        setNudges(response.nudges);
+      })
+      .catch((err) => {
+        console.warn('Relationship nudge request failed', err);
+        if (mounted) {
+          setNudges([]);
+          setNudgesError('Iliski hatirlatmalari alinamadi.');
+        }
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [selectedNode?.id, selectedNode?.type]);
+
   if (!selectedNode || selectedNode.type !== NODE_TYPES.GOAL) {
     return (
       <div className="panel ai-panel empty">
-        <p>AI önerileri görmek için bir hedef seçin.</p>
+        <p>AI önerilerini görmek için bir hedef seçin.</p>
       </div>
     );
   }
@@ -77,19 +164,21 @@ export function AiInsightPanel() {
     score: item.score,
   }));
 
-  const fallbackList: SuggestionDisplay[] = supportsEdges.reduce<SuggestionDisplay[]>((acc, edge) => {
-    const person = mockGraphResponse.nodes.find((node) => node.id === edge.sourceNodeId);
-    if (!person) {
+  const fallbackList: SuggestionDisplay[] = supportsEdges
+    .reduce<SuggestionDisplay[]>((acc, edge) => {
+      const person = graph.nodes.find((node) => node.id === edge.sourceNodeId);
+      if (!person) {
+        return acc;
+      }
+      acc.push({
+        id: edge.id,
+        name: person.name ?? 'İsimsiz',
+        sector: person.sector ?? undefined,
+        score: edge.relevanceScore ?? undefined,
+      });
       return acc;
-    }
-    acc.push({
-      id: edge.id,
-      name: person.name,
-      sector: person.sector,
-      score: edge.relevanceScore ?? 0,
-    });
-    return acc;
-  }, []);
+    }, [])
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
 
   const listToRender = apiList.length > 0 ? apiList : fallbackList;
 
@@ -118,25 +207,72 @@ export function AiInsightPanel() {
           ))}
         </ul>
       </section>
-      <section>
+      <section className="network-insights">
         <h4>Network Durumu</h4>
+        {diagnosticsSource && (
+          <small className="muted">
+            {diagnosticsSource === 'server' ? 'AI analizi' : 'Yerel graph analizi'}
+          </small>
+        )}
+        {diagnosticsError && <small className="error">{diagnosticsError}</small>}
+        {diagnostics ? (
+          <>
+            <div className={`readiness-pill ${diagnostics.readiness.level}`}>
+              <div>
+                <strong>{diagnostics.readiness.message}</strong>
+                <small>Skor: {(diagnostics.readiness.score * 100).toFixed(0)}%</small>
+              </div>
+            </div>
+            <ul className="insight-list">
+              {diagnostics.readiness.summary.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <p className="muted">Analiz icin yeterli veri yok.</p>
+        )}
+      </section>
+      <section>
+        <h4>Sektor Analizi</h4>
         <ul className="insight-list">
-          <li>
-            <span>Fintech sektöründe güçlü.</span>
-            <strong>+2 destek</strong>
-          </li>
-          <li>
-            <span>Marketing tarafı zayıf.</span>
-            <strong>Eksik</strong>
-          </li>
-          <li>
-            <span>Son 60 günde 1 kişiyle iletişim yok.</span>
-            <strong>Uyarı</strong>
-          </li>
+          {!diagnostics && <li>Veri bekleniyor.</li>}
+          {diagnostics?.sectorHighlights.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </section>
+      <section>
+        <h4>Risk Uyarilari</h4>
+        <ul className="insight-list warning">
+          {!diagnostics && <li>Uyarilar icin destek verisi bekleniyor.</li>}
+          {diagnostics?.riskAlerts.map((item, index) => (
+            <li key={`${item}-${index}`}>{item}</li>
+          ))}
+        </ul>
+      </section>
+      <section>
+        <h4>Iliski Hatirlatmalari</h4>
+        {nudgesError && <small className="error">{nudgesError}</small>}
+        <ul className="nudge-list">
+          {nudges.length === 0 && <li>Hatirlatma yok.</li>}
+          {nudges.map((nudge) => (
+            <li key={`${nudge.person.id}-${nudge.edgeType}-${nudge.targetName ?? 'none'}`}>
+              <div className="nudge-header">
+                <strong>{nudge.person.name}</strong>
+                {nudge.targetName && <small>{nudge.targetName}</small>}
+              </div>
+              <ul>
+                {nudge.reasons.map((reason) => (
+                  <li key={reason}>{reason}</li>
+                ))}
+              </ul>
+            </li>
+          ))}
         </ul>
       </section>
       <footer>
-        <button className="primary-button block">AI Öneri Al</button>
+        <button className="primary-button block">AI Önerisi Al</button>
       </footer>
     </div>
   );

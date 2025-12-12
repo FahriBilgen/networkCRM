@@ -129,6 +129,8 @@ public class GraphServiceImpl implements GraphService {
                 .endDate(node.getEndDate())
                 .status(node.getStatus())
                 .properties(node.getProperties())
+                .createdAt(node.getCreatedAt())
+                .updatedAt(node.getUpdatedAt())
                 .build();
     }
 

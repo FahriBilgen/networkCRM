@@ -2,8 +2,10 @@ package com.fahribilgen.networkcrm.controller;
 
 import com.fahribilgen.networkcrm.entity.User;
 import com.fahribilgen.networkcrm.enums.NodeType;
+import com.fahribilgen.networkcrm.payload.NodeImportResponse;
 import com.fahribilgen.networkcrm.payload.NodeRequest;
 import com.fahribilgen.networkcrm.payload.NodeResponse;
+import com.fahribilgen.networkcrm.repository.UserRepository;
 import com.fahribilgen.networkcrm.security.UserPrincipal;
 import com.fahribilgen.networkcrm.service.NodeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,10 +16,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -39,6 +47,9 @@ class NodeControllerIntegrationTest {
     @MockBean
     private NodeService nodeService;
 
+    @MockBean
+    private UserRepository userRepository;
+
     private NodeResponse testNodeResponse;
     private NodeRequest nodeRequest;
     private User testUser;
@@ -58,6 +69,10 @@ class NodeControllerIntegrationTest {
                 .sector("Technology")
                 .tags(Arrays.asList("tech", "ai"))
                 .relationshipStrength(5)
+                .properties(Map.of(
+                        "timeline",
+                        List.of(Map.of("id", "entry-1", "date", "2025-01-01", "note", "Kickoff"))
+                ))
                 .build();
 
         nodeRequest = NodeRequest.builder()
@@ -68,11 +83,21 @@ class NodeControllerIntegrationTest {
                 .tags(Arrays.asList("tech", "ai"))
                 .relationshipStrength(5)
                 .build();
+
+        when(userRepository.findById(any(UUID.class)))
+                .thenAnswer(invocation -> Optional.of(testUser));
+    }
+
+    private void authenticate() {
+        UserPrincipal principal = UserPrincipal.create(testUser);
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities())
+        );
     }
 
     @Test
-    @WithMockUser(username = "test@example.com")
     void testCreateNode_Success() throws Exception {
+        authenticate();
         when(nodeService.createNode(any(NodeRequest.class), any(User.class)))
                 .thenReturn(testNodeResponse);
 
@@ -86,8 +111,8 @@ class NodeControllerIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "test@example.com")
     void testGetNode_Success() throws Exception {
+        authenticate();
         UUID nodeId = testNodeResponse.getId();
         when(nodeService.getNode(eq(nodeId), any(User.class)))
                 .thenReturn(testNodeResponse);
@@ -99,8 +124,8 @@ class NodeControllerIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "test@example.com")
     void testUpdateNode_Success() throws Exception {
+        authenticate();
         UUID nodeId = testNodeResponse.getId();
         NodeRequest updateRequest = NodeRequest.builder()
                 .type(NodeType.PERSON)
@@ -127,8 +152,32 @@ class NodeControllerIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "test@example.com")
+    void testUpdateNode_ReturnsProperties() throws Exception {
+        authenticate();
+        UUID nodeId = testNodeResponse.getId();
+        NodeResponse updatedResponse = NodeResponse.builder()
+                .id(nodeId)
+                .type(NodeType.PERSON)
+                .name("Timeline Owner")
+                .properties(Map.of(
+                        "timeline",
+                        List.of(Map.of("id", "entry-2", "date", "2025-02-01", "note", "Mentor call"))
+                ))
+                .build();
+
+        when(nodeService.updateNode(eq(nodeId), any(NodeRequest.class), any(User.class)))
+                .thenReturn(updatedResponse);
+
+        mockMvc.perform(put("/api/nodes/" + nodeId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(nodeRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.properties.timeline[0].note").value("Mentor call"));
+    }
+
+    @Test
     void testDeleteNode_Success() throws Exception {
+        authenticate();
         UUID nodeId = testNodeResponse.getId();
 
         mockMvc.perform(delete("/api/nodes/" + nodeId))
@@ -136,8 +185,8 @@ class NodeControllerIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "test@example.com")
     void testGetAllNodes_Success() throws Exception {
+        authenticate();
         when(nodeService.getAllNodes(any(User.class)))
                 .thenReturn(Arrays.asList(testNodeResponse));
 
@@ -149,10 +198,28 @@ class NodeControllerIntegrationTest {
 
     @Test
     void testCreateNode_Unauthorized() throws Exception {
+        SecurityContextHolder.clearContext();
         mockMvc.perform(post("/api/nodes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(nodeRequest)))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void testImportCsv() throws Exception {
+        authenticate();
+        MockMultipartFile file = new MockMultipartFile("file", "contacts.csv", "text/csv", "name\nJohn Doe".getBytes());
+        NodeImportResponse response = NodeImportResponse.builder()
+                .processed(1)
+                .created(1)
+                .skipped(0)
+                .errors(List.of())
+                .build();
+        when(nodeService.importPersonsFromCsv(any(MultipartFile.class), any(User.class))).thenReturn(response);
+
+        mockMvc.perform(multipart("/api/nodes/import/csv").file(file))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.created").value(1));
     }
 
 }

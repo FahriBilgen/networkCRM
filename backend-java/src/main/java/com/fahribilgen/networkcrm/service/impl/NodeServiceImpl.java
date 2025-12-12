@@ -5,6 +5,7 @@ import com.fahribilgen.networkcrm.entity.Node;
 import com.fahribilgen.networkcrm.entity.User;
 import com.fahribilgen.networkcrm.enums.EdgeType;
 import com.fahribilgen.networkcrm.enums.NodeType;
+import com.fahribilgen.networkcrm.payload.GoalPathSuggestionResponse;
 import com.fahribilgen.networkcrm.payload.NodeFilterRequest;
 import com.fahribilgen.networkcrm.payload.NodeImportResponse;
 import com.fahribilgen.networkcrm.payload.NodeProximityResponse;
@@ -30,17 +31,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
@@ -286,6 +294,175 @@ public class NodeServiceImpl implements NodeService {
                 .build();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public GoalPathSuggestionResponse getGoalPathSuggestions(UUID goalId, User user, Integer maxDepth, Integer limit) {
+        int depthLimit = maxDepth == null ? 3 : Math.max(2, Math.min(maxDepth, 6));
+        int suggestionLimit = limit == null ? 3 : Math.max(1, Math.min(limit, 10));
+
+        Node goalNode = nodeRepository.findById(goalId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Goal not found"));
+
+        if (!goalNode.getUser().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Goal not accessible");
+        }
+        if (goalNode.getType() != NodeType.GOAL) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Path suggestions require a GOAL node.");
+        }
+
+        List<Node> nodes = nodeRepository.findByUserId(user.getId());
+        if (CollectionUtils.isEmpty(nodes)) {
+            return GoalPathSuggestionResponse.builder()
+                    .goalId(goalId)
+                    .suggestions(List.of())
+                    .build();
+        }
+
+        Map<UUID, Node> nodeMap = nodes.stream()
+                .collect(Collectors.toMap(Node::getId, node -> node));
+
+        Map<UUID, Set<UUID>> adjacency = buildAdjacencyMap(nodeMap, edgeRepository.findBySourceNode_User_Id(user.getId()));
+        if (!adjacency.containsKey(goalId)) {
+            adjacency.put(goalId, new HashSet<>());
+        }
+
+        Deque<PathSearchState> queue = new ArrayDeque<>();
+        Set<UUID> visited = new HashSet<>();
+        queue.add(new PathSearchState(goalId, List.of(goalId)));
+        visited.add(goalId);
+
+        List<GoalPathSuggestionResponse.PathSuggestion> suggestions = new ArrayList<>();
+
+        while (!queue.isEmpty()) {
+            PathSearchState state = queue.removeFirst();
+            int distance = state.path().size() - 1;
+            if (distance > depthLimit) {
+                continue;
+            }
+
+            if (!state.nodeId().equals(goalId)) {
+                Node current = nodeMap.get(state.nodeId());
+                if (current != null && current.getType() == NodeType.PERSON && distance >= 2) {
+                    suggestions.add(GoalPathSuggestionResponse.PathSuggestion.builder()
+                            .person(mapToResponse(current))
+                            .distance(distance)
+                            .pathNodeIds(new ArrayList<>(state.path()))
+                            .build());
+                    if (suggestions.size() >= suggestionLimit) {
+                        break;
+                    }
+                }
+            }
+
+            Set<UUID> neighbors = adjacency.getOrDefault(state.nodeId(), Set.of());
+            for (UUID neighborId : neighbors) {
+                if (visited.add(neighborId)) {
+                    List<UUID> nextPath = new ArrayList<>(state.path());
+                    nextPath.add(neighborId);
+                    queue.add(new PathSearchState(neighborId, nextPath));
+                }
+            }
+        }
+
+        return GoalPathSuggestionResponse.builder()
+                .goalId(goalId)
+                .suggestions(suggestions)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public NodeImportResponse importPersonsFromCsv(MultipartFile file, User user) {
+        if (file == null || file.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CSV dosyasi gerekli.");
+        }
+
+        int processed = 0;
+        int created = 0;
+        int skipped = 0;
+        List<String> errors = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+            CSVParser parser = CSVFormat.DEFAULT
+                    .builder()
+                    .setHeader()
+                    .setSkipHeaderRecord(true)
+                    .setIgnoreHeaderCase(true)
+                    .setIgnoreEmptyLines(true)
+                    .setTrim(true)
+                    .build()
+                    .parse(reader);
+
+            Map<String, String> headers = parser.getHeaderMap().keySet().stream()
+                    .collect(Collectors.toMap(h -> h.toLowerCase(Locale.ROOT), h -> h, (a, b) -> a));
+
+            for (CSVRecord record : parser) {
+                processed++;
+                String name = resolveName(record, headers);
+                if (!StringUtils.hasText(name)) {
+                    errors.add("Satir " + record.getRecordNumber() + ": isim alanı bulunamadı.");
+                    skipped++;
+                    continue;
+                }
+                if (nodeRepository.existsByUserIdAndNameIgnoreCase(user.getId(), name)) {
+                    skipped++;
+                    continue;
+                }
+
+                NodeRequest request = NodeRequest.builder()
+                        .type(NodeType.PERSON)
+                        .name(name)
+                        .company(resolveValue(record, headers, COMPANY_COLUMNS))
+                        .role(resolveValue(record, headers, ROLE_COLUMNS))
+                        .sector(resolveValue(record, headers, SECTOR_COLUMNS))
+                        .tags(parseTags(resolveValue(record, headers, TAG_COLUMNS)))
+                        .notes(resolveValue(record, headers, NOTES_COLUMNS))
+                        .linkedinUrl(resolveValue(record, headers, LINKEDIN_COLUMNS))
+                        .relationshipStrength(parseInteger(resolveValue(record, headers, new String[]{"relationship_strength", "relationship strength"})))
+                        .build();
+
+                try {
+                    createNode(request, user);
+                    created++;
+                } catch (Exception ex) {
+                    logger.warn("Failed to import CSV record {}", record.getRecordNumber(), ex);
+                    errors.add("Satir " + record.getRecordNumber() + ": " + ex.getMessage());
+                    skipped++;
+                }
+            }
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CSV okunamadi.", e);
+        }
+
+        return NodeImportResponse.builder()
+                .processed(processed)
+                .created(created)
+                .skipped(skipped)
+                .errors(errors)
+                .build();
+    }
+
+    private Map<UUID, Set<UUID>> buildAdjacencyMap(Map<UUID, Node> nodeMap, List<Edge> edges) {
+        Map<UUID, Set<UUID>> adjacency = new HashMap<>();
+        nodeMap.keySet().forEach(id -> adjacency.put(id, new HashSet<>()));
+        if (CollectionUtils.isEmpty(edges)) {
+            return adjacency;
+        }
+        for (Edge edge : edges) {
+            UUID sourceId = edge.getSourceNode() != null ? edge.getSourceNode().getId() : null;
+            UUID targetId = edge.getTargetNode() != null ? edge.getTargetNode().getId() : null;
+            if (sourceId == null || targetId == null) {
+                continue;
+            }
+            if (!adjacency.containsKey(sourceId) || !adjacency.containsKey(targetId)) {
+                continue;
+            }
+            adjacency.get(sourceId).add(targetId);
+            adjacency.get(targetId).add(sourceId);
+        }
+        return adjacency;
+    }
+
     private void accumulateNeighbors(List<Edge> edges,
                                      List<NodeProximityResponse.NeighborConnection> neighbors,
                                      Map<EdgeType, Long> connectionCounts,
@@ -345,6 +522,54 @@ public class NodeServiceImpl implements NodeService {
         }
 
         return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+    }
+
+    private String resolveName(CSVRecord record, Map<String, String> headers) {
+        String name = resolveValue(record, headers, NAME_COLUMNS);
+        if (StringUtils.hasText(name)) {
+            return name.trim();
+        }
+        String first = resolveValue(record, headers, FIRST_NAME_COLUMNS);
+        String last = resolveValue(record, headers, LAST_NAME_COLUMNS);
+        if (StringUtils.hasText(first) || StringUtils.hasText(last)) {
+            return (StringUtils.hasText(first) ? first.trim() : "") + " " + (StringUtils.hasText(last) ? last.trim() : "");
+        }
+        return null;
+    }
+
+    private String resolveValue(CSVRecord record, Map<String, String> headers, String[] candidates) {
+        for (String candidate : candidates) {
+            String normalized = candidate.toLowerCase(Locale.ROOT);
+            if (headers.containsKey(normalized)) {
+                String raw = record.get(headers.get(normalized));
+                if (StringUtils.hasText(raw)) {
+                    return raw.trim();
+                }
+            }
+        }
+        return null;
+    }
+
+    private List<String> parseTags(String tagsValue) {
+        if (!StringUtils.hasText(tagsValue)) {
+            return null;
+        }
+        String[] split = tagsValue.split("[,;]");
+        return Arrays.stream(split)
+                .map(String::trim)
+                .filter(token -> !token.isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    private Integer parseInteger(String value) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 
     private NodeResponse mapToResponse(Node node) {
@@ -524,5 +749,8 @@ public class NodeServiceImpl implements NodeService {
 
             return builder.or(textPredicate, builder.exists(tagSubquery));
         };
+    }
+
+    private record PathSearchState(UUID nodeId, List<UUID> path) {
     }
 }

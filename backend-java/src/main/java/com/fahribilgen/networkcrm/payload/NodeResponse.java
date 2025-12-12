@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -30,4 +31,6 @@ public class NodeResponse {
     private LocalDate endDate;
     private ProjectStatus status;
     private Map<String, Object> properties;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

@@ -6,6 +6,8 @@ import com.fahribilgen.networkcrm.enums.NodeType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
@@ -15,6 +17,8 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
+@org.springframework.test.context.ActiveProfiles("test")
+@org.springframework.test.context.TestPropertySource(locations = "classpath:application-test.properties")
 class NodeRepositoryTest {
 
     @Autowired
@@ -23,9 +27,6 @@ class NodeRepositoryTest {
     @Autowired
     private NodeRepository nodeRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-
     private User testUser;
     private Node testNode1;
     private Node testNode2;
@@ -33,14 +34,12 @@ class NodeRepositoryTest {
     @BeforeEach
     void setUp() {
         testUser = User.builder()
-                .id(UUID.randomUUID())
                 .email("test@example.com")
                 .passwordHash("hashed_password")
                 .build();
-        userRepository.saveAndFlush(testUser);
+        testUser = entityManager.persistAndFlush(testUser);
 
         testNode1 = Node.builder()
-                .id(UUID.randomUUID())
                 .user(testUser)
                 .type(NodeType.PERSON)
                 .name("John Doe")
@@ -50,7 +49,6 @@ class NodeRepositoryTest {
                 .build();
 
         testNode2 = Node.builder()
-                .id(UUID.randomUUID())
                 .user(testUser)
                 .type(NodeType.VISION)
                 .name("Global Tech Vision")
@@ -59,8 +57,8 @@ class NodeRepositoryTest {
                 .relationshipStrength(3)
                 .build();
 
-        nodeRepository.saveAndFlush(testNode1);
-        nodeRepository.saveAndFlush(testNode2);
+        testNode1 = entityManager.persistAndFlush(testNode1);
+        testNode2 = entityManager.persistAndFlush(testNode2);
     }
 
     @Test
@@ -121,7 +119,6 @@ class NodeRepositoryTest {
     @Test
     void testSaveNode() {
         Node newNode = Node.builder()
-                .id(UUID.randomUUID())
                 .user(testUser)
                 .type(NodeType.GOAL)
                 .name("Career Goal")

@@ -1,5 +1,13 @@
 package com.fahribilgen.networkcrm.service.impl;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fahribilgen.networkcrm.entity.Edge;
 import com.fahribilgen.networkcrm.entity.Node;
 import com.fahribilgen.networkcrm.entity.User;
@@ -10,13 +18,6 @@ import com.fahribilgen.networkcrm.payload.EdgeResponse;
 import com.fahribilgen.networkcrm.repository.EdgeRepository;
 import com.fahribilgen.networkcrm.repository.NodeRepository;
 import com.fahribilgen.networkcrm.service.EdgeService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class EdgeServiceImpl implements EdgeService {
@@ -40,7 +41,7 @@ public class EdgeServiceImpl implements EdgeService {
         }
 
         if (sourceNode.getId().equals(targetNode.getId())) {
-             throw new RuntimeException("Cannot create self-loop edge");
+            throw new RuntimeException("Cannot create self-loop edge");
         }
 
         validateEdgeType(edgeRequest, sourceNode, targetNode);
@@ -109,35 +110,32 @@ public class EdgeServiceImpl implements EdgeService {
     private void validateEdgeType(EdgeRequest edgeRequest, Node sourceNode, Node targetNode) {
         EdgeType type = edgeRequest.getType();
         if (type == null) {
-            throw new RuntimeException("Edge type is required");
+            throw new IllegalArgumentException("Edge type is required");
         }
 
         NodeType sourceType = sourceNode.getType();
         NodeType targetType = targetNode.getType();
 
-        switch (type) {
-            case KNOWS -> {
-                if (sourceType != NodeType.PERSON || targetType != NodeType.PERSON) {
-                    throw new RuntimeException("KNOWS edges are only allowed between PERSON nodes");
-                }
+        if (type == EdgeType.KNOWS) {
+            if (sourceType != NodeType.PERSON || targetType != NodeType.PERSON) {
+                throw new IllegalArgumentException("KNOWS edges are only allowed between PERSON nodes");
             }
-            case SUPPORTS -> {
-                if (sourceType != NodeType.PERSON || (targetType != NodeType.GOAL && targetType != NodeType.PROJECT)) {
-                    throw new RuntimeException("SUPPORTS edges must connect PERSON to GOAL/PROJECT");
-                }
+        } else if (type == EdgeType.SUPPORTS) {
+            if (sourceType != NodeType.PERSON || (targetType != NodeType.GOAL && targetType != NodeType.PROJECT)) {
+                throw new IllegalArgumentException("SUPPORTS edges must connect PERSON to GOAL/PROJECT");
             }
-            case BELONGS_TO -> {
-                boolean goalToVision = sourceType == NodeType.GOAL && targetType == NodeType.VISION;
-                boolean projectToGoal = sourceType == NodeType.PROJECT && targetType == NodeType.GOAL;
-                boolean personToCompany = sourceType == NodeType.PERSON && targetType == NodeType.COMPANY;
-                if (!goalToVision && !projectToGoal && !personToCompany) {
-                    throw new RuntimeException("BELONGS_TO edges must connect GOAL->VISION, PROJECT->GOAL or PERSON->COMPANY");
-                }
-                if (edgeRequest.getSortOrder() == null) {
-                    edgeRequest.setSortOrder(0);
-                }
+        } else if (type == EdgeType.BELONGS_TO) {
+            boolean goalToVision = sourceType == NodeType.GOAL && targetType == NodeType.VISION;
+            boolean projectToGoal = sourceType == NodeType.PROJECT && targetType == NodeType.GOAL;
+            boolean personToCompany = sourceType == NodeType.PERSON && targetType == NodeType.COMPANY;
+            if (!goalToVision && !projectToGoal && !personToCompany) {
+                throw new IllegalArgumentException("BELONGS_TO edges must connect GOAL->VISION, PROJECT->GOAL or PERSON->COMPANY");
             }
-            default -> throw new IllegalArgumentException("Unsupported edge type: " + type);
+            if (edgeRequest.getSortOrder() == null) {
+                throw new IllegalArgumentException("sortOrder is required for BELONGS_TO edges");
+            }
+        } else {
+            throw new IllegalArgumentException("Unsupported edge type: " + type);
         }
     }
 }

@@ -39,17 +39,79 @@
   flex-wrap: wrap;
 }
 
-.node-detail-panel .tags span {
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
+.node-detail-panel .tags button {
+  border: none;
   background: rgba(148, 163, 184, 0.2);
+  color: #e2e8f0;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
   font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.node-detail-panel .tags button:hover {
+  background: rgba(96, 165, 250, 0.35);
+}
+
+.value-with-action {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.chip-button {
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(148, 163, 184, 0.2);
+  color: #e2e8f0;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.chip-button.secondary {
+  background: transparent;
+  color: #93c5fd;
+}
+
+.chip-button.danger {
+  background: rgba(248, 113, 113, 0.12);
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+.chip-button:hover {
+  background: rgba(96, 165, 250, 0.3);
+  color: #bfdbfe;
 }
 
 .node-detail-panel.empty {
   justify-content: center;
   text-align: center;
   color: #94a3b8;
+}
+
+.detail-footer {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.ghost-button.danger {
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #f87171;
+}
+
+.error-text {
+  color: #f87171;
+  font-size: 0.8rem;
+}
+
+.success-text {
+  color: #34d399;
+  font-size: 0.8rem;
 }
 
 .badge {
@@ -79,4 +141,272 @@
 .badge-person {
   background: rgba(34, 211, 238, 0.2);
   color: #22d3ee;
+}
+
+.link-section {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.6rem;
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.timeline-section {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.6rem;
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.timeline-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.timeline-form input,
+.timeline-form textarea {
+  width: 100%;
+}
+
+.timeline-form button {
+  align-self: flex-start;
+}
+
+.timeline-list {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.timeline-list li {
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(2, 6, 23, 0.4);
+}
+
+.timeline-list li p {
+  margin: 0;
+}
+
+.timeline-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  margin-bottom: 0.2rem;
+}
+
+.timeline-date {
+  font-weight: 600;
+}
+
+.path-section {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.6rem;
+  background: rgba(14, 116, 144, 0.12);
+}
+
+.path-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.path-list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.path-list li {
+  border: 1px solid rgba(45, 212, 191, 0.3);
+  border-radius: 0.6rem;
+  padding: 0.6rem;
+  background: rgba(8, 47, 73, 0.4);
+}
+
+.path-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.path-header small {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
+.path-distance {
+  font-size: 0.75rem;
+  color: #67e8f9;
+  letter-spacing: 0.05em;
+}
+
+.path-sequence {
+  margin: 0.4rem 0;
+  font-size: 0.85rem;
+  color: #e2e8f0;
+}
+
+.path-actions {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.favorite-paths {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.6rem;
+  background: rgba(30, 41, 59, 0.5);
+}
+
+.favorite-path-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.favorite-path-list li {
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 0.6rem;
+  padding: 0.5rem;
+  background: rgba(15, 23, 42, 0.4);
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.favorite-path-list li small {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
+.timeline-meta .ghost-button {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.45rem;
+}
+
+.link-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.link-form select,
+.link-form input,
+.link-form textarea {
+  width: 100%;
+}
+
+.link-form button {
+  align-self: flex-start;
+}
+
+.proximity-section {
+  margin-top: 1rem;
+}
+
+.proximity-card {
+  padding: 0.75rem;
+  border-radius: 0.6rem;
+  background: rgba(15, 23, 42, 0.3);
+}
+
+.proximity-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  margin: 0.4rem 0;
+  color: #94a3b8;
+}
+
+.proximity-list {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.neighbor-item {
+  padding: 0.45rem 0.5rem;
+  border-radius: 0.5rem;
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.neighbor-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.edge-pill {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.15);
+  color: #cbd5f5;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.neighbor-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.neighbor-meta-chip {
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.15);
+}
+
+.filter-alert {
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  background: rgba(96, 165, 250, 0.15);
+  color: #60a5fa;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-alert.dimmed {
+  background: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+}
+
+.filter-alert .ghost-button {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
 }

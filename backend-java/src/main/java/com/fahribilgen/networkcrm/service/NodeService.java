@@ -2,6 +2,7 @@ package com.fahribilgen.networkcrm.service;
 
 import com.fahribilgen.networkcrm.entity.User;
 import com.fahribilgen.networkcrm.enums.NodeType;
+import com.fahribilgen.networkcrm.payload.GoalPathSuggestionResponse;
 import com.fahribilgen.networkcrm.payload.NodeFilterRequest;
 import com.fahribilgen.networkcrm.payload.NodeImportResponse;
 import com.fahribilgen.networkcrm.payload.NodeProximityResponse;
@@ -23,4 +24,5 @@ public interface NodeService {
     List<NodeResponse> findSimilarNodes(String query, User user);
     NodeProximityResponse getNodeProximity(UUID nodeId, User user);
     NodeImportResponse importPersonsFromCsv(MultipartFile file, User user);
+    GoalPathSuggestionResponse getGoalPathSuggestions(UUID goalId, User user, Integer maxDepth, Integer limit);
 }

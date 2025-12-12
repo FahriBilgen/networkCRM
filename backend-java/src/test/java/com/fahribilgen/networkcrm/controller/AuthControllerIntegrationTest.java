@@ -105,6 +105,8 @@ class AuthControllerIntegrationTest {
                 .thenReturn(false);
         when(userRepository.save(any(User.class)))
                 .thenReturn(newUser);
+        when(userRepository.findByEmail("newuser@example.com"))
+                .thenReturn(Optional.of(newUser));
         when(tokenProvider.generateToken(any()))
                 .thenReturn("jwt_token_here");
 
