@@ -1,28 +1,64 @@
 package com.fahribilgen.networkcrm.service.impl;
 
+import com.fahribilgen.networkcrm.entity.Edge;
 import com.fahribilgen.networkcrm.entity.Node;
 import com.fahribilgen.networkcrm.entity.User;
+import com.fahribilgen.networkcrm.enums.EdgeType;
 import com.fahribilgen.networkcrm.enums.NodeType;
 import com.fahribilgen.networkcrm.payload.NodeFilterRequest;
+import com.fahribilgen.networkcrm.payload.NodeImportResponse;
+import com.fahribilgen.networkcrm.payload.NodeProximityResponse;
 import com.fahribilgen.networkcrm.payload.NodeRequest;
 import com.fahribilgen.networkcrm.payload.NodeResponse;
+import com.fahribilgen.networkcrm.repository.EdgeRepository;
 import com.fahribilgen.networkcrm.repository.NodeRepository;
 import com.fahribilgen.networkcrm.service.EmbeddingService;
 import com.fahribilgen.networkcrm.service.NodeService;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class NodeServiceImpl implements NodeService {
+
+    private static final Logger logger = LoggerFactory.getLogger(NodeServiceImpl.class);
+    private static final String[] NAME_COLUMNS = {"name", "full name", "full_name"};
+    private static final String[] FIRST_NAME_COLUMNS = {"first name", "first_name", "first"};
+    private static final String[] LAST_NAME_COLUMNS = {"last name", "last_name", "last"};
+    private static final String[] COMPANY_COLUMNS = {"company", "organization", "current company"};
+    private static final String[] ROLE_COLUMNS = {"position", "headline", "title", "role"};
+    private static final String[] SECTOR_COLUMNS = {"industry", "sector"};
+    private static final String[] TAG_COLUMNS = {"tags", "label", "labels"};
+    private static final String[] NOTES_COLUMNS = {"notes", "note"};
+    private static final String[] LINKEDIN_COLUMNS = {"linkedin url", "linkedin profile url", "profile url"};
 
     @Autowired
     private NodeRepository nodeRepository;
@@ -30,9 +66,14 @@ public class NodeServiceImpl implements NodeService {
     @Autowired
     private EmbeddingService embeddingService;
 
+    @Autowired
+    private EdgeRepository edgeRepository;
+
     @Override
     @Transactional
     public NodeResponse createNode(NodeRequest nodeRequest, User user) {
+        validateNodeRequest(nodeRequest);
+        List<Double> embedding = generateEmbeddingForRequest(nodeRequest);
         Node node = Node.builder()
                 .user(user)
                 .type(nodeRequest.getType())
@@ -51,7 +92,7 @@ public class NodeServiceImpl implements NodeService {
                 .endDate(nodeRequest.getEndDate())
                 .status(nodeRequest.getStatus())
                 .properties(nodeRequest.getProperties())
-                .embedding(null) // generateEmbeddingForRequest(nodeRequest)
+                .embedding(embedding)
                 .build();
 
         Node savedNode = nodeRepository.save(node);
@@ -61,6 +102,7 @@ public class NodeServiceImpl implements NodeService {
     @Override
     @Transactional
     public NodeResponse updateNode(UUID nodeId, NodeRequest nodeRequest, User user) {
+        validateNodeRequest(nodeRequest);
         Node node = nodeRepository.findById(nodeId)
                 .orElseThrow(() -> new RuntimeException("Node not found"));
 
@@ -87,12 +129,10 @@ public class NodeServiceImpl implements NodeService {
         node.setStatus(nodeRequest.getStatus());
         node.setProperties(nodeRequest.getProperties());
 
-        /*
         List<Double> embedding = generateEmbeddingForRequest(nodeRequest);
         if (embedding != null) {
             node.setEmbedding(embedding);
         }
-        */
 
         Node updatedNode = nodeRepository.save(node);
         return mapToResponse(updatedNode);
@@ -106,6 +146,16 @@ public class NodeServiceImpl implements NodeService {
 
         if (!node.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("Unauthorized access to node");
+        }
+
+        List<Edge> outgoing = edgeRepository.findBySourceNodeId(nodeId);
+        if (!CollectionUtils.isEmpty(outgoing)) {
+            edgeRepository.deleteAll(outgoing);
+        }
+
+        List<Edge> incoming = edgeRepository.findByTargetNodeId(nodeId);
+        if (!CollectionUtils.isEmpty(incoming)) {
+            edgeRepository.deleteAll(incoming);
         }
 
         nodeRepository.delete(node);
@@ -137,12 +187,46 @@ public class NodeServiceImpl implements NodeService {
 
     @Override
     public List<NodeResponse> filterNodes(NodeFilterRequest filter, User user) {
+        Specification<Node> specification = belongsToUser(user.getId());
+
         if (filter == null) {
-            return getAllNodes(user);
+            return nodeRepository.findAll(specification).stream()
+                    .map(this::mapToResponse)
+                    .collect(Collectors.toList());
         }
-        List<Node> nodes = nodeRepository.findByUserId(user.getId());
-        return nodes.stream()
-                .filter(node -> matchesFilter(node, filter))
+
+        if (filter.getType() != null) {
+            specification = specification.and(hasType(filter.getType()));
+        }
+
+        if (!CollectionUtils.isEmpty(filter.getTypes())) {
+            specification = specification.and(hasAnyType(filter.getTypes()));
+        }
+
+        if (StringUtils.hasText(filter.getSector())) {
+            specification = specification.and(hasSector(filter.getSector()));
+        }
+
+        if (!CollectionUtils.isEmpty(filter.getTags())) {
+            Specification<Node> tagSpec = hasAllTags(filter.getTags());
+            if (tagSpec != null) {
+                specification = specification.and(tagSpec);
+            }
+        }
+
+        if (filter.getMinRelationshipStrength() != null) {
+            specification = specification.and(hasMinRelationshipStrength(filter.getMinRelationshipStrength()));
+        }
+
+        if (filter.getMaxRelationshipStrength() != null) {
+            specification = specification.and(hasMaxRelationshipStrength(filter.getMaxRelationshipStrength()));
+        }
+
+        if (StringUtils.hasText(filter.getSearchTerm())) {
+            specification = specification.and(containsSearchTerm(filter.getSearchTerm()));
+        }
+
+        return nodeRepository.findAll(specification).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -170,6 +254,75 @@ public class NodeServiceImpl implements NodeService {
                 .limit(5)
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public NodeProximityResponse getNodeProximity(UUID nodeId, User user) {
+        Node node = nodeRepository.findById(nodeId)
+                .orElseThrow(() -> new RuntimeException("Node not found"));
+
+        if (!node.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized access to node");
+        }
+
+        List<NodeProximityResponse.NeighborConnection> neighbors = new ArrayList<>();
+        Map<EdgeType, Long> connectionCounts = new EnumMap<>(EdgeType.class);
+
+        List<Edge> outgoing = edgeRepository.findBySourceNodeId(nodeId);
+        List<Edge> incoming = edgeRepository.findByTargetNodeId(nodeId);
+
+        accumulateNeighbors(outgoing, neighbors, connectionCounts, true, user.getId());
+        accumulateNeighbors(incoming, neighbors, connectionCounts, false, user.getId());
+
+        double influenceScore = calculateInfluenceScore(neighbors);
+
+        return NodeProximityResponse.builder()
+                .nodeId(nodeId)
+                .totalConnections(neighbors.size())
+                .connectionCounts(connectionCounts)
+                .neighbors(neighbors)
+                .influenceScore(influenceScore)
+                .build();
+    }
+
+    private void accumulateNeighbors(List<Edge> edges,
+                                     List<NodeProximityResponse.NeighborConnection> neighbors,
+                                     Map<EdgeType, Long> connectionCounts,
+                                     boolean outgoing,
+                                     UUID userId) {
+        if (CollectionUtils.isEmpty(edges)) {
+            return;
+        }
+        for (Edge edge : edges) {
+            Node neighborNode = outgoing ? edge.getTargetNode() : edge.getSourceNode();
+            if (neighborNode == null || neighborNode.getUser() == null || !neighborNode.getUser().getId().equals(userId)) {
+                continue;
+            }
+            connectionCounts.merge(edge.getType(), 1L, Long::sum);
+            neighbors.add(NodeProximityResponse.NeighborConnection.builder()
+                    .edgeId(edge.getId())
+                    .edgeType(edge.getType())
+                    .outgoing(outgoing)
+                    .relationshipStrength(edge.getRelationshipStrength())
+                    .lastInteractionDate(edge.getLastInteractionDate())
+                    .neighbor(mapToResponse(neighborNode))
+                    .build());
+        }
+    }
+
+    private double calculateInfluenceScore(List<NodeProximityResponse.NeighborConnection> neighbors) {
+        if (CollectionUtils.isEmpty(neighbors)) {
+            return 0.0;
+        }
+        double connectionScore = neighbors.size();
+        double strengthSum = neighbors.stream()
+                .map(NodeProximityResponse.NeighborConnection::getRelationshipStrength)
+                .filter(Objects::nonNull)
+                .mapToDouble(Integer::doubleValue)
+                .sum();
+        double avgStrength = connectionScore == 0 ? 0 : strengthSum / connectionScore;
+        return connectionScore + avgStrength;
     }
 
     private double cosineSimilarity(List<Double> v1, List<Double> v2) {
@@ -213,74 +366,21 @@ public class NodeServiceImpl implements NodeService {
                 .endDate(node.getEndDate())
                 .status(node.getStatus())
                 .properties(node.getProperties())
+                .createdAt(node.getCreatedAt())
+                .updatedAt(node.getUpdatedAt())
                 .build();
     }
 
-    private boolean matchesFilter(Node node, NodeFilterRequest filter) {
-        if (filter.getType() != null && node.getType() != filter.getType()) {
-            return false;
+    private void validateNodeRequest(NodeRequest nodeRequest) {
+        if (nodeRequest == null) {
+            throw new IllegalArgumentException("Node payload is required");
         }
-
-        if (!CollectionUtils.isEmpty(filter.getTypes()) && filter.getTypes().stream().noneMatch(type -> type == node.getType())) {
-            return false;
+        if (nodeRequest.getType() == null) {
+            throw new IllegalArgumentException("Node type is required");
         }
-
-        if (StringUtils.hasText(filter.getSector())) {
-            if (!StringUtils.hasText(node.getSector()) || !node.getSector().equalsIgnoreCase(filter.getSector())) {
-                return false;
-            }
+        if (!StringUtils.hasText(nodeRequest.getName())) {
+            throw new IllegalArgumentException("Node name is required");
         }
-
-        if (!CollectionUtils.isEmpty(filter.getTags())) {
-            List<String> nodeTags = node.getTags();
-            if (CollectionUtils.isEmpty(nodeTags)) {
-                return false;
-            }
-            for (String requiredTag : filter.getTags()) {
-                boolean match = nodeTags.stream()
-                        .filter(Objects::nonNull)
-                        .anyMatch(tag -> tag.equalsIgnoreCase(requiredTag));
-                if (!match) {
-                    return false;
-                }
-            }
-        }
-
-        Integer minStrength = filter.getMinRelationshipStrength();
-        Integer maxStrength = filter.getMaxRelationshipStrength();
-        Integer nodeStrength = node.getRelationshipStrength();
-        if (minStrength != null && (nodeStrength == null || nodeStrength < minStrength)) {
-            return false;
-        }
-        if (maxStrength != null && (nodeStrength == null || nodeStrength > maxStrength)) {
-            return false;
-        }
-
-        if (StringUtils.hasText(filter.getSearchTerm())) {
-            String searchTerm = filter.getSearchTerm().toLowerCase();
-            boolean matches = containsIgnoreCase(node.getName(), searchTerm)
-                    || containsIgnoreCase(node.getDescription(), searchTerm)
-                    || containsIgnoreCase(node.getSector(), searchTerm)
-                    || containsIgnoreCase(node.getCompany(), searchTerm)
-                    || containsIgnoreCase(node.getRole(), searchTerm)
-                    || containsIgnoreCase(node.getNotes(), searchTerm);
-
-            if (!matches && !CollectionUtils.isEmpty(node.getTags())) {
-                matches = node.getTags().stream()
-                        .filter(Objects::nonNull)
-                        .anyMatch(tag -> tag.toLowerCase().contains(searchTerm));
-            }
-
-            if (!matches) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private boolean containsIgnoreCase(String value, String searchTerm) {
-        return StringUtils.hasText(value) && value.toLowerCase().contains(searchTerm);
     }
 
     private List<String> normalizeTags(List<String> tags) {
@@ -299,7 +399,12 @@ public class NodeServiceImpl implements NodeService {
         if (payload == null || payload.isBlank()) {
             return null;
         }
-        return embeddingService.generateEmbedding(payload);
+        try {
+            return embeddingService.generateEmbedding(payload);
+        } catch (RuntimeException ex) {
+            logger.warn("Embedding generation skipped for node '{}': {}", nodeRequest.getName(), ex.getMessage());
+            return null;
+        }
     }
 
     private String buildEmbeddingPayload(NodeRequest request) {
@@ -337,5 +442,87 @@ public class NodeServiceImpl implements NodeService {
             return;
         }
         builder.append(trimmed).append(" ");
+    }
+
+    private Specification<Node> belongsToUser(UUID userId) {
+        return (root, query, builder) -> builder.equal(root.get("user").get("id"), userId);
+    }
+
+    private Specification<Node> hasType(NodeType type) {
+        return (root, query, builder) -> builder.equal(root.get("type"), type);
+    }
+
+    private Specification<Node> hasAnyType(List<NodeType> types) {
+        return (root, query, builder) -> root.get("type").in(types);
+    }
+
+    private Specification<Node> hasSector(String sector) {
+        String normalized = sector.trim().toLowerCase(Locale.ROOT);
+        return (root, query, builder) -> builder.equal(builder.lower(root.get("sector")), normalized);
+    }
+
+    private Specification<Node> hasAllTags(List<String> tags) {
+        List<String> normalized = tags.stream()
+                .filter(Objects::nonNull)
+                .map(tag -> tag.trim().toLowerCase(Locale.ROOT))
+                .filter(token -> !token.isEmpty())
+                .collect(Collectors.toList());
+
+        if (normalized.isEmpty()) {
+            return null;
+        }
+
+        Specification<Node> specification = null;
+        for (String tag : normalized) {
+            Specification<Node> tagSpec = (root, query, builder) -> {
+                Subquery<Integer> subquery = query.subquery(Integer.class);
+                Root<Node> subRoot = subquery.from(Node.class);
+                Join<Node, String> join = subRoot.join("tags", JoinType.INNER);
+                subquery.select(builder.literal(1))
+                        .where(builder.and(
+                                builder.equal(subRoot.get("id"), root.get("id")),
+                                builder.equal(builder.lower(join), tag)
+                        ));
+                return builder.exists(subquery);
+            };
+            specification = specification == null ? tagSpec : specification.and(tagSpec);
+        }
+        return specification;
+    }
+
+    private Specification<Node> hasMinRelationshipStrength(Integer min) {
+        return (root, query, builder) -> builder.greaterThanOrEqualTo(root.get("relationshipStrength"), min);
+    }
+
+    private Specification<Node> hasMaxRelationshipStrength(Integer max) {
+        return (root, query, builder) -> builder.lessThanOrEqualTo(root.get("relationshipStrength"), max);
+    }
+
+    private Specification<Node> containsSearchTerm(String searchTerm) {
+        String normalized = searchTerm.trim().toLowerCase(Locale.ROOT);
+        String pattern = "%" + normalized + "%";
+
+        return (root, query, builder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(builder.like(builder.lower(root.get("name")), pattern));
+            predicates.add(builder.like(builder.lower(root.get("description")), pattern));
+            predicates.add(builder.like(builder.lower(root.get("sector")), pattern));
+            predicates.add(builder.like(builder.lower(root.get("company")), pattern));
+            predicates.add(builder.like(builder.lower(root.get("role")), pattern));
+            predicates.add(builder.like(builder.lower(root.get("notes")), pattern));
+
+            Predicate textPredicate = builder.or(predicates.toArray(new Predicate[0]));
+
+            Subquery<Integer> tagSubquery = query.subquery(Integer.class);
+            Root<Node> tagRoot = tagSubquery.from(Node.class);
+            Join<Node, String> tagJoin = tagRoot.join("tags", JoinType.LEFT);
+            tagSubquery.select(builder.literal(1))
+                    .where(builder.and(
+                            builder.equal(tagRoot.get("id"), root.get("id")),
+                            builder.like(builder.lower(tagJoin), pattern)
+                    ));
+
+            return builder.or(textPredicate, builder.exists(tagSubquery));
+        };
     }
 }
