@@ -22,7 +22,7 @@ import type {
 } from '../types';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? '/api',
   timeout: 8000,
 });
 
@@ -120,6 +120,10 @@ export async function linkPersonToGoal(goalId: string, payload: LinkPersonToGoal
 
 export async function signIn(email: string, password: string) {
   return api.post<{ accessToken: string }>('/auth/signin', { email, password });
+}
+
+export async function signUp(email: string, password: string) {
+  return api.post<{ accessToken: string }>('/auth/signup', { email, password });
 }
 
 export async function createNode(payload: NodeRequestPayload) {

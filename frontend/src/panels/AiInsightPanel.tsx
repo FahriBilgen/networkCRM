@@ -12,6 +12,7 @@ type SuggestionDisplay = {
   name: string;
   sector?: string | null;
   score?: number | null;
+  reason?: string;
 };
 
 export function AiInsightPanel() {
@@ -62,7 +63,7 @@ export function AiInsightPanel() {
       } catch (err) {
         console.warn('Goal suggestion request failed', err);
         if (mounted) {
-          setError('AI önerileri alınamadı, mevcut bağlantılar gösteriliyor.');
+          setError('Yapay Zeka önerileri alınamadı, mevcut bağlantılar gösteriliyor.');
           setSuggestions([]);
         }
       } finally {
@@ -109,7 +110,7 @@ export function AiInsightPanel() {
         if (localDiagnostics) {
           setDiagnostics(localDiagnostics);
           setDiagnosticsSource('local');
-          setDiagnosticsError('Sunucu analizi alinamadi; yerel graph verisi kullaniliyor.');
+          setDiagnosticsError('Sunucu analizi alınamadı; yerel ağ verisi kullanılıyor.');
         } else {
           setDiagnostics(null);
           setDiagnosticsSource(null);
@@ -162,6 +163,7 @@ export function AiInsightPanel() {
     name: item.person.name,
     sector: item.person.sector,
     score: item.score,
+    reason: item.reason,
   }));
 
   const fallbackList: SuggestionDisplay[] = supportsEdges
@@ -185,7 +187,7 @@ export function AiInsightPanel() {
   return (
     <div className="panel ai-panel">
       <header>
-        <h3>AI Insights</h3>
+        <h3>Yapay Zeka Analizleri</h3>
         <p className="muted">Hedef: {selectedNode.name}</p>
         {loading && <small>Öneriler yükleniyor...</small>}
         {error && <small className="error">{error}</small>}
@@ -198,6 +200,7 @@ export function AiInsightPanel() {
             <li key={item.id}>
               <div>
                 <strong>{item.name}</strong>
+                {item.reason && <small className="reason-text">{item.reason}</small>}
                 {item.sector && <small>{item.sector}</small>}
               </div>
               {typeof item.score === 'number' && (
@@ -208,10 +211,10 @@ export function AiInsightPanel() {
         </ul>
       </section>
       <section className="network-insights">
-        <h4>Network Durumu</h4>
+        <h4>Ağ Durumu</h4>
         {diagnosticsSource && (
           <small className="muted">
-            {diagnosticsSource === 'server' ? 'AI analizi' : 'Yerel graph analizi'}
+            {diagnosticsSource === 'server' ? 'Yapay Zeka Analizi' : 'Yerel Grafik Analizi'}
           </small>
         )}
         {diagnosticsError && <small className="error">{diagnosticsError}</small>}
@@ -230,11 +233,11 @@ export function AiInsightPanel() {
             </ul>
           </>
         ) : (
-          <p className="muted">Analiz icin yeterli veri yok.</p>
+          <p className="muted">Analiz için yeterli veri yok.</p>
         )}
       </section>
       <section>
-        <h4>Sektor Analizi</h4>
+        <h4>Sektör Analizi</h4>
         <ul className="insight-list">
           {!diagnostics && <li>Veri bekleniyor.</li>}
           {diagnostics?.sectorHighlights.map((item) => (
@@ -243,19 +246,19 @@ export function AiInsightPanel() {
         </ul>
       </section>
       <section>
-        <h4>Risk Uyarilari</h4>
+        <h4>Risk Uyarıları</h4>
         <ul className="insight-list warning">
-          {!diagnostics && <li>Uyarilar icin destek verisi bekleniyor.</li>}
+          {!diagnostics && <li>Uyarılar için destek verisi bekleniyor.</li>}
           {diagnostics?.riskAlerts.map((item, index) => (
             <li key={`${item}-${index}`}>{item}</li>
           ))}
         </ul>
       </section>
       <section>
-        <h4>Iliski Hatirlatmalari</h4>
+        <h4>İlişki Hatırlatmaları</h4>
         {nudgesError && <small className="error">{nudgesError}</small>}
         <ul className="nudge-list">
-          {nudges.length === 0 && <li>Hatirlatma yok.</li>}
+          {nudges.length === 0 && <li>Hatırlatma yok.</li>}
           {nudges.map((nudge) => (
             <li key={`${nudge.person.id}-${nudge.edgeType}-${nudge.targetName ?? 'none'}`}>
               <div className="nudge-header">
@@ -272,7 +275,7 @@ export function AiInsightPanel() {
         </ul>
       </section>
       <footer>
-        <button className="primary-button block">AI Önerisi Al</button>
+        <button className="primary-button block">Yapay Zeka Önerisi Al</button>
       </footer>
     </div>
   );

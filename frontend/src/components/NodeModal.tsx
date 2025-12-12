@@ -27,7 +27,7 @@ const defaultValues: Record<NodeType, Partial<NodeRequestPayload>> = {
 
 const typeOrder: NodeType[] = [NODE_TYPES.VISION, NODE_TYPES.GOAL, NODE_TYPES.PROJECT, NODE_TYPES.PERSON];
 const typeText: Record<NodeType, string> = {
-  PERSON: 'Kisi',
+  PERSON: 'Kişi',
   GOAL: 'Hedef',
   PROJECT: 'Proje',
   VISION: 'Vizyon',
@@ -161,7 +161,7 @@ export function NodeModal() {
 
   const handleClassification = async () => {
     if (!form.name?.trim()) {
-      setClassificationError('Once isim alann doldurun.');
+      setClassificationError('Önce isim alanını doldurun.');
       return;
     }
     setClassificationLoading(true);
@@ -183,7 +183,7 @@ export function NodeModal() {
     } catch (err) {
       console.error('Classification failed', err);
       setClassification(null);
-      setClassificationError('Tasnif onerisi getirilemedi.');
+      setClassificationError('Tasnif önerisi getirilemedi.');
     } finally {
       setClassificationLoading(false);
     }
@@ -201,7 +201,7 @@ export function NodeModal() {
     const hasNotes = Boolean(form.notes?.trim());
     const hasTags = Boolean(form.tags?.length);
     if (!hasName && !hasDescription && !hasNotes && !hasTags) {
-      setSectorSuggestionError('Once isim, aciklama, not veya etiket girin.');
+      setSectorSuggestionError('Önce isim, açıklama, not veya etiket girin.');
       return;
     }
     setSectorSuggestionLoading(true);
@@ -220,7 +220,7 @@ export function NodeModal() {
     } catch (err) {
       console.error('Sector suggestion failed', err);
       setSectorSuggestion(null);
-      setSectorSuggestionError('Sektor onerisi getirilemedi.');
+      setSectorSuggestionError('Sektör önerisi getirilemedi.');
     } finally {
       setSectorSuggestionLoading(false);
     }
@@ -247,13 +247,13 @@ export function NodeModal() {
       closeModal();
     } catch (err) {
       console.error('Node mutation failed', err);
-      setError('Islem basarisiz oldu. Lutfen tekrar deneyin.');
+      setError('İşlem başarısız oldu. Lütfen tekrar deneyin.');
     } finally {
       setLoading(false);
     }
   };
 
-  const label = modal.mode === 'create' ? 'Yeni' : 'Duzenle';
+  const label = modal.mode === 'create' ? 'Yeni' : 'Düzenle';
   const typeLabel = form.type;
 
   return (
@@ -287,16 +287,16 @@ export function NodeModal() {
                 {typeText[classification.suggestedType]}  {(classification.confidence * 100).toFixed(0)}%
               </p>
             ) : (
-              <p className="muted">Isim ve aciklama girdikten sonra oneri alabilirsiniz.</p>
+              <p className="muted">İsim ve açıklama girdikten sonra öneri alabilirsiniz.</p>
             )}
           </div>
           <div className="classification-actions">
             <button type="button" className="ghost-button" onClick={handleClassification} disabled={classificationLoading}>
-              {classificationLoading ? 'Analiz ediliyor...' : 'Tip oner'}
+              {classificationLoading ? 'Analiz ediliyor...' : 'Tip Öner'}
             </button>
             {classification && classification.suggestedType !== form.type && (
               <button type="button" className="ghost-button" onClick={applyClassification}>
-                Oneriyi uygula
+                Öneriyi Uygula
               </button>
             )}
           </div>
@@ -310,11 +310,11 @@ export function NodeModal() {
           )}
         </div>
         <label>
-          Isim
+          İsim
           <input value={form.name ?? ''} onChange={(event) => handleChange('name', event.target.value)} required />
         </label>
         <label>
-          Aciklama
+          Açıklama
           <textarea
             value={form.description ?? ''}
             onChange={(event) => handleChange('description', event.target.value)}
@@ -323,7 +323,7 @@ export function NodeModal() {
         </label>
         <div className="sector-field">
           <div className="label-row">
-            <label htmlFor={sectorInputId}>Sektor</label>
+            <label htmlFor={sectorInputId}>Sektör</label>
             <div className="sector-actions">
               <button
                 type="button"
@@ -331,11 +331,11 @@ export function NodeModal() {
                 onClick={handleSectorSuggestion}
                 disabled={sectorSuggestionLoading}
               >
-                {sectorSuggestionLoading ? 'Analiz ediliyor...' : 'Sektor oner'}
+                {sectorSuggestionLoading ? 'Analiz ediliyor...' : 'Sektör Öner'}
               </button>
               {sectorSuggestion && (
                 <button type="button" className="ghost-button" onClick={applySectorSuggestion}>
-                  Sektoru uygula
+                  Sektörü Uygula
                 </button>
               )}
             </div>
@@ -349,10 +349,10 @@ export function NodeModal() {
             <div className="sector-suggestion">
               <div className="sector-suggestion-summary">
                 <strong>{sectorSuggestion.sector}</strong>
-                <span className="confidence">Guven {(sectorSuggestion.confidence * 100).toFixed(0)}%</span>
+                <span className="confidence">Güven {(sectorSuggestion.confidence * 100).toFixed(0)}%</span>
               </div>
               {sectorSuggestion.matchedKeywords && sectorSuggestion.matchedKeywords.length > 0 && (
-                <small>Anahtar kelimeler: {sectorSuggestion.matchedKeywords.join(', ')}</small>
+                <small>Anahtar Kelimeler: {sectorSuggestion.matchedKeywords.join(', ')}</small>
               )}
               {sectorSuggestion.rationale && <small>{sectorSuggestion.rationale}</small>}
             </div>
@@ -373,21 +373,24 @@ export function NodeModal() {
         </label>
         {typeLabel === NODE_TYPES.PERSON && (
           <label>
-            Iliski Gucu (0-5)
-            <input
-              type="number"
-              min={0}
-              max={5}
-              value={form.relationshipStrength ?? ''}
-              onChange={(event) =>
-                handleChange('relationshipStrength', event.target.value === '' ? undefined : Number(event.target.value))
-              }
-            />
+            İlişki Gücü (0-5)
+            <div className="strength-selector">
+              {[0, 1, 2, 3, 4, 5].map((val) => (
+                <button
+                  key={val}
+                  type="button"
+                  className={`strength-btn ${form.relationshipStrength === val ? 'active' : ''}`}
+                  onClick={() => handleChange('relationshipStrength', val)}
+                >
+                  {val}
+                </button>
+              ))}
+            </div>
           </label>
         )}
         {typeLabel === NODE_TYPES.GOAL && (
           <label>
-            Oncelik (1-5)
+            Öncelik (1-5)
             <input
               type="number"
               min={1}
@@ -399,7 +402,7 @@ export function NodeModal() {
         )}
         {typeLabel === NODE_TYPES.GOAL && (
           <label>
-            Bitis Tarihi
+            Bitiş Tarihi
             <input
               type="date"
               value={form.dueDate ?? ''}
@@ -410,7 +413,7 @@ export function NodeModal() {
         {typeLabel === NODE_TYPES.PROJECT && (
           <>
             <label>
-              Baslangic Tarihi
+              Başlangıç Tarihi
               <input
                 type="date"
                 value={form.startDate ?? ''}
@@ -418,7 +421,7 @@ export function NodeModal() {
               />
             </label>
             <label>
-              Bitis Tarihi
+              Bitiş Tarihi
               <input
                 type="date"
                 value={form.endDate ?? ''}
@@ -428,9 +431,9 @@ export function NodeModal() {
             <label>
               Durum
               <select value={form.status ?? 'TODO'} onChange={(event) => handleChange('status', event.target.value)}>
-                <option value="TODO">Yapilacak</option>
-                <option value="DOING">Devam ediyor</option>
-                <option value="DONE">Tamamlandi</option>
+                <option value="TODO">Yapılacak</option>
+                <option value="DOING">Devam Ediyor</option>
+                <option value="DONE">Tamamlandı</option>
               </select>
             </label>
           </>

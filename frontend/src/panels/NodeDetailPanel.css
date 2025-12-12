@@ -2,16 +2,27 @@
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  animation: slideInDown 0.4s ease-out;
 }
 
 .node-detail-panel h3 {
   margin: 0;
+  transition: color 0.3s ease;
+}
+
+.node-detail-panel:hover h3 {
+  color: #bfdbfe;
 }
 
 .node-detail-panel .muted {
   margin: 0;
   color: #94a3b8;
   font-size: 0.8rem;
+  transition: color 0.3s ease;
+}
+
+.node-detail-panel:hover .muted {
+  color: #cbd5f5;
 }
 
 .node-detail-panel section {
@@ -47,6 +58,13 @@
   padding: 0.15rem 0.5rem;
   font-size: 0.75rem;
   cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.node-detail-panel .tags button:hover {
+  background: rgba(16, 185, 129, 0.3);
+  color: #86efac;
+  transform: scale(1.05);
 }
 
 .node-detail-panel .tags button:hover {

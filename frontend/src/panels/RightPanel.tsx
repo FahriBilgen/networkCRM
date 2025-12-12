@@ -16,7 +16,7 @@ export function RightPanel() {
           Detaylar
         </button>
         <button className={panelTab === 'ai' ? 'active' : ''} onClick={() => setPanelTab('ai')}>
-          AI Insights
+          Yapay Zeka
         </button>
       </div>
       <div className="panel-body">{panelTab === 'details' ? <NodeDetailPanel /> : <AiInsightPanel />}</div>

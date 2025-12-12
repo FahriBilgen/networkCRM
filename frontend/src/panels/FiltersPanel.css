@@ -15,11 +15,18 @@
   flex-direction: column;
   gap: 0.4rem;
   margin-bottom: 0.75rem;
+  animation: slideInUp 0.3s ease-out;
+  transition: all 0.3s ease;
 }
 
 .filter-group label {
   font-size: 0.8rem;
   color: #94a3b8;
+  transition: color 0.3s ease;
+}
+
+.filter-group:hover label {
+  color: #cbd5f5;
 }
 
 .filters-panel select,
@@ -29,6 +36,15 @@
   background: #0f172a;
   color: #f1f5f9;
   padding: 0.45rem 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.filters-panel select:focus,
+.filters-panel input[type='number']:focus {
+  outline: none;
+  border-color: #10b981;
+  background: #1a2d3a;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
 }
 
 .range-group {
@@ -47,10 +63,42 @@
   gap: 0.4rem 0.75rem;
   font-size: 0.8rem;
   color: #cbd5f5;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.tag-list label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.3rem;
+}
+
+.tag-list label:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: #bfdbfe;
+}
+
+.tag-list input[type='checkbox'] {
+  cursor: pointer;
 }
 
 .filters-panel footer {
   margin-top: auto;
+}
+
+.filters-panel header {
+  animation: slideInDown 0.3s ease-out;
+}
+
+.filters-panel h3 {
+  transition: color 0.3s ease;
+}
+
+.filters-panel:hover h3 {
+  color: #bfdbfe;
 }
 
 .block {
@@ -62,14 +110,22 @@
   margin-top: 0.35rem;
   font-size: 0.8rem;
   color: #94a3b8;
+  animation: slideInUp 0.3s ease-out;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.4rem;
+  transition: all 0.3s ease;
 }
 
 .filter-message.info {
   color: #60a5fa;
+  background: rgba(96, 165, 250, 0.1);
+  border-left: 2px solid #60a5fa;
 }
 
 .filter-message.error {
   color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+  border-left: 2px solid #f87171;
 }
 
 .filter-summary {

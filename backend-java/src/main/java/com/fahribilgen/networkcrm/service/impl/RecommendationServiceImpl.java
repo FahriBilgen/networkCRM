@@ -1,5 +1,30 @@
 package com.fahribilgen.networkcrm.service.impl;
 
+import java.text.Normalizer;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.fahribilgen.networkcrm.entity.Edge;
 import com.fahribilgen.networkcrm.entity.Node;
 import com.fahribilgen.networkcrm.entity.User;
@@ -18,33 +43,9 @@ import com.fahribilgen.networkcrm.payload.NodeSectorSuggestionResponse;
 import com.fahribilgen.networkcrm.payload.RelationshipNudgeResponse;
 import com.fahribilgen.networkcrm.repository.EdgeRepository;
 import com.fahribilgen.networkcrm.repository.NodeRepository;
-import com.fahribilgen.networkcrm.service.EmbeddingService;
 import com.fahribilgen.networkcrm.service.EdgeService;
+import com.fahribilgen.networkcrm.service.EmbeddingService;
 import com.fahribilgen.networkcrm.service.RecommendationService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.text.Normalizer;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class RecommendationServiceImpl implements RecommendationService {
@@ -101,10 +102,19 @@ public class RecommendationServiceImpl implements RecommendationService {
 
         List<GoalSuggestionResponse.PersonSuggestion> suggestions = people.stream()
                 .filter(person -> person.getEmbedding() != null)
-                .map(person -> GoalSuggestionResponse.PersonSuggestion.builder()
-                        .person(mapToNodeResponse(person))
-                        .score(cosineSimilarity(goal.getEmbedding(), person.getEmbedding()))
-                        .build())
+                .map(person -> {
+                    double score = cosineSimilarity(goal.getEmbedding(), person.getEmbedding());
+                    String reason = "Yüksek anlamsal benzerlik";
+                    if (goal.getSector() != null && !goal.getSector().isEmpty()
+                            && goal.getSector().equalsIgnoreCase(person.getSector())) {
+                        reason = "Ortak sektör (" + goal.getSector() + ") ve anlamsal uyum";
+                    }
+                    return GoalSuggestionResponse.PersonSuggestion.builder()
+                            .person(mapToNodeResponse(person))
+                            .score(score)
+                            .reason(reason)
+                            .build();
+                })
                 .filter(suggestion -> suggestion.getScore() > 0)
                 .sorted(Comparator.comparingDouble(GoalSuggestionResponse.PersonSuggestion::getScore).reversed())
                 .limit(Math.max(limit, 1))
@@ -338,7 +348,6 @@ public class RecommendationServiceImpl implements RecommendationService {
                 .nudges(nudges)
                 .build();
     }
-
 
     private void ensureNodeEmbedding(Node node) {
         if (node.getEmbedding() != null) {
@@ -588,8 +597,8 @@ public class RecommendationServiceImpl implements RecommendationService {
                 .sorted((a, b) -> Long.compare(b.daysSinceInteraction(), a.daysSinceInteraction()))
                 .limit(3)
                 .forEach(detail -> alerts.add(String.format("%s ile %d gundur iletisim yok.",
-                        detail.person().getName(),
-                        detail.daysSinceInteraction())));
+                detail.person().getName(),
+                detail.daysSinceInteraction())));
 
         details.stream()
                 .filter(detail -> {
@@ -598,8 +607,8 @@ public class RecommendationServiceImpl implements RecommendationService {
                 })
                 .limit(3)
                 .forEach(detail -> alerts.add(String.format("%s icin iliski gucu %d/5 seviyesinde.",
-                        detail.person().getName(),
-                        detail.edge().getRelationshipStrength() == null ? 0 : detail.edge().getRelationshipStrength())));
+                detail.person().getName(),
+                detail.edge().getRelationshipStrength() == null ? 0 : detail.edge().getRelationshipStrength())));
 
         if (alerts.isEmpty()) {
             alerts.add("Kritik risk bulunmadi.");
@@ -622,6 +631,7 @@ public class RecommendationServiceImpl implements RecommendationService {
     }
 
     private record SupportDetail(Node person, Edge edge, Long daysSinceInteraction) {
+
     }
 
     private List<String> buildNudgeReasons(Edge edge) {
@@ -661,7 +671,6 @@ public class RecommendationServiceImpl implements RecommendationService {
         }
         return description.chars().anyMatch(Character::isDigit);
     }
-
 
     private String normalizeText(String input) {
         if (!StringUtils.hasText(input)) {

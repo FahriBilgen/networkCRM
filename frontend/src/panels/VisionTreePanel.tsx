@@ -12,6 +12,13 @@ import './VisionTreePanel.css';
 
 type DragItem = { id: string; type: NodeType } | null;
 
+const typeLabels: Record<string, string> = {
+  person: 'kişi',
+  vision: 'vizyon',
+  goal: 'hedef',
+  project: 'proje',
+};
+
 export function VisionTreePanel() {
   const { data, loading, error } = useVisionTree();
   const selectNode = useSelectionStore((state) => state.selectNode);
@@ -92,7 +99,7 @@ export function VisionTreePanel() {
     if (!entries.length) {
       return null;
     }
-    return entries.map(([type, count]) => `${type.toLowerCase()}: ${count}`).join(' • ');
+    return entries.map(([type, count]) => `${typeLabels[type.toLowerCase()] || type.toLowerCase()}: ${count}`).join(' • ');
   }, [filteredSet, flattenedNodes]);
 
   const handleSelect = (nodeId: string) => {
@@ -116,7 +123,7 @@ export function VisionTreePanel() {
     }
     try {
       await moveGoal(dragItem.id, visionId, sortOrder);
-      setStatusMessage('Hedef yeni vision altına taşındı.');
+      setStatusMessage('Hedef yeni vizyon altına taşındı.');
       triggerVisionRefresh();
       triggerGraphRefresh();
     } catch (err) {
@@ -150,14 +157,14 @@ export function VisionTreePanel() {
   return (
     <div className="panel vision-tree-panel">
       <header>
-        <h3>Vision / Goal / Project</h3>
+        <h3>Vizyon / Hedef / Proje</h3>
         {filterSummary && <p className="vision-filter-summary">{filterSummary}</p>}
       </header>
       <div className="vision-tree-scroll">
         {loading && <p>Yükleniyor...</p>}
         {error && <p className="error">{error}</p>}
         {!loading && !error && matchedVisions.length === 0 && (
-          <p className="muted">Filtre ile eşleşen vision/goal bulunamadı.</p>
+          <p className="muted">Filtre ile eşleşen vizyon/hedef bulunamadı.</p>
         )}
         {matchedVisions.map((vision) => (
           <div
@@ -256,13 +263,13 @@ export function VisionTreePanel() {
       </div>
       <div className="vision-tree-footer">
         <p>
-          Bir hedefi yeni bir vision&apos;a sürükleyip bıraktığınızda BELONGS_TO bağlantısı güncellenecek. Projeler de
+          Bir hedefi yeni bir vizyona sürükleyip bıraktığınızda bağlantısı güncellenecek. Projeler de
           aynı şekilde hedef seviyesine taşınabilir.
         </p>
         <div className="legend">
-          <LegendDot label="Vision" type={NODE_TYPES.VISION} />
-          <LegendDot label="Goal" type={NODE_TYPES.GOAL} />
-          <LegendDot label="Project" type={NODE_TYPES.PROJECT} />
+          <LegendDot label="Vizyon" type={NODE_TYPES.VISION} />
+          <LegendDot label="Hedef" type={NODE_TYPES.GOAL} />
+          <LegendDot label="Proje" type={NODE_TYPES.PROJECT} />
         </div>
         {statusMessage && <p className="status">{statusMessage}</p>}
       </div>

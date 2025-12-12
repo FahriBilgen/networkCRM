@@ -58,7 +58,7 @@ describe('createNodeDragHandler', () => {
         }),
       }),
     );
-    expect(setStatusMessage).toHaveBeenCalledWith('Node pozisyonu kaydedildi.');
+    expect(setStatusMessage).toHaveBeenCalledWith('Kayıt pozisyonu kaydedildi.');
     expect(triggerGraphRefresh).toHaveBeenCalled();
   });
 
@@ -98,7 +98,7 @@ describe('edge helpers', () => {
       relationshipStrength: 4,
       lastInteractionDate: '2025-01-01',
     };
-    expect(buildEdgeLabel(edge)).toContain('supports');
+    expect(buildEdgeLabel(edge)).toContain('Destekliyor');
     expect(buildEdgeLabel(edge)).toContain('(4)');
     expect(buildEdgeLabel(edge)).toContain('2025-01-01');
 

@@ -32,16 +32,16 @@ describe('buildGoalNetworkDiagnostics', () => {
     const diagnostics = buildGoalNetworkDiagnostics(nodes, supports);
 
     expect(diagnostics.readiness.level).toBe('medium');
-    expect(diagnostics.readiness.summary).toContain('2 baglanti');
+    expect(diagnostics.readiness.summary).toContain('2 bağlantı');
     expect(diagnostics.sectorHighlights[0]).toContain('fintech');
-    expect(diagnostics.riskAlerts.some((line) => line.includes('gundur iletisim yok'))).toBeTruthy();
+    expect(diagnostics.riskAlerts.some((line) => line.includes('gündür iletişim yok'))).toBeTruthy();
     vi.useRealTimers();
   });
 
   it('handles empty supports gracefully', () => {
     const nodes = [{ id: 'p1', type: NODE_TYPES.PERSON, name: 'Ahmet', sector: 'Fintech' }] as any;
     const diagnostics = buildGoalNetworkDiagnostics(nodes, []);
-    expect(diagnostics.readiness.message).toContain('Bu hedefe bagli kisi yok');
-    expect(diagnostics.riskAlerts[0]).toContain('Destekci yok');
+    expect(diagnostics.readiness.message).toContain('Bu hedefe bağlı kişi yok');
+    expect(diagnostics.riskAlerts[0]).toContain('Destekçi yok');
   });
 });

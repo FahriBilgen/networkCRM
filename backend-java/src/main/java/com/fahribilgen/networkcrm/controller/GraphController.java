@@ -1,17 +1,18 @@
 package com.fahribilgen.networkcrm.controller;
 
-import com.fahribilgen.networkcrm.entity.User;
-import com.fahribilgen.networkcrm.payload.GraphResponse;
-import com.fahribilgen.networkcrm.payload.VisionTreeResponse;
-import com.fahribilgen.networkcrm.repository.UserRepository;
-import com.fahribilgen.networkcrm.security.UserPrincipal;
-import com.fahribilgen.networkcrm.service.GraphService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fahribilgen.networkcrm.entity.User;
+import com.fahribilgen.networkcrm.payload.GraphResponse;
+import com.fahribilgen.networkcrm.payload.VisionTreeResponse;
+import com.fahribilgen.networkcrm.repository.UserRepository;
+import com.fahribilgen.networkcrm.security.UserPrincipal;
+import com.fahribilgen.networkcrm.service.GraphService;
 
 @RestController
 @RequestMapping("/api/graph")
@@ -24,8 +25,10 @@ public class GraphController {
     private UserRepository userRepository;
 
     @GetMapping
-    public ResponseEntity<GraphResponse> getGraph(@AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(graphService.getGraph(getUser(currentUser)));
+    public ResponseEntity<GraphResponse> getGraph(
+            @AuthenticationPrincipal UserPrincipal currentUser,
+            @org.springframework.web.bind.annotation.RequestParam(required = false, defaultValue = "500") int limit) {
+        return ResponseEntity.ok(graphService.getGraph(getUser(currentUser), limit));
     }
 
     @GetMapping("/vision-tree")

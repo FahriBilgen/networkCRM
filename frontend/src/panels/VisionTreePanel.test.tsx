@@ -72,7 +72,7 @@ describe('VisionTreePanel drag and drop', () => {
     fireEvent.drop(vision2!);
 
     await waitFor(() => {
-      expect(screen.getByText(/Hedef yeni vision altına taşındı/i)).toBeInTheDocument();
+      expect(screen.getByText(/Hedef yeni vizyon altına taşındı/i)).toBeInTheDocument();
       expect(moveGoal).toHaveBeenCalledWith('goal-1', 'vision-2', 0);
     });
   });

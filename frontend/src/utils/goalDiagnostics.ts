@@ -26,25 +26,25 @@ export function buildGoalNetworkDiagnostics(nodes: NodeResponse[], supports: Edg
     total === 0 ? 0 : Number(((strongCount / total) * 0.6 + (freshCount / total) * 0.4).toFixed(2));
 
   let readinessLevel: GoalNetworkDiagnostics['readiness']['level'] = 'weak';
-  let readinessMessage = 'Network zayif gorunuyor, baglantilari guclendir.';
+  let readinessMessage = 'Ağ zayıf görünüyor, bağlantıları güçlendir.';
   if (readinessScore >= 0.7 || strongCount >= 3) {
     readinessLevel = 'strong';
-    readinessMessage = 'Bu hedef icin network hazir gorunuyor.';
+    readinessMessage = 'Bu hedef için ağ hazır görünüyor.';
   } else if (readinessScore >= 0.45) {
     readinessLevel = 'medium';
-    readinessMessage = 'Ag sinirda, yeni guclu baglantilar eklemeye calisin.';
+    readinessMessage = 'Ağ sınırda, yeni güçlü bağlantılar eklemeye çalışın.';
   }
   if (total === 0) {
-    readinessMessage = 'Bu hedefe bagli kisi yok.';
+    readinessMessage = 'Bu hedefe bağlı kişi yok.';
   }
 
   const readinessSummary = [
-    `${total} baglanti`,
-    `${strongCount} baglanti 4+ guce sahip`,
-    `${freshCount} baglanti son 45 gunde temas kurdu`,
+    `${total} bağlantı`,
+    `${strongCount} bağlantı 4+ güce sahip`,
+    `${freshCount} bağlantı son 45 günde temas kurdu`,
   ];
   if (total > 0 && total < 3) {
-    readinessSummary.push('En az 3 destekci olmadan hedef riskli.');
+    readinessSummary.push('En az 3 destekçi olmadan hedef riskli.');
   }
 
   const sectorHighlights = buildSectorHighlights(nodes, supportDetails);
@@ -101,14 +101,14 @@ function buildSectorHighlights(
   }
 
   if (highlights.length === 0) {
-    highlights.push('Sektor dagilimini hesaplamak icin veri yok.');
+    highlights.push('Sektör dağılımını hesaplamak için veri yok.');
   }
   return highlights;
 }
 
 function buildRiskAlerts(details: Array<{ person: NodeResponse; edge: EdgeResponse; daysSinceInteraction: number | null }>) {
   if (details.length === 0) {
-    return ['Destekci yok, once kisi ekleyin.'];
+    return ['Destekçi yok, önce kişi ekleyin.'];
   }
 
   const alerts: string[] = [];
@@ -118,19 +118,19 @@ function buildRiskAlerts(details: Array<{ person: NodeResponse; edge: EdgeRespon
     .slice(0, 3);
   stale.forEach((detail) => {
     alerts.push(
-      `${detail.person.name ?? 'Isimsiz'} ile ${Math.round(detail.daysSinceInteraction ?? 0)} gundur iletisim yok.`,
+      `${detail.person.name ?? 'İsimsiz'} ile ${Math.round(detail.daysSinceInteraction ?? 0)} gündür iletişim yok.`,
     );
   });
 
   const weak = details.filter((detail) => (detail.edge.relationshipStrength ?? 0) < 3).slice(0, 3);
   weak.forEach((detail) => {
     alerts.push(
-      `${detail.person.name ?? 'Isimsiz'} icin iliski gucu ${detail.edge.relationshipStrength ?? 0}/5 seviyesinde.`,
+      `${detail.person.name ?? 'İsimsiz'} için ilişki gücü ${detail.edge.relationshipStrength ?? 0}/5 seviyesinde.`,
     );
   });
 
   if (alerts.length === 0) {
-    alerts.push('Kritik risk bulunmadi.');
+    alerts.push('Kritik risk bulunmadı.');
   }
   return alerts;
 }

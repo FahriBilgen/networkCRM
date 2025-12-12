@@ -34,6 +34,12 @@ const typeColors: Record<NodeType, string> = {
   [NODE_TYPES.PERSON]: '#22d3ee',
 };
 
+const edgeTypeLabels: Record<string, string> = {
+  KNOWS: 'Tanıyor',
+  SUPPORTS: 'Destekliyor',
+  BELONGS_TO: 'Ait',
+};
+
 type PositionMap = Record<string, { x: number; y: number }>;
 
 type ViewMode = 'CUSTOM' | 'MIND_MAP';
@@ -240,9 +246,9 @@ export function GraphCanvas() {
       .map((candidate) => candidate.id);
     setFilteredNodeIds(ids);
     if (ids.length === 0) {
-      setStatusMessage(`${sector} sektorunde node bulunamadi.`);
+      setStatusMessage(`${sector} sektöründe kayıt bulunamadı.`);
     } else {
-      setStatusMessage(`${sector} sektorunden ${ids.length} node vurgulandi.`);
+      setStatusMessage(`${sector} sektöründen ${ids.length} kayıt vurgulandı.`);
     }
   };
 
@@ -260,7 +266,7 @@ export function GraphCanvas() {
 
   const handleExport = async (format: GraphExportFormat) => {
     if (!canvasRef.current) {
-      setExportError('Graph elementi bulunamadi.');
+      setExportError('Ağ görseli bulunamadı.');
       return;
     }
     setExportError(null);
@@ -268,10 +274,10 @@ export function GraphCanvas() {
     try {
       const safeName = (selectedNode?.name || 'network-graph').replace(/\s+/g, '-').toLowerCase();
       await exportGraphElement(canvasRef.current, { format, fileName: safeName });
-      setStatusMessage(`Graph ${format.toUpperCase()} olarak kaydedildi.`);
+      setStatusMessage(`Ağ ${format.toUpperCase()} olarak kaydedildi.`);
     } catch (err) {
       console.warn('Graph export failed', err);
-      setExportError('Graph exportu basarisiz oldu.');
+      setExportError('Dışa aktarma başarısız oldu.');
     } finally {
       setExportingFormat(null);
     }
@@ -293,17 +299,17 @@ export function GraphCanvas() {
         return;
       }
       setPositions((prev) => ({ ...prev, ...layoutPositions }));
-      setStatusMessage('Auto layout uygulandi.');
+      setStatusMessage('Otomatik düzen uygulandı.');
       if (isAuthenticated) {
         setAutoLayoutStatus('persisting');
         await persistLayout(layoutPositions);
-        setStatusMessage('Auto layout kaydedildi.');
+        setStatusMessage('Otomatik düzen kaydedildi.');
         triggerGraphRefresh();
       }
       setAutoLayoutStatus('idle');
     } catch (err) {
       console.warn('Auto layout failed', err);
-      setAutoLayoutError('Auto layout basarisiz oldu.');
+      setAutoLayoutError('Otomatik düzen başarısız oldu.');
       setAutoLayoutStatus('idle');
     }
   };
@@ -611,7 +617,7 @@ export function GraphCanvas() {
               <div className="path-inspector-header">
                 <div>
                   <strong>Favoriler</strong>
-                  <small>{favoritePaths.length} path</small>
+                  <small>{favoritePaths.length} yol</small>
                 </div>
               </div>
               <ul className="favorite-path-list">
@@ -619,7 +625,7 @@ export function GraphCanvas() {
                   <li key={favorite.id}>
                     <div>
                       <strong>{favorite.label}</strong>
-                      <small>{favorite.nodeIds.length} node</small>
+                      <small>{favorite.nodeIds.length} kayıt</small>
                     </div>
                     <div className="favorite-actions">
                       <button
@@ -682,11 +688,11 @@ export function createNodeDragHandler({
         },
       });
       await updateNode(node.id, payload);
-      setStatusMessage('Node pozisyonu kaydedildi.');
+      setStatusMessage('Kayıt pozisyonu kaydedildi.');
       triggerGraphRefresh();
     } catch (err) {
       console.warn('Failed to persist node position', err);
-      setStatusMessage('Node pozisyonu kaydedilemedi.');
+      setStatusMessage('Kayıt pozisyonu kaydedilemedi.');
     }
   };
 }
@@ -738,7 +744,7 @@ export function createEdge(edge: EdgeResponse, dimmed = false, highlighted = fal
 }
 
 export function buildEdgeLabel(edge: EdgeResponse) {
-  const parts = [edge.type.toLowerCase()];
+  const parts = [edgeTypeLabels[edge.type] || edge.type.toLowerCase()];
   if (edge.relationshipStrength !== undefined && edge.relationshipStrength !== null) {
     parts.push(`(${edge.relationshipStrength})`);
   }

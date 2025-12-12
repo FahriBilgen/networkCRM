@@ -78,13 +78,13 @@ describe('NodeDetailPanel link person form', () => {
     render(<NodeDetailPanel />);
     act(() => useSelectionStore.getState().selectNode(goalNode));
 
-    await screen.findByText(/Kisiyi hedefe bagla/i);
-    fireEvent.change(screen.getByLabelText(/^Kisi/i), { target: { value: 'person-1' } });
-    fireEvent.change(screen.getByLabelText(/Iliski Gucu/i), { target: { value: '4' } });
+    await screen.findByText(/Kişiyi hedefe bağla/i);
+    fireEvent.change(screen.getByLabelText(/^Kişi/i), { target: { value: 'person-1' } });
+    fireEvent.click(screen.getByRole('button', { name: '4' }));
     fireEvent.change(screen.getByLabelText(/^Not$/i), { target: { value: 'critical' } });
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /Baglanti Olustur/ }));
+      fireEvent.click(screen.getByRole('button', { name: /Bağlantı Oluştur/ }));
     });
 
     await waitFor(() => {
@@ -93,7 +93,7 @@ describe('NodeDetailPanel link person form', () => {
         expect.objectContaining({ personId: 'person-1', relationshipStrength: 4, notes: 'critical' }),
       );
     });
-    expect(screen.getByText(/Baglanti kaydedildi/i)).toBeInTheDocument();
+    expect(screen.getByText(/Bağlantı kaydedildi/i)).toBeInTheDocument();
   });
 
   it('displays proximity metadata when available', async () => {
@@ -124,9 +124,9 @@ describe('NodeDetailPanel link person form', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Iliski gucu: 5/)).toBeInTheDocument();
-      expect(screen.getByText(/Son iletisim: 2025-01-10/)).toBeInTheDocument();
-      expect(screen.getByText(/Influence skoru/i)).toBeInTheDocument();
+      expect(screen.getByText(/İlişki Gücü: 5/)).toBeInTheDocument();
+      expect(screen.getByText(/Son İletişim: 2025-01-10/)).toBeInTheDocument();
+      expect(screen.getByText(/Etki Skoru/i)).toBeInTheDocument();
     });
   });
 
@@ -156,7 +156,7 @@ describe('NodeDetailPanel link person form', () => {
     );
 
     await screen.findByText('Fintech');
-    fireEvent.click(screen.getByRole('button', { name: /Grafikte vurgula/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Grafikte Vurgula/i }));
 
     expect(useGraphStore.getState().filteredNodeIds).toEqual(['person-1', 'person-2']);
   });
@@ -212,17 +212,17 @@ describe('NodeDetailPanel link person form', () => {
       } as any),
     );
 
-    await screen.findByText(/Henuz zaman bazli kayit yok/i);
-    const textarea = screen.getByPlaceholderText(/Son gorusme notu/i);
+    await screen.findByText(/Henüz zaman bazlı kayıt yok/i);
+    const textarea = screen.getByPlaceholderText(/Son görüşme notu/i);
     fireEvent.change(textarea, { target: { value: 'Yeni not' } });
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /Kaydi ekle/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Kaydı Ekle/i }));
     });
 
     await waitFor(() => {
       expect(updateNode).toHaveBeenCalled();
     });
-    expect(screen.getByText(/timeline kaydi eklendi/i)).toBeInTheDocument();
+    expect(screen.getByText(/Zaman çizelgesi kaydı eklendi/i)).toBeInTheDocument();
     expect(screen.getByText('Yeni not')).toBeInTheDocument();
   });
 
@@ -259,7 +259,7 @@ describe('NodeDetailPanel link person form', () => {
     );
 
     await screen.findByText('Eski not');
-    fireEvent.click(screen.getByRole('button', { name: /Kaydi Sil/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Kaydı Sil/i }));
 
     await waitFor(() => {
       expect(updateNode).toHaveBeenCalledWith(
@@ -271,8 +271,8 @@ describe('NodeDetailPanel link person form', () => {
         }),
       );
     });
-    expect(screen.getByText(/Timeline kaydi silindi/i)).toBeInTheDocument();
-    expect(screen.getByText(/Henuz zaman bazli kayit yok/i)).toBeInTheDocument();
+    expect(screen.getByText(/Zaman çizelgesi kaydı silindi/i)).toBeInTheDocument();
+    expect(screen.getByText(/Henüz zaman bazlı kayıt yok/i)).toBeInTheDocument();
   });
 
   it('shows path-based suggestions for goals', async () => {
@@ -313,16 +313,16 @@ describe('NodeDetailPanel link person form', () => {
       } as any),
     );
 
-  await screen.findByText(/Path-based oneriler/i);
+  await screen.findByText(/Erişim Yolu Önerileri/i);
   expect(screen.getByText('Bora')).toBeInTheDocument();
   await waitFor(() => expect(fetchGoalPathSuggestions).toHaveBeenCalledWith('goal-1', { limit: 4, maxDepth: 3 }));
 
-  fireEvent.click(screen.getAllByRole('button', { name: /Grafikte goster/i })[0]);
+  fireEvent.click(screen.getAllByRole('button', { name: /Ağda Göster/i })[0]);
     expect(useGraphStore.getState().highlightPathNodeIds).toEqual(
       expect.arrayContaining(['goal-1', 'person-a', 'person-b']),
     );
 
-    fireEvent.click(screen.getAllByRole('button', { name: /Favorilere ekle/i })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: /Favorilere Ekle/i })[0]);
     await waitFor(() => expect(useGraphStore.getState().favoritePaths).toHaveLength(1));
     const favorites = useGraphStore.getState().favoritePaths;
     expect(favorites[0]).toMatchObject({
@@ -330,8 +330,8 @@ describe('NodeDetailPanel link person form', () => {
     });
     expect(favorites[0].nodeIds).toEqual(expect.arrayContaining(['goal-1', 'person-a', 'person-b']));
 
-  await screen.findByText(/Favori patikalar/i);
-  fireEvent.click(screen.getAllByRole('button', { name: /Favoriyi sil/i })[0]);
+  await screen.findByText(/Favori Patikalar/i);
+  fireEvent.click(screen.getAllByRole('button', { name: /Favoriyi Sil/i })[0]);
   await waitFor(() => expect(useGraphStore.getState().favoritePaths).toHaveLength(0));
   });
 
@@ -364,10 +364,10 @@ describe('NodeDetailPanel link person form', () => {
       } as any),
     );
 
-    await screen.findByText(/Path-based oneriler/i);
+    await screen.findByText(/Erişim Yolu Önerileri/i);
     expect(screen.getByText('Bora')).toBeInTheDocument();
     await waitFor(() => expect(fetchGoalPathSuggestions).toHaveBeenCalled());
-    expect(screen.getByText(/Yerel graph analizi/i, { selector: 'small.muted' })).toBeInTheDocument();
-    expect(screen.getByText(/Sunucu onerileri getirilemedi/i)).toBeInTheDocument();
+    expect(screen.getByText(/Yerel Ağ Analizi/i, { selector: 'small.muted' })).toBeInTheDocument();
+    expect(screen.getByText(/Sunucu önerileri getirilemedi/i)).toBeInTheDocument();
   });
 });

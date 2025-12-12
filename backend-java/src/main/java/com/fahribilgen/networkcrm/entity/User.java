@@ -8,7 +8,11 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
+
+import com.fahribilgen.networkcrm.enums.RoleName;
 
 @Entity
 @Table(name = "users")
@@ -27,6 +31,13 @@ public class User {
 
     @Column(nullable = false)
     private String passwordHash;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
+    @Builder.Default
+    private Set<RoleName> roles = new HashSet<>();
 
     @CreationTimestamp
     @Column(updatable = false)

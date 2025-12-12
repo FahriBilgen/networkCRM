@@ -53,6 +53,6 @@ describe('FiltersPanel', () => {
         maxRelationshipStrength: 4,
       }),
     );
-    expect(screen.getByText(/node eşleşti/i)).toBeInTheDocument();
+    expect(screen.getByText(/kayıt eşleşti/i)).toBeInTheDocument();
   });
 });

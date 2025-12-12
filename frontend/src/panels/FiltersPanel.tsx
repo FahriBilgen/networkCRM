@@ -65,16 +65,24 @@ export function FiltersPanel() {
       setFilteredNodeIds(ids);
       setMessageKind('info');
       if (result.length === 0) {
-        setMessage('Eşleşen node yok. Graph tüm nodları gri olarak gösteriyor.');
+        setMessage('Eşleşen kayıt bulunamadı. Tüm ağ gri olarak gösteriliyor.');
         setSummary(null);
       } else {
-        setMessage(`${result.length} node eşleşti. Graph bu nodları parlak gösteriyor.`);
+        setMessage(`${result.length} kayıt eşleşti. İlgili bağlantılar vurgulanıyor.`);
         const counts: Partial<Record<NodeType, number>> = {};
         result.forEach((node) => {
           counts[node.type] = (counts[node.type] ?? 0) + 1;
         });
+        
+        const typeLabels: Record<string, string> = {
+          PERSON: 'Kişi',
+          GOAL: 'Hedef',
+          PROJECT: 'Proje',
+          VISION: 'Vizyon',
+        };
+
         const detail = Object.entries(counts)
-          .map(([type, count]) => `${type.toLowerCase()}: ${count}`)
+          .map(([type, count]) => `${typeLabels[type] || type}: ${count}`)
           .join(' • ');
         setSummary(detail);
       }

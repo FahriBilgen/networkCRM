@@ -56,10 +56,10 @@ describe('NodeModal', () => {
     render(<NodeModal />);
     act(() => openModal('create', NODE_TYPES.PERSON));
 
-    fireEvent.change(screen.getByLabelText(/Isim/i), { target: { value: 'Yeni Kisi' } });
-    fireEvent.change(screen.getByLabelText(/Sektor/i), { target: { value: 'SaaS' } });
+    fireEvent.change(screen.getByLabelText(/İsim/i), { target: { value: 'Yeni Kisi' } });
+    fireEvent.change(screen.getByLabelText(/Sektör/i), { target: { value: 'SaaS' } });
     fireEvent.change(screen.getByLabelText(/Etiketler/i), { target: { value: 'mentor, yatirimci ' } });
-    fireEvent.change(screen.getByLabelText(/Iliski Gucu/i), { target: { value: '5' } });
+    fireEvent.click(screen.getByRole('button', { name: '5' }));
     fireEvent.change(screen.getByLabelText(/Notlar/i), { target: { value: 'Not girildi' } });
 
     await act(async () => {
@@ -86,8 +86,8 @@ describe('NodeModal', () => {
     render(<NodeModal />);
     act(() => openModal('edit', NODE_TYPES.GOAL));
 
-    fireEvent.change(screen.getByLabelText(/Isim/i), { target: { value: 'Guncel Hedef' } });
-    fireEvent.change(screen.getByLabelText(/Oncelik/i), { target: { value: '5' } });
+    fireEvent.change(screen.getByLabelText(/İsim/i), { target: { value: 'Guncel Hedef' } });
+    fireEvent.change(screen.getByLabelText(/Öncelik/i), { target: { value: '5' } });
     fireEvent.change(screen.getByLabelText(/Notlar/i), { target: { value: 'Guncel not' } });
 
     await act(async () => {
@@ -115,11 +115,11 @@ describe('NodeModal', () => {
       matchedKeywords: ['fintech'],
     });
 
-    fireEvent.change(screen.getByLabelText(/Isim/i), { target: { value: 'Yeni Kisi' } });
-    fireEvent.change(screen.getByLabelText(/Aciklama/i), { target: { value: 'Finans uzmani' } });
+    fireEvent.change(screen.getByLabelText(/İsim/i), { target: { value: 'Yeni Kisi' } });
+    fireEvent.change(screen.getByLabelText(/Açıklama/i), { target: { value: 'Finans uzmani' } });
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /Sektor oner/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Sektör Öner/i }));
     });
 
     await waitFor(() =>
@@ -133,7 +133,7 @@ describe('NodeModal', () => {
 
     await waitFor(() => expect(screen.getByText('Fintech')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: /Sektoru uygula/i }));
-    expect(screen.getByLabelText(/Sektor/i)).toHaveValue('Fintech');
+    fireEvent.click(screen.getByRole('button', { name: /Sektörü Uygula/i }));
+    expect(screen.getByLabelText(/Sektör/i)).toHaveValue('Fintech');
   });
 });

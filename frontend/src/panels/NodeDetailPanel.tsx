@@ -21,10 +21,16 @@ import { buildNodeRequestPayload } from '../utils/nodePayload';
 import { computeGoalPathSuggestions } from '../utils/goalPathSuggestions';
 
 const typeLabels: Record<NodeType, string> = {
-  PERSON: 'Kisi',
-  VISION: 'Vision',
-  GOAL: 'Goal',
-  PROJECT: 'Project',
+  PERSON: 'Kişi',
+  VISION: 'Vizyon',
+  GOAL: 'Hedef',
+  PROJECT: 'Proje',
+};
+
+const edgeTypeLabels: Record<string, string> = {
+  KNOWS: 'Tanıyor',
+  SUPPORTS: 'Destekliyor',
+  BELONGS_TO: 'Ait',
 };
 
 export function NodeDetailPanel() {
@@ -95,7 +101,7 @@ export function NodeDetailPanel() {
       })
       .catch((err) => {
         console.warn('Unable to load people for linking', err);
-        setPeopleError('Kisiler getirilemedi.');
+        setPeopleError('Kişiler getirilemedi.');
       })
       .finally(() => setPeopleLoading(false));
   }, [selectedNode, isAuthenticated]);
@@ -113,7 +119,7 @@ export function NodeDetailPanel() {
       .then((data) => setProximity(data))
       .catch((err) => {
         console.warn('Unable to load proximity insight', err);
-        setProximityError('Yakinlik verisi getirilemedi.');
+        setProximityError('Yakınlık verisi getirilemedi.');
       })
       .finally(() => setProximityLoading(false));
   }, [selectedNode, isAuthenticated, proximityKey]);
@@ -197,7 +203,7 @@ export function NodeDetailPanel() {
         console.warn('Goal path suggestions unavailable', err);
         setPathSuggestions(fallbackPathSuggestions);
         setPathSource('local');
-        setPathError('Sunucu onerileri getirilemedi; yerel graph analizi kullaniliyor.');
+        setPathError('Sunucu önerileri getirilemedi; yerel grafik analizi kullanılıyor.');
       })
       .finally(() => {
         if (!cancelled) {
@@ -242,7 +248,7 @@ export function NodeDetailPanel() {
   if (!selectedNode) {
     return (
       <div className="panel node-detail-panel empty">
-        <p>Graph uzerinden bir node sectiginizde detaylar burada gorunecek.</p>
+        <p>Grafik üzerinden bir kayıt seçtiğinizde detaylar burada görünecek.</p>
       </div>
     );
   }
@@ -250,8 +256,8 @@ export function NodeDetailPanel() {
   const matchesFilter = !filteredNodeIds || filteredNodeIds.includes(selectedNode.id);
   const filterHint = filteredNodeIds
     ? matchesFilter
-      ? 'Bu node filtre sonucunda vurgulaniyor.'
-      : 'Bu node filtre kriterlerine uymuyor; graph uzerinde gri gosteriliyor.'
+      ? 'Bu kayıt filtre sonucunda vurgulanıyor.'
+      : 'Bu kayıt filtre kriterlerine uymuyor; grafik üzerinde gri gösteriliyor.'
     : null;
 
   const handleLinkSubmit = async (event: React.FormEvent) => {
@@ -260,7 +266,7 @@ export function NodeDetailPanel() {
       return;
     }
     if (!linkPersonId) {
-      setLinkError('Lutfen bir kisi secin.');
+      setLinkError('Lütfen bir kişi seçin.');
       return;
     }
 
@@ -275,7 +281,7 @@ export function NodeDetailPanel() {
         addedByUser: true,
       };
       await linkPersonToGoal(selectedNode.id, payload);
-      setLinkFeedback('Baglanti kaydedildi.');
+      setLinkFeedback('Bağlantı kaydedildi.');
       setLinkPersonId('');
       setLinkStrength('');
       setLinkNotes('');
@@ -283,7 +289,7 @@ export function NodeDetailPanel() {
       refreshProximity();
     } catch (err) {
       console.warn('Failed to create SUPPORTS edge', err);
-      setLinkError('Baglanti olusturulamadi.');
+      setLinkError('Bağlantı oluşturulamadı.');
     } finally {
       setLinkSubmitting(false);
     }
@@ -321,7 +327,7 @@ export function NodeDetailPanel() {
       return true;
     } catch (err) {
       console.warn('Failed to persist timeline change', err);
-      setTimelineError('Timeline kaydi kaydedilemedi.');
+      setTimelineError('Zaman çizelgesi kaydı kaydedilemedi.');
       return false;
     } finally {
       setTimelineSaving(false);
@@ -340,7 +346,7 @@ export function NodeDetailPanel() {
     }
     const entry = createTimelineEntry(trimmed, timelineDate);
     const nextTimeline = [entry, ...timelineEntries].slice(0, 25);
-    const success = await persistTimelineEntries(nextTimeline, 'Timeline kaydi eklendi.');
+    const success = await persistTimelineEntries(nextTimeline, 'Zaman çizelgesi kaydı eklendi.');
     if (success) {
       setTimelineNote('');
       setTimelineDate(defaultTimelineDate());
@@ -352,7 +358,7 @@ export function NodeDetailPanel() {
       return;
     }
     const nextTimeline = timelineEntries.filter((entry) => entry.id !== entryId);
-    await persistTimelineEntries(nextTimeline, 'Timeline kaydi silindi.');
+    await persistTimelineEntries(nextTimeline, 'Zaman çizelgesi kaydı silindi.');
   };
 
   const formatPath = (pathIds: string[]) => {
@@ -412,16 +418,16 @@ export function NodeDetailPanel() {
       )}
       {selectedNode.description && <p>{selectedNode.description}</p>}
       <section>
-        <h4>Ozet nitelikler</h4>
+        <h4>Özet Nitelikler</h4>
         <dl>
           {selectedNode.sector && (
             <>
-              <dt>Sektor</dt>
+              <dt>Sektör</dt>
               <dd>
                 <div className="value-with-action">
                   <span>{selectedNode.sector}</span>
                   <button type="button" className="chip-button secondary" onClick={highlightBySector}>
-                    Grafikte vurgula
+                    Grafikte Vurgula
                   </button>
                 </div>
               </dd>
@@ -429,7 +435,7 @@ export function NodeDetailPanel() {
           )}
           {selectedNode.relationshipStrength !== undefined && (
             <>
-              <dt>Iliski Gucu</dt>
+              <dt>İlişki Gücü</dt>
               <dd>{selectedNode.relationshipStrength}/5</dd>
             </>
           )}
@@ -447,7 +453,7 @@ export function NodeDetailPanel() {
           ) : null}
           {selectedNode.dueDate && (
             <>
-              <dt>Bitis</dt>
+              <dt>Bitiş</dt>
               <dd>{selectedNode.dueDate}</dd>
             </>
           )}
@@ -456,7 +462,7 @@ export function NodeDetailPanel() {
 
       {selectedNode.type === NODE_TYPES.PERSON && (
         <section className="timeline-section">
-          <h4>Zaman Cizelgesi</h4>
+          <h4>Zaman Çizelgesi</h4>
           {isAuthenticated ? (
             <form className="timeline-form" onSubmit={handleTimelineSubmit}>
               <label>
@@ -473,20 +479,20 @@ export function NodeDetailPanel() {
                   rows={2}
                   value={timelineNote}
                   onChange={(event) => setTimelineNote(event.target.value)}
-                  placeholder="Son gorusme notu..."
+                  placeholder="Son görüşme notu..."
                 />
               </label>
               <button className="ghost-button" type="submit" disabled={timelineSaving || !timelineNote.trim()}>
-                {timelineSaving ? 'Kaydediliyor...' : 'Kaydi ekle'}
+                {timelineSaving ? 'Kaydediliyor...' : 'Kaydı Ekle'}
               </button>
               {timelineError && <small className="error-text">{timelineError}</small>}
               {timelineFeedback && <small className="success-text">{timelineFeedback}</small>}
             </form>
           ) : (
-            <p className={timelineEntries.length === 0 ? 'muted' : ''}>Not eklemek icin giris yapin.</p>
+            <p className={timelineEntries.length === 0 ? 'muted' : ''}>Not eklemek için giriş yapın.</p>
           )}
           <ul className="timeline-list">
-            {timelineEntries.length === 0 && <li>Henuz zaman bazli kayit yok.</li>}
+            {timelineEntries.length === 0 && <li>Henüz zaman bazlı kayıt yok.</li>}
             {timelineEntries.map((entry) => (
               <li key={entry.id}>
                 <div className="timeline-meta">
@@ -498,7 +504,7 @@ export function NodeDetailPanel() {
                       onClick={() => handleTimelineRemove(entry.id)}
                       disabled={timelineSaving}
                     >
-                      Kaydi Sil
+                      Kaydı Sil
                     </button>
                   )}
                 </div>
@@ -511,46 +517,49 @@ export function NodeDetailPanel() {
 
       {selectedNode.type === NODE_TYPES.GOAL && (
         <section className="link-section">
-          <h4>Kisiyi hedefe bagla</h4>
+          <h4>Kişiyi hedefe bağla</h4>
           {!isAuthenticated ? (
-            <p className="muted">Bu islemi yapabilmek icin giris yapin.</p>
+            <p className="muted">Bu işlemi yapabilmek için giriş yapın.</p>
           ) : (
             <form className="link-form" onSubmit={handleLinkSubmit}>
               <label>
-                Kisi
+                Kişi
                 <select
                   value={linkPersonId}
                   onChange={(event) => setLinkPersonId(event.target.value)}
                   disabled={peopleLoading || peopleOptions.length === 0}
                 >
-                  <option value="">Bir kisi secin</option>
+                  <option value="">Bir kişi seçin</option>
                   {peopleOptions.map((person) => (
                     <option key={person.id} value={person.id}>
-                      {person.name ?? 'Isimsiz Kisi'}
+                      {person.name ?? 'İsimsiz Kişi'}
                     </option>
                   ))}
                 </select>
               </label>
               <label>
-                Iliski Gucu (0-5)
-                <input
-                  type="number"
-                  min={0}
-                  max={5}
-                  value={linkStrength}
-                  onChange={(event) =>
-                    setLinkStrength(event.target.value === '' ? '' : Number(event.target.value))
-                  }
-                />
+                İlişki Gücü (0-5)
+                <div className="strength-selector">
+                  {[0, 1, 2, 3, 4, 5].map((val) => (
+                    <button
+                      key={val}
+                      type="button"
+                      className={`strength-btn ${linkStrength === val ? 'active' : ''}`}
+                      onClick={() => setLinkStrength(val)}
+                    >
+                      {val}
+                    </button>
+                  ))}
+                </div>
               </label>
               <label>
                 Not
                 <textarea value={linkNotes} onChange={(event) => setLinkNotes(event.target.value)} rows={2} />
               </label>
               <button className="primary-button" type="submit" disabled={linkSubmitting || !linkPersonId}>
-                {linkSubmitting ? 'Baglaniyor...' : 'Baglanti Olustur'}
+                {linkSubmitting ? 'Bağlanıyor...' : 'Bağlantı Oluştur'}
               </button>
-              {peopleLoading && <small>Liste yukleniyor...</small>}
+              {peopleLoading && <small>Liste yükleniyor...</small>}
               {peopleError && <small className="error-text">{peopleError}</small>}
               {linkError && <small className="error-text">{linkError}</small>}
               {linkFeedback && <small className="success-text">{linkFeedback}</small>}
@@ -562,14 +571,14 @@ export function NodeDetailPanel() {
       {selectedNode.type === NODE_TYPES.GOAL && (pathSuggestions.length > 0 || pathLoading) && (
         <section className="path-section">
           <div className="path-section-header">
-            <h4>Path-based oneriler</h4>
+            <h4>Erişim Yolu Önerileri</h4>
             {pathLoading ? (
-              <small>Yukleniyor...</small>
+              <small>Yükleniyor...</small>
             ) : (
-              <small className="muted">{pathSource === 'server' ? 'Sunucu analizi' : 'Yerel graph analizi'}</small>
+              <small className="muted">{pathSource === 'server' ? 'Sunucu Analizi' : 'Yerel Ağ Analizi'}</small>
             )}
           </div>
-          <p className="muted">Bu hedefe 2-3 adimda erisilebilecek kisiler.</p>
+          <p className="muted">Bu hedefe 2-3 adımda erişilebilecek kişiler.</p>
           {pathFeedback && <small className="success-text">{pathFeedback}</small>}
           {pathError && <small className="error-text">{pathError}</small>}
           <ul className="path-list">
@@ -577,10 +586,10 @@ export function NodeDetailPanel() {
               <li key={suggestion.person.id}>
                 <div className="path-header">
                   <div>
-                    <strong>{suggestion.person.name ?? 'Isimsiz Kisi'}</strong>
+                    <strong>{suggestion.person.name ?? 'İsimsiz Kişi'}</strong>
                     {suggestion.person.sector && <small>{suggestion.person.sector}</small>}
                   </div>
-                  <span className="path-distance">{suggestion.distance}-hop</span>
+                  <span className="path-distance">{suggestion.distance} adım</span>
                 </div>
                 <p className="path-sequence">{formatPath(suggestion.pathNodeIds)}</p>
                 <div className="path-actions">
@@ -589,14 +598,14 @@ export function NodeDetailPanel() {
                     className="chip-button secondary"
                     onClick={() => setHighlightPath(suggestion.pathNodeIds)}
                   >
-                    Grafikte goster
+                    Ağda Göster
                   </button>
                   <button
                     type="button"
                     className="chip-button secondary"
                     onClick={() => handleFavoriteAdd(suggestion)}
                   >
-                    Favorilere ekle
+                    Favorilere Ekle
                   </button>
                 </div>
               </li>
@@ -607,13 +616,13 @@ export function NodeDetailPanel() {
 
       {selectedNode.type === NODE_TYPES.GOAL && goalFavoritePaths.length > 0 && (
         <section className="favorite-paths">
-          <h4>Favori patikalar</h4>
+          <h4>Favori Patikalar</h4>
           <ul className="favorite-path-list">
             {goalFavoritePaths.map((favorite) => (
               <li key={favorite.id}>
                 <div>
                   <strong>{favorite.label}</strong>
-                  <small>{favorite.nodeIds.length} node</small>
+                  <small>{favorite.nodeIds.length} adım</small>
                 </div>
                 <div className="path-actions">
                   <button
@@ -621,14 +630,14 @@ export function NodeDetailPanel() {
                     className="chip-button secondary"
                     onClick={() => applyFavoritePath(favorite.id)}
                   >
-                    Goster
+                    Göster
                   </button>
                   <button
                     type="button"
                     className="chip-button danger"
                     onClick={() => handleFavoriteRemove(favorite.id)}
                   >
-                    Favoriyi sil
+                    Favoriyi Sil
                   </button>
                 </div>
               </li>
@@ -639,33 +648,33 @@ export function NodeDetailPanel() {
 
       {isAuthenticated && (
         <section className="proximity-section">
-          <h4>1-Hop Yakinlik</h4>
-          {proximityLoading && <p className="muted">Hesaplaniyor...</p>}
+          <h4>Yakınlık Analizi</h4>
+          {proximityLoading && <p className="muted">Hesaplanıyor...</p>}
           {proximityError && <p className="error-text">{proximityError}</p>}
           {proximity && (
             <div className="proximity-card">
               <p>
-                Toplam baglanti: <strong>{proximity.totalConnections}</strong>
+                Toplam Bağlantı: <strong>{proximity.totalConnections}</strong>
               </p>
               <p>
-                Influence skoru: <strong>{proximity.influenceScore.toFixed(2)}</strong>
+                Etki Skoru: <strong>{proximity.influenceScore.toFixed(2)}</strong>
               </p>
               {proximity.connectionCounts && Object.keys(proximity.connectionCounts).length > 0 && (
                 <div className="proximity-counts">
                   {Object.entries(proximity.connectionCounts).map(([edgeType, count]) => (
                     <span key={edgeType}>
-                      {edgeType}: <strong>{count}</strong>
+                      {edgeTypeLabels[edgeType] || edgeType}: <strong>{count}</strong>
                     </span>
                   ))}
                 </div>
               )}
               <ul className="proximity-list">
-                {proximity.neighbors.length === 0 && <li>Baglanti bulunamadi.</li>}
+                {proximity.neighbors.length === 0 && <li>Bağlantı bulunamadı.</li>}
                 {proximity.neighbors.slice(0, 5).map((neighbor) => (
                   <li key={neighbor.edgeId} className="neighbor-item">
                     <div className="neighbor-line">
                       <div>
-                        <strong>{neighbor.neighbor.name ?? 'Isimsiz Kisi'}</strong> ({neighbor.neighbor.type})
+                        <strong>{neighbor.neighbor.name ?? 'İsimsiz Kişi'}</strong> ({neighbor.neighbor.type})
                       </div>
                       <span className="edge-pill">
                         {neighbor.outgoing ? '->' : '<-'} {neighbor.edgeType}
@@ -674,10 +683,10 @@ export function NodeDetailPanel() {
                     {(neighbor.relationshipStrength !== undefined || neighbor.lastInteractionDate) && (
                       <div className="neighbor-meta">
                         {neighbor.relationshipStrength !== undefined && neighbor.relationshipStrength !== null && (
-                          <span className="neighbor-meta-chip">Iliski gucu: {neighbor.relationshipStrength}/5</span>
+                          <span className="neighbor-meta-chip">İlişki Gücü: {neighbor.relationshipStrength}/5</span>
                         )}
                         {neighbor.lastInteractionDate && (
-                          <span className="neighbor-meta-chip">Son iletisim: {neighbor.lastInteractionDate}</span>
+                          <span className="neighbor-meta-chip">Son İletişim: {neighbor.lastInteractionDate}</span>
                         )}
                       </div>
                     )}
@@ -691,13 +700,13 @@ export function NodeDetailPanel() {
 
       <footer className="detail-footer">
         <button className="primary-button" onClick={() => openEditModal(selectedNode)}>
-          Duzenle
+          Düzenle
         </button>
         <button
           className="ghost-button danger"
           onClick={async () => {
             if (!selectedNode?.id) return;
-            if (!window.confirm('Bu kaydi silmek istediginize emin misiniz?')) return;
+            if (!window.confirm('Bu kaydı silmek istediğinize emin misiniz?')) return;
             try {
               await deleteNode(selectedNode.id);
               triggerGraphRefresh();
@@ -705,7 +714,7 @@ export function NodeDetailPanel() {
               selectNode(null);
               setDeleteError(null);
             } catch {
-              setDeleteError('Silme islemi basarisiz oldu.');
+              setDeleteError('Silme işlemi başarısız oldu.');
             }
           }}
         >

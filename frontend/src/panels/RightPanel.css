@@ -23,11 +23,18 @@
   padding: 0.4rem 0.5rem;
   cursor: pointer;
   font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.panel-tabs button:hover {
+  color: #cbd5f5;
+  background: rgba(59, 130, 246, 0.1);
 }
 
 .panel-tabs button.active {
-  background: #1d2539;
-  color: #f8fafc;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(34, 211, 238, 0.2));
+  color: #bfdbfe;
+  box-shadow: inset 0 0 8px rgba(59, 130, 246, 0.2);
 }
 
 .panel-body {

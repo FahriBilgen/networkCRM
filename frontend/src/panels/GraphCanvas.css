@@ -1,11 +1,19 @@
 .graph-canvas {
   width: 100%;
   height: 100%;
-  background: #020617;
+  background: linear-gradient(135deg, #020617 0%, #0a1223 100%);
   border: 1px solid #0f172a;
   border-radius: 0.75rem;
   overflow: hidden;
   position: relative;
+  transition: all 0.3s ease;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@media (max-width: 768px) {
+  .graph-canvas {
+    border-radius: 0.5rem;
+  }
 }
 
 .graph-toolbar {
@@ -17,10 +25,27 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.3rem 0.6rem;
-  background: rgba(2, 6, 23, 0.9);
+  background: rgba(2, 6, 23, 0.95);
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.35);
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(10px);
+  animation: slideInDown 0.4s ease-out;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.graph-toolbar:hover {
+  border-color: rgba(148, 163, 184, 0.5);
+  background: rgba(2, 6, 23, 0.98);
+}
+
+@media (max-width: 768px) {
+  .graph-toolbar {
+    top: 0.5rem;
+    left: 0.5rem;
+    gap: 0.4rem;
+    padding: 0.25rem 0.4rem;
+  }
 }
 
 .toolbar-group {
@@ -65,11 +90,17 @@
   border-radius: 0;
   padding: 0.2rem 0.6rem;
   font-size: 0.8rem;
+  transition: all 0.2s ease;
 }
 
 .view-toggle .ghost-button.active {
-  background: rgba(59, 130, 246, 0.15);
+  background: rgba(59, 130, 246, 0.25);
   color: #bfdbfe;
+  box-shadow: inset 0 0 8px rgba(59, 130, 246, 0.2);
+}
+
+.view-toggle .ghost-button:hover {
+  background: rgba(59, 130, 246, 0.2);
 }
 
 .toolbar-hint {

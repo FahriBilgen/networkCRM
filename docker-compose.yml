@@ -56,6 +56,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/networkcrm
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: password
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
       LANGCHAIN4J_OLLAMA_BASE_URL: http://ollama:11434
     depends_on:
       db:

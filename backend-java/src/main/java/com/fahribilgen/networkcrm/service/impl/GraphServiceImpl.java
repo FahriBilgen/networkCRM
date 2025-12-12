@@ -1,5 +1,20 @@
 package com.fahribilgen.networkcrm.service.impl;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
 import com.fahribilgen.networkcrm.entity.Edge;
 import com.fahribilgen.networkcrm.entity.Node;
 import com.fahribilgen.networkcrm.entity.User;
@@ -12,11 +27,6 @@ import com.fahribilgen.networkcrm.payload.VisionTreeResponse;
 import com.fahribilgen.networkcrm.repository.EdgeRepository;
 import com.fahribilgen.networkcrm.repository.NodeRepository;
 import com.fahribilgen.networkcrm.service.GraphService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class GraphServiceImpl implements GraphService {
@@ -29,11 +39,29 @@ public class GraphServiceImpl implements GraphService {
 
     @Override
     public GraphResponse getGraph(User user) {
-        List<Node> nodes = nodeRepository.findByUserId(user.getId());
+        return getGraph(user, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public GraphResponse getGraph(User user, int limit) {
+        List<Node> nodes;
+        if (limit < Integer.MAX_VALUE) {
+            nodes = nodeRepository.findByUserId(user.getId(),
+                    PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt")));
+        } else {
+            nodes = nodeRepository.findByUserId(user.getId());
+        }
+
+        Set<UUID> nodeIds = nodes.stream().map(Node::getId).collect(Collectors.toSet());
+
         List<Edge> edges = edgeRepository.findBySourceNode_User_Id(user.getId());
 
+        List<Edge> filteredEdges = edges.stream()
+                .filter(e -> nodeIds.contains(e.getSourceNode().getId()) && nodeIds.contains(e.getTargetNode().getId()))
+                .collect(Collectors.toList());
+
         List<NodeResponse> nodeResponses = nodes.stream().map(this::mapToNodeResponse).collect(Collectors.toList());
-        List<EdgeResponse> edgeResponses = edges.stream().map(this::mapToEdgeResponse).collect(Collectors.toList());
+        List<EdgeResponse> edgeResponses = filteredEdges.stream().map(this::mapToEdgeResponse).collect(Collectors.toList());
 
         return GraphResponse.builder()
                 .nodes(nodeResponses)
@@ -74,9 +102,9 @@ public class GraphServiceImpl implements GraphService {
                 .filter(node -> node.getType() == NodeType.VISION)
                 .sorted(Comparator.comparing(node -> Optional.ofNullable(node.getName()).orElse(""), String.CASE_INSENSITIVE_ORDER))
                 .map(vision -> VisionTreeResponse.VisionNode.builder()
-                        .vision(mapToNodeResponse(vision))
-                        .goals(buildGoalNodes(vision.getId(), goalsByVision, projectsByGoal, sortOrderByNodeId))
-                        .build())
+                .vision(mapToNodeResponse(vision))
+                .goals(buildGoalNodes(vision.getId(), goalsByVision, projectsByGoal, sortOrderByNodeId))
+                .build())
                 .collect(Collectors.toList());
 
         return VisionTreeResponse.builder()
@@ -85,23 +113,23 @@ public class GraphServiceImpl implements GraphService {
     }
 
     private List<VisionTreeResponse.GoalNode> buildGoalNodes(UUID visionId,
-                                                             Map<UUID, List<Node>> goalsByVision,
-                                                             Map<UUID, List<Node>> projectsByGoal,
-                                                             Map<UUID, Integer> sortOrderByNodeId) {
+            Map<UUID, List<Node>> goalsByVision,
+            Map<UUID, List<Node>> projectsByGoal,
+            Map<UUID, Integer> sortOrderByNodeId) {
         List<Node> goals = goalsByVision.getOrDefault(visionId, List.of());
         return goals.stream()
                 .sorted(Comparator.comparing((Node node) -> sortOrderByNodeId.getOrDefault(node.getId(), 0))
                         .thenComparing(node -> Optional.ofNullable(node.getName()).orElse(""), String.CASE_INSENSITIVE_ORDER))
                 .map(goalNode -> VisionTreeResponse.GoalNode.builder()
-                        .goal(mapToNodeResponse(goalNode))
-                        .projects(buildProjectNodes(goalNode.getId(), projectsByGoal, sortOrderByNodeId))
-                        .build())
+                .goal(mapToNodeResponse(goalNode))
+                .projects(buildProjectNodes(goalNode.getId(), projectsByGoal, sortOrderByNodeId))
+                .build())
                 .collect(Collectors.toList());
     }
 
     private List<NodeResponse> buildProjectNodes(UUID goalId,
-                                                 Map<UUID, List<Node>> projectsByGoal,
-                                                 Map<UUID, Integer> sortOrderByNodeId) {
+            Map<UUID, List<Node>> projectsByGoal,
+            Map<UUID, Integer> sortOrderByNodeId) {
         List<Node> projects = projectsByGoal.getOrDefault(goalId, List.of());
         return projects.stream()
                 .sorted(Comparator.comparing((Node node) -> sortOrderByNodeId.getOrDefault(node.getId(), 0))

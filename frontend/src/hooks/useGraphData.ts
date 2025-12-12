@@ -36,11 +36,17 @@ export function useGraphData() {
           setError(null);
         }
       } catch (err) {
-        console.warn('Graph fetch failed, fallback to mock', err);
+        console.warn('Graph fetch failed', err);
         if (mounted) {
-          setError('Graph yüklenemedi, mock veri gösteriliyor');
-          setData(mockGraphResponse);
-          setGraph(mockGraphResponse);
+          if (import.meta.env.PROD) {
+            setError('Ağ verisi yüklenemedi. Lütfen bağlantınızı kontrol edin.');
+            setData({ nodes: [], links: [] });
+            setGraph({ nodes: [], links: [] });
+          } else {
+            setError('Graph yüklenemedi, mock veri gösteriliyor (DEV MODE)');
+            setData(mockGraphResponse);
+            setGraph(mockGraphResponse);
+          }
         }
       } finally {
         mounted && setLoading(false);

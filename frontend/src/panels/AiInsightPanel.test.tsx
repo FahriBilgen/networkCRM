@@ -59,7 +59,7 @@ describe('AiInsightPanel fallback', () => {
       expect(screen.getByText(/82%/)).toBeInTheDocument();
     });
     expect(
-      screen.getByText((text) => text.toLowerCase().includes('ai') && text.toLowerCase().includes('mevcut')),
+      screen.getByText((text) => text.toLowerCase().includes('yapay zeka') && text.toLowerCase().includes('mevcut')),
     ).toBeInTheDocument();
   });
 
@@ -94,11 +94,11 @@ describe('AiInsightPanel fallback', () => {
     }));
 
     render(<AiInsightPanel />);
-    await screen.findByText(/Network Durumu/);
+    await screen.findByText(/Ağ Durumu/);
 
-    expect(screen.getByText(/2 baglanti/i)).toBeInTheDocument();
-    expect(screen.getByText(/Risk Uyarilari/)).toBeInTheDocument();
-    expect(screen.getByText(/iletisim yok/i)).toBeInTheDocument();
+    expect(screen.getByText(/2 bağlantı/i)).toBeInTheDocument();
+    expect(screen.getByText(/Risk Uyarıları/)).toBeInTheDocument();
+    expect(screen.getByText(/iletişim yok/i)).toBeInTheDocument();
   });
 
   it('shows relationship nudges from API when available', async () => {
@@ -117,14 +117,14 @@ describe('AiInsightPanel fallback', () => {
           lastInteractionDate: null,
           relationshipStrength: 1,
           targetName: 'Networking',
-          reasons: ['100 gundur iletisim yok.'],
+          reasons: ['100 gündür iletişim yok.'],
         },
       ],
     });
 
     render(<AiInsightPanel />);
-    await screen.findByText(/Iliski Hatirlatmalari/);
+    await screen.findByText(/İlişki Hatırlatmaları/);
     expect(screen.getByText('Bora')).toBeInTheDocument();
-    expect(screen.getByText(/100 gundur/)).toBeInTheDocument();
+    expect(screen.getByText(/100 gündür/)).toBeInTheDocument();
   });
 });

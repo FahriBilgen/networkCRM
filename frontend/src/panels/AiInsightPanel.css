@@ -2,19 +2,31 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  animation: slideInUp 0.4s ease-out;
 }
 
 .ai-panel header h3 {
   margin: 0;
+  transition: color 0.3s ease;
+}
+
+.ai-panel:hover header h3 {
+  color: #bfdbfe;
 }
 
 .ai-panel header .muted {
   margin: 0;
   color: #94a3b8;
+  transition: color 0.3s ease;
+}
+
+.ai-panel:hover header .muted {
+  color: #cbd5f5;
 }
 
 .ai-panel header .error {
   color: #f87171;
+  animation: slideInUp 0.3s ease-out;
 }
 
 .ai-panel section h4 {
@@ -42,6 +54,16 @@
   border: 1px solid #1f2937;
   border-radius: 0.6rem;
   padding: 0.4rem 0.6rem;
+  transition: all 0.3s ease;
+  animation: slideInUp 0.3s ease-out;
+}
+
+.suggestion-list li:hover,
+.insight-list li:hover {
+  background: #1a2539;
+  border-color: #334155;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+  transform: translateX(4px);
 }
 
 .suggestion-list li small {
@@ -129,3 +151,12 @@
   color: #94a3b8;
   justify-content: center;
 }
+
+.reason-text {
+  display: block;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-style: italic;
+  margin-top: 0.125rem;
+}
+

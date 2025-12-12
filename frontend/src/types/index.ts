@@ -110,6 +110,7 @@ export interface GoalSuggestionResponse {
 export interface PersonSuggestion {
   person: NodeResponse;
   score: number;
+  reason?: string;
 }
 
 export interface GoalPathSuggestionResponse {
