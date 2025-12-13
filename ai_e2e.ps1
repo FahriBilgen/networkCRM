@@ -1,5 +1,5 @@
 $ErrorActionPreference = "Stop"
-$baseUrl = "http://localhost:8081/api"
+$baseUrl = "http://localhost:8080/api"
 $email = "aie2e@example.com"
 $password = "password123"
 

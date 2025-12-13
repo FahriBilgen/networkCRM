@@ -719,3 +719,572 @@ Konfigürasyon:
 - `VITE_API_BASE_URL`
 
 JWT zorunlu olduğu için üretimde güçlü secret/rotate politikası ve HTTPS reverse proxy önerilir.
+
+--------------------------------------------------------------------------------------------------
+
+
+
+# MOBİL ÜRÜN – KİLİTLENMİŞ VİZYON & ÖZELLİK SETİ
+
+## 1. Mobil Ürünün Vizyonu
+
+**Mobil uygulama, tanıştığın insanları kaybetmemen ve ihtiyaç duyduğunda hızlıca bulman içindir.**
+
+* LinkedIn rakibi değil
+* Sosyal ağ değil
+* Chat uygulaması değil
+
+Mobil = **kişisel network hafızası**
+
+---
+
+## 2. Mobilin Rolü (Scope)
+
+Mobil:
+
+* Sahada hızlı veri girişi
+* Hafızaya alma
+* Basit erişim
+
+Mobil **değildir**:
+
+* Analiz aracı
+* Strateji aracı
+* AI ürünü
+* Graph aracı
+
+Web:
+
+* Graph
+* Vision / Goal / Project
+* AI analiz
+* Premium
+
+---
+
+## 3. Çözülen Temel Problemler
+
+1. Tanıştım ama unuttum
+2. Arıyorum ama bulamıyorum
+3. Kimdi bu, ne konuşmuştuk?
+
+Mobil sadece bu 3 probleme odaklanır.
+
+---
+
+## 4. Mobil Özellikler (KESİN)
+
+### 4.1 Kayıt & Profil
+
+Kayıt olurken alınır:
+
+* İsim
+* Sektör
+* Kısa bio (1 satır)
+* Telefon
+* Email
+* Opsiyonel LinkedIn
+
+**Prensip:**
+İletişim bilgisi alınır ama **private** tutulur.
+
+---
+
+### 4.2 Ana Ekran – Sektör Dizini
+
+* Sektör listesi
+* Her sektör altında kişi sayısı
+* Sektör içine girince kişi listesi
+
+Sıralama:
+
+* Varsayılan: son eklenen
+* Alternatif: son etkileşim
+
+---
+
+### 4.3 Kişi Kartı
+
+Zorunlu:
+
+* İsim
+* Sektör
+* Etiketler
+
+Opsiyonel:
+
+* Nerede tanıştık
+* Ne konuştuk
+* Tarih (otomatik)
+* Telefon / Email / LinkedIn
+
+İletişim bilgisi yoksa:
+
+* Görsel olarak “eksik” hissi verilir
+* Ama zorlanmaz
+
+---
+
+### 4.4 Hızlı Kişi Ekleme
+
+Alanlar:
+
+* İsim (zorunlu)
+* Sektör (zorunlu)
+* 1 satır not (opsiyonel)
+
+Hedef süre: **< 15 saniye**
+
+---
+
+### 4.5 Kayıtlı Kullanıcıyla Ekleşme
+
+Akış:
+
+1. İsim + sektörle arama
+2. Mini profil görüntüleme
+3. “Tanıştık” isteği
+4. Kabul edilince otomatik ekleme ve sınıflandırma
+
+Sosyal ağ değil, doğrulama.
+
+---
+
+### 4.6 İletişim Paylaşımı (kritik karar)
+
+**Kayıt sırasında:**
+
+* Telefon / Email alınır
+* Varsayılan: private
+
+**Bağlantı sonrası:**
+
+* Kullanıcı isterse paylaşır
+* Telefon / Email / LinkedIn için ayrı ayrı opt-in
+
+Otomatik paylaşım yok.
+
+---
+
+### 4.7 İletişim Kurma
+
+Uygulama:
+
+* Arama yapmaz
+* Mesaj göndermez
+
+Sadece:
+
+* 📞 Ara
+* ✉️ Mail at
+* 🔗 LinkedIn’de aç
+
+---
+
+## 5. Mobilde BİLİNÇLİ OLARAK OLMAYANLAR
+
+* AI
+* Graph
+* Vision / Goal / Project
+* Chat
+* Network analizi
+* Karmaşık filtreler
+* Sosyal feed
+* Influence score
+
+---
+
+## 6. Mobil – Web Ayrımı
+
+Mobil:
+
+* Input
+* Hafıza
+* Free
+
+Web:
+
+* Analiz
+* Strateji
+* AI
+* Premium
+
+Tek backend, tek veri modeli.
+
+---
+
+## 7. Gizlilik & Güven Prensibi
+
+> **İletişim bilgisi bizde durur, paylaşım kararı kullanıcıdadır.**
+
+Bu prensip:
+
+* Spam’i önler
+* Güveni artırır
+* Sosyal baskıyı azaltır
+
+---
+
+## 8. Mobil Başarı Metrikleri
+
+* Ortalama kişi ekleme süresi (<15 sn)
+* 7 gün sonra arama oranı
+* Kişi başına iletişim bilgisi ekleme oranı
+* “Geri dönüp bulma” davranışı
+
+---
+
+## 9. Tek Cümlelik Mobil Tanım
+
+**“Tanıştığın insan kaybolmaz.”**
+
+---
+
+## 10. Kilitlenmiş Kararlar (özet)
+
+* Mobil ayrı ürün, ortak platform
+* Mobil AI’sız
+* Sektör bazlı hafıza
+* İletişim bilgisi alınır, paylaşım opt-in
+* Web premium, mobil free
+
+---
+
+Bu dokümanla:
+
+* Mobil scope kilitlendi
+* Feature creep önlendi
+* Web ile sınırlar netleşti
+
+
+Aşağıdaki teknik plan, konuştuğumuz mobil vizyonu **mevcut Spring Boot + Postgres + React web** altyapısına oturtacak şekilde “yapılabilir ve kontrol edilebilir” biçimde tasarlanmıştır. Amaç: **tek backend, tek veri modeli**, mobil için ayrı ürün davranışı.
+
+---
+
+## 1. Veri Modeli Değişiklikleri
+
+### 1.1 `users` tablosu: profil + iletişim (private)
+
+Kayıtta alınacak alanlar:
+
+* `full_name` (zorunlu)
+* `sector` (zorunlu)
+* `bio` (opsiyonel, kısa)
+* `email` (zorunlu veya opsiyonel karar; pratikte auth için zaten email kullanıyorsan zorunlu)
+* `phone_e164` (opsiyonel ama teşvikli)
+* `linkedin_url` (opsiyonel)
+
+Not: `phone_e164` formatını standardize et (E.164). UI tarafında ülke seçimi ile normalize et.
+
+### 1.2 “Kişi kartı” (NodeType.PERSON) iletişim alanları
+
+Mobilde kişi kartı iki tür olabilir:
+
+* **Manual person**: kullanıcı kendi ekledi, iletişim alanları serbest
+* **Registered person**: uygulamadaki kullanıcıdan türeyen kişi, iletişim paylaşımı opt-in
+
+Bu ayrımı tutmak için `nodes` içine minimal ek alanlar:
+
+* `owner_user_id` (zaten var)
+* `linked_user_id` (nullable) → bu person node’u bir uygulama kullanıcısına bağlıysa
+* `contact_phone` (nullable)
+* `contact_email` (nullable)
+* `contact_linkedin` (nullable)
+
+Kural:
+
+* `linked_user_id != null` olan person node’unda `contact_*` alanları **varsayılan boş** gelir.
+* Bu alanlar sadece karşı taraf “paylaş” açınca doldurulur.
+
+### 1.3 İletişim paylaşım politikası: `user_contact_shares`
+
+Kayıtlı kullanıcıların hangi bilgilerini bağlantılarına açtığını tutan bir tablo:
+
+`user_contact_shares`
+
+* `id`
+* `user_id` (paylaşan)
+* `share_phone` (bool)
+* `share_email` (bool)
+* `share_linkedin` (bool)
+* `updated_at`
+
+İstersen “kişiye özel paylaşım” (A’ya açık, B’ye kapalı) da yapabilirsin ama ilk faz için global toggle yeterli.
+
+### 1.4 “Ekleşme” (mutual connect) modeli: `connection_requests` + `connections`
+
+İki aşamalı model net ve abuse yönetimi için gerekli.
+
+`connection_requests`
+
+* `id`
+* `from_user_id`
+* `to_user_id`
+* `status` (PENDING/ACCEPTED/REJECTED/CANCELLED)
+* `created_at`, `responded_at`
+
+`connections`
+
+* `id`
+* `user_a_id`
+* `user_b_id`
+* `created_at`
+
+Kural: ACCEPTED olunca `connections` yarat.
+
+### 1.5 Otomatik sınıflandırma (sektör) nasıl olacak?
+
+* Karşı tarafın `users.sector` değeri var.
+* Connection kabul edilince, kabul eden kullanıcının graph’ında bir `Person` node yaratılır:
+
+  * `name = users.full_name`
+  * `sector = users.sector`
+  * `linked_user_id = users.id`
+  * `tags = []`
+  * `relationship_strength = default` (ör. 2)
+  * `notes = null`
+  * `created_at = now`
+* Aynı işlem diğer taraf için de yapılır (opsiyon: iki taraf da otomatik birbirini node olarak eklesin).
+
+---
+
+## 2. Backend API Tasarımı
+
+### 2.1 Auth & Profile
+
+* `POST /api/auth/register`
+
+  * body: `fullName, sector, bio?, email, password, phone?, linkedinUrl?`
+* `GET /api/me`
+* `PUT /api/me`
+
+  * profil güncelleme (sector/bio/phone/linkedin)
+
+### 2.2 Mobile directory: kullanıcı arama (isim + sektör)
+
+Salt isim riskli olduğu için minimum doğrulama bilgisi döndür:
+
+* `GET /api/users/search?q=&sector=`
+
+  * response item: `userId, fullName, sector, bioShort, linkedinUrl? (opsiyon)`
+
+Rate limit burada önemli (abuse). En azından IP/user bazlı basit limit.
+
+### 2.3 Connection request akışı
+
+* `POST /api/connections/requests`
+
+  * body: `toUserId`
+* `GET /api/connections/requests?status=PENDING` (inbound/outbound ayrı)
+* `POST /api/connections/requests/{id}/accept`
+* `POST /api/connections/requests/{id}/reject`
+* `GET /api/connections` (list)
+
+ACCEPT sırasında:
+
+1. `connections` kaydı yarat
+2. Her iki kullanıcı için `Person` node oluştur / varsa reuse et
+3. Bu node’ları “sektör klasörü”nde otomatik görünür kıl
+
+### 2.4 Contact sharing (opt-in)
+
+* `GET /api/me/contact-sharing`
+* `PUT /api/me/contact-sharing`
+
+  * body: `{ sharePhone, shareEmail, shareLinkedin }`
+
+Bağlantı listesinde karşı tarafın paylaşıma açtığı alanları döndürmek için:
+
+* `GET /api/connections/contacts`
+
+  * response: `connectionUserId, sharedPhone?, sharedEmail?, sharedLinkedin?`
+
+Backend kuralı:
+
+* Paylaşım kapalıysa alanlar null döner.
+
+### 2.5 Mobil kişi yönetimi (manual person)
+
+Mevcut Node API’n varsa onu kullan, yoksa mobil için sade uçlar aç:
+
+* `POST /api/mobile/people`
+
+  * body: `name, sector, tags?, notes?, phone?, email?, linkedin?`
+  * type=PERSON
+* `GET /api/mobile/people?sector=&q=&tag=`
+* `GET /api/mobile/people/{id}`
+* `PUT /api/mobile/people/{id}`
+* `DELETE /api/mobile/people/{id}`
+
+Not: `sector` indexlenmeli, `q` için trigram/GIN (Postgres) veya basit ILIKE yeter.
+
+---
+
+## 3. Servis Katmanı: kritik iş kuralları
+
+### 3.1 Person node oluşturma (registered user’dan)
+
+`PersonFromUserFactory` gibi bir servis:
+
+* idempotent çalışsın: aynı `linked_user_id` için tekrar node açmasın
+* kullanıcı bazında (`owner_user_id`) unique olsun
+
+Unique constraint önerisi:
+
+* `(owner_user_id, linked_user_id)` unique
+
+### 3.2 Contact paylaşımı sync
+
+Bağlantı kabul edildikten sonra paylaşım toggle değişince ne olacak?
+
+İki seçenek:
+
+1. **Runtime fetch**: Mobil kişi kartında iletişim bilgisi gösterirken `/connections/contacts` üzerinden anlık getir, node’a yazma.
+2. **Materialize**: Paylaşıma açılınca ilgili `Person` node’lara `contact_*` yaz.
+
+Gerçekçi ve temiz seçenek: **(1) Runtime fetch**
+
+* Veriyi iki yerde tutmazsın
+* Privacy bug riski düşer
+
+Yani `Person` node’daki `contact_*` alanları sadece manual kişiler için; registered bağlantılarda iletişim “connection contacts” üzerinden gelir.
+
+---
+
+## 4. Mobil Uygulama Mimarisi
+
+### 4.1 Teknoloji seçimi
+
+Gerçekçi seçenekler:
+
+* **React Native + Expo** (hızlı iterasyon, tek codebase)
+* Alternatif: Flutter (daha ağır yatırım)
+
+Senin stack React olduğu için RN/Expo mantıklı.
+
+### 4.2 Ekranlar (minimum ama tam)
+
+1. Auth
+
+* Register (profil + iletişim)
+* Login
+
+2. Home (Sektör Dizini)
+
+* sektör listesi + kişi sayıları
+
+3. SectorPeopleList
+
+* liste + arama (name/tag)
+* sort: recent / lastInteraction
+
+4. PersonDetail
+
+* kişi bilgileri
+* contact actions: Call / Email / LinkedIn
+* notes + tags edit
+
+5. AddPerson (Quick add)
+
+* name + sector + note + (optional contact)
+
+6. Connect (Kayıtlı kullanıcı ara + istek)
+
+* search users
+* send request
+* inbound requests inbox
+
+7. Settings
+
+* Contact sharing toggles
+* Profile edit
+
+### 4.3 Local cache (offline-first hafif)
+
+Mobilde “kaydetme hızlı” olmalı. Minimum:
+
+* SQLite (Expo SQLite) veya MMKV/AsyncStorage + server sync
+* Create/update işlemlerini kuyruklayıp online olunca gönder
+
+Ama ilk fazda bile:
+
+* “Kaydet tuşuna basınca kaybolmasın” için optimistic UI şart.
+
+---
+
+## 5. Güvenlik ve Abuse Kontrolleri
+
+Bu işin ölçeği küçük olsa bile temel kontrol şart.
+
+* `users/search` rate limit
+* Connection request limit:
+
+  * günde X istek
+  * aynı kullanıcıya tekrar istek engeli
+* Blocklist (erken koymak iyi):
+
+  * `POST /api/connections/block/{userId}`
+  * block’lu kullanıcı aramada çıkmaz, istek atamaz
+
+Privacy:
+
+* Phone/email varsayılan private
+* Paylaşım toggles default false
+* Paylaşım kapandığında API null döndürür (geçmiş loglarda saklamazsın)
+
+---
+
+## 6. Web Premium ile Uyumluluk
+
+Web’i “dokunma” moduna almıştın. Burada sadece iki şey gerekir:
+
+1. Web’de premium:
+
+* AI/graph vs zaten var.
+* Mobilin ürettiği manual persons web graph’ta görünür.
+
+2. Web’de “hijyen göstergeleri” (çok düşük efor, yüksek değer):
+
+* “İletişim bilgisi eksik kişi sayısı”
+* “Son 30 gün temas yok listesi” (AI’sız bile manuel lastInteraction ile)
+
+Bunlar premium değerini artırır ama mobil scope’u bozmaz.
+
+---
+
+## 7. Uygulama Planı
+
+### Faz 1: Temel mobil (hafıza)
+
+* Register/Login
+* Quick add manual person
+* Sector index + search
+* Person detail + Call/Email/LinkedIn actions
+
+### Faz 2: Ekleşme (kayıtlı kullanıcı)
+
+* User search
+* Connection requests
+* Contact sharing toggles
+* Connection contacts fetch
+
+### Faz 3: Hijyen ve kalite
+
+* Offline queue
+* Block/rate limit
+* lastInteraction alanı (manuel “bugün konuştuk” butonu)
+
+---
+
+## 8. “Done” Tanımı
+
+Mobil teknik olarak “bitti” demek için:
+
+* 15 saniyede kişi ekleniyor
+* Sektöre göre 2 tap ile kişi bulunuyor
+* Kişi kartından tek tap ile arama/mail/linkedin açılıyor
+* Kayıtlı kullanıcı ekleşmesi çalışıyor
+* İletişim paylaşımı opt-in ve geri alınabilir
+
+---
+
