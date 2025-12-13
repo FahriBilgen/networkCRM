@@ -110,4 +110,42 @@ describe('App Integration Flow', () => {
 
     expect(useSelectionStore.getState().selectedNode).toEqual(testNode);
   });
+
+  it('should open modal in edit mode, update node, and refresh graph', async () => {
+    // 1. Setup existing node
+    const existingNode = { 
+      id: 'edit-node-1', 
+      type: NODE_TYPES.PERSON, 
+      name: 'Old Name', 
+      sector: 'Old Sector'
+    };
+
+    render(<NodeModal />);
+
+    // 2. Open modal in Edit mode
+    act(() => {
+      useUiStore.getState().openEditModal(existingNode as any);
+    });
+
+    // 3. Verify modal title
+    expect(screen.getByText(/Düzenle.*Kişi/i)).toBeInTheDocument();
+    
+    // 4. Verify form pre-filled
+    expect(screen.getByDisplayValue('Old Name')).toBeInTheDocument();
+
+    // 5. Change Name
+    fireEvent.change(screen.getByLabelText(/İsim/i), { target: { value: 'Updated Name' } });
+
+    // 6. Submit
+    const submitBtn = screen.getByRole('button', { name: /Kaydet/i });
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+
+    // 7. Verify API call
+    expect(client.updateNode).toHaveBeenCalledWith('edit-node-1', expect.objectContaining({
+      name: 'Updated Name',
+      sector: 'Old Sector'
+    }));
+  });
 });

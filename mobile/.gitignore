@@ -1,0 +1,10 @@
+node_modules/
+.expo/
+dist/
+web-build/
+.bundle
+vendor/
+android/app/build/
+ios/Pods/
+*.log
+.env

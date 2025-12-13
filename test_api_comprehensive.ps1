@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 # Configuration
-$baseUrl = "http://localhost:8080/api"
+$baseUrl = "http://localhost:8081/api"
 $email = "testuser@example.com"
 $password = "password123"
 

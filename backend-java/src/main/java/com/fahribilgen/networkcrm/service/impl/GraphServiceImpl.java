@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fahribilgen.networkcrm.entity.Edge;
 import com.fahribilgen.networkcrm.entity.Node;
@@ -38,11 +39,13 @@ public class GraphServiceImpl implements GraphService {
     private EdgeRepository edgeRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public GraphResponse getGraph(User user) {
         return getGraph(user, Integer.MAX_VALUE);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public GraphResponse getGraph(User user, int limit) {
         List<Node> nodes;
         if (limit < Integer.MAX_VALUE) {

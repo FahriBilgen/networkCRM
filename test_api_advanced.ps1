@@ -162,9 +162,9 @@ Print-Success "Chain created (A->B->C)."
 
 # Verify Graph Structure
 $graph = Invoke-Json -Uri "$baseUrl/graph" -Method GET -Headers $headers1
-Print-Status "Graph Nodes: $($graph.nodes.Count), Edges: $($graph.edges.Count)"
-if ($graph.nodes.Count -ge 3 -and $graph.edges.Count -ge 2) {
-    Print-Success "Graph structure verified (Nodes: $($graph.nodes.Count), Edges: $($graph.edges.Count))"
+Print-Status "Graph Nodes: $($graph.nodes.Count), Edges: $($graph.links.Count)"
+if ($graph.nodes.Count -ge 3 -and $graph.links.Count -ge 2) {
+    Print-Success "Graph structure verified (Nodes: $($graph.nodes.Count), Edges: $($graph.links.Count))"
 } else {
     Print-Error "Graph structure mismatch."
 }
@@ -173,7 +173,7 @@ if ($graph.nodes.Count -ge 3 -and $graph.edges.Count -ge 2) {
 Print-Status "Starting Scenario 5: AI & Search"
 
 # Search
-$search = Invoke-Json -Uri "$baseUrl/nodes?search=Secret" -Method GET -Headers $headers1
+$search = Invoke-Json -Uri "$baseUrl/nodes/filter?q=Secret" -Method GET -Headers $headers1
 if ($search.Count -eq 1 -and $search[0].name -eq "User1 Secret") {
     Print-Success "Search OK."
 } else {
