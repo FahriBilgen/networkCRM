@@ -137,6 +137,9 @@ export default function RegisterScreen() {
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.buttonText}>Kayıt Ol</Text>
+          )}
+        </TouchableOpacity>
+
       </View>
 
       <View style={styles.footerSection}>
